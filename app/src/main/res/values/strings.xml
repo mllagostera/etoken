@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">etoken</string>
+
+    <string name="username_prompt">Escribe tu nombre de usuario de Moxfield para cargar tus mazos públicos.</string>
+    <string name="username_label">Usuario de Moxfield</string>
+    <string name="action_load_decks">Cargar mazos</string>
+    <string name="action_retry">Reintentar</string>
+    <string name="action_back">Volver</string>
+
+    <string name="decks_empty">Este usuario no tiene mazos públicos.</string>
+    <string name="deck_untitled">Mazo sin nombre</string>
+
+    <string name="tokens_title">Tokens</string>
+    <string name="tokens_empty">Ninguna carta de este mazo crea tokens.</string>
+    <string name="tokens_created_by">Lo crean: %1$s</string>
+
+    <string name="error_user_not_found">No hemos encontrado ese usuario en Moxfield. Revisa que esté bien escrito.</string>
+    <string name="error_blocked">Moxfield ha rechazado la petición. Prueba otra vez en unos minutos.</string>
+    <string name="error_network">No hay conexión. Comprueba tu red e inténtalo de nuevo.</string>
+    <string name="error_unknown">Algo ha salido mal.</string>
+</resources>

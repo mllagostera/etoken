@@ -1,0 +1,8 @@
+<resources>
+    <!-- Colours all come from the Compose theme; this only has to keep the
+         platform from drawing an action bar or a splash background. -->
+    <style name="Theme.Etoken" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

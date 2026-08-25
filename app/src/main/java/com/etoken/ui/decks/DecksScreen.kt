@@ -1,0 +1,131 @@
+package com.etoken.ui.decks
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
+import com.etoken.R
+import com.etoken.domain.model.DeckSummary
+import com.etoken.ui.common.BackButton
+import com.etoken.ui.common.ErrorView
+import com.etoken.ui.common.LoadingView
+import com.etoken.ui.common.MessageView
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DecksScreen(
+    onDeckClick: (DeckSummary) -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: DecksViewModel = viewModel(factory = DecksViewModel.Factory),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = { Text(viewModel.username) },
+                navigationIcon = { BackButton(onBack) },
+            )
+        },
+    ) { padding ->
+        Box(Modifier.padding(padding)) {
+            when (val current = state) {
+                DecksUiState.Loading -> LoadingView()
+                DecksUiState.Empty -> MessageView(stringResource(R.string.decks_empty))
+                is DecksUiState.Failed -> ErrorView(current.error, onRetry = viewModel::load)
+                is DecksUiState.Ready -> DeckGrid(current.decks, onDeckClick)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeckGrid(decks: List<DeckSummary>, onDeckClick: (DeckSummary) -> Unit) {
+    LazyVerticalGrid(
+        // Adaptive rather than a fixed count so the grid reflows sensibly on
+        // tablets and in landscape.
+        columns = GridCells.Adaptive(minSize = 160.dp),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(decks, key = { it.publicId }) { deck ->
+            DeckCard(deck, onClick = { onDeckClick(deck) })
+        }
+    }
+}
+
+@Composable
+private fun DeckCard(deck: DeckSummary, onClick: () -> Unit) {
+    Card(modifier = Modifier.clickable(onClick = onClick)) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    // Scryfall/Moxfield art crops are consistently 626x457.
+                    .aspectRatio(626f / 457f)
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (deck.imageUrl != null) {
+                    AsyncImage(
+                        model = deck.imageUrl,
+                        contentDescription = deck.commander,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+            }
+
+            Column(Modifier.padding(10.dp)) {
+                Text(
+                    text = deck.name.ifBlank { stringResource(R.string.deck_untitled) },
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (!deck.commander.isNullOrBlank()) {
+                    Text(
+                        text = deck.commander,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
+    }
+}
