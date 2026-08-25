@@ -1,0 +1,54 @@
+name: Android CI
+
+# Runs on every branch, not just main. This repo has never been compiled
+# anywhere -- CI is the first machine with an Android SDK that will touch it --
+# so waiting for a pull request to find out would waste the whole point.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-test-build:
+    name: lint, unit tests y assembleDebug
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Dar permisos de ejecución a gradlew
+        run: chmod +x gradlew
+
+      # Compilation first, deliberately: it is the signal this project has
+      # never had. Lint and tests are worth little while the code may not build.
+      - name: Build (assembleDebug)
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Tests unitarios
+        run: ./gradlew :app:testDebugUnitTest --stacktrace
+
+      - name: Android Lint
+        run: ./gradlew :app:lintDebug --stacktrace
+
+      - name: Publicar reportes y APK
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-reports
+          path: |
+            app/build/reports/lint-results-debug.html
+            app/build/test-results/**/*.xml
+            app/build/outputs/apk/debug/*.apk
+          retention-days: 14
