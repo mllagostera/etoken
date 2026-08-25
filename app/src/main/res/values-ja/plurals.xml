@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="tokens_count">
+        <item quantity="other">トークン %1$d 種類</item>
+    </plurals>
+
+    <plurals name="new_game_body">
+        <item quantity="other">場の状態を消去します：戦場のトークン %1$d 体、カウンターと召喚酔いも含めて。</item>
+    </plurals>
+
+    <plurals name="clear_body">
+        <item quantity="other">この種類のトークン %1$d 体を、カウンターごと戦場から取り除きます。</item>
+    </plurals>
+</resources>

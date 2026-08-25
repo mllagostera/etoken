@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="tokens_count">
+        <item quantity="one">%1$d Spielstein</item>
+        <item quantity="other">%1$d Spielsteine</item>
+    </plurals>
+
+    <plurals name="new_game_body">
+        <item quantity="one">Der Spielstand wird gelöscht: %1$d Spielstein im Spiel, mit seinen Marken und seiner Einsatzverzögerung.</item>
+        <item quantity="other">Der Spielstand wird gelöscht: %1$d Spielsteine im Spiel, mit ihren Marken und ihrer Einsatzverzögerung.</item>
+    </plurals>
+
+    <plurals name="clear_body">
+        <item quantity="one">%1$d Spielstein dieser Art verlässt das Spiel, mit seinen Marken.</item>
+        <item quantity="other">%1$d Spielsteine dieser Art verlassen das Spiel, mit ihren Marken.</item>
+    </plurals>
+</resources>

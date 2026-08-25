@@ -1,0 +1,121 @@
+name: API smoke
+
+# Manual: this hits third-party APIs, so it has no business running on every
+# push. It exists because the app's whole Moxfield contract is inherited from
+# another project and has never been exercised from this one -- and a runner
+# can answer that without waiting for someone to install the APK.
+on:
+  workflow_dispatch:
+    inputs:
+      username:
+        description: Moxfield username to look up
+        required: true
+        default: mllagostera
+
+jobs:
+  smoke:
+    name: Moxfield y Scryfall con las cabeceras reales de la app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recorrer el mismo camino que hace la app
+        env:
+          # Copied verbatim from data/Network.kt and EtokenApplication.kt.
+          # If these drift, this job stops testing what the app actually sends.
+          MOX_UA: "Mozilla/5.0 (compatible; etoken/0.1; +https://github.com/mllagostera/etoken)"
+          MOX_REFERER: "https://www.moxfield.com/"
+          SCRY_UA: "etoken/0.1 (+https://github.com/mllagostera/etoken)"
+          IMG_UA: "etoken-Android/0.1"
+          USERNAME: ${{ inputs.username }}
+        run: |
+          set -uo pipefail
+          fail=0
+          note() { printf '%-46s %s\n' "$1" "$2"; }
+
+          echo "== 1. Moxfield: listar mazos del usuario =="
+          code=$(curl -sS -o search.json -w '%{http_code}' -G \
+            -H "User-Agent: $MOX_UA" -H "Accept: application/json" -H "Referer: $MOX_REFERER" \
+            --data-urlencode "authorUserNames=$USERNAME" \
+            --data-urlencode "pageNumber=1" --data-urlencode "pageSize=100" \
+            --data-urlencode "sortType=Updated" --data-urlencode "sortDirection=Descending" \
+            --data-urlencode "includePinned=true" --data-urlencode "showIllegal=true" \
+            "https://api2.moxfield.com/v2/decks/search-sfw") || code=000
+          note "GET /v2/decks/search-sfw" "$code"
+          [ "$code" = 200 ] || fail=1
+
+          if [ "$code" = 200 ]; then
+            note "  totalPages" "$(jq -r '.totalPages // "ausente"' search.json)"
+            note "  mazos en la primera página" "$(jq -r '.data | length' search.json)"
+            note "  ¿trae name?" "$(jq -r '.data[0] | has("name")' search.json)"
+            note "  ¿trae main?" "$(jq -r '.data[0] | has("main")' search.json)"
+            PUBLIC_ID=$(jq -r '.data[0].publicId // empty' search.json)
+            note "  primer publicId" "${PUBLIC_ID:-ninguno}"
+          fi
+
+          echo
+          echo "== 2. Moxfield: el mazo completo =="
+          if [ -n "${PUBLIC_ID:-}" ]; then
+            code=$(curl -sS -o deck.json -w '%{http_code}' \
+              -H "User-Agent: $MOX_UA" -H "Accept: application/json" -H "Referer: $MOX_REFERER" \
+              "https://api2.moxfield.com/v3/decks/all/$PUBLIC_ID") || code=000
+            note "GET /v3/decks/all/{publicId}" "$code"
+            [ "$code" = 200 ] || fail=1
+            if [ "$code" = 200 ]; then
+              note "  name" "$(jq -r '.name // "ausente"' deck.json)"
+              note "  main.id" "$(jq -r '.main.id // "ausente"' deck.json)"
+              note "  ¿main.card_faces?" "$(jq -r 'if (.main.card_faces // []) | length > 0 then "sí" else "no" end' deck.json)"
+              note "  comandantes" "$(jq -r '[.boards.commanders.cards[]?.card.name] | join(" & ") // "ninguno"' deck.json)"
+              note "  cartas en mainboard" "$(jq -r '.boards.mainboard.cards | length' deck.json)"
+              # The field the whole token feature hangs on.
+              note "  ¿las cartas traen scryfall_id?" \
+                "$(jq -r '[.boards.mainboard.cards[]?.card.scryfall_id] | map(select(. != null)) | length' deck.json) de $(jq -r '.boards.mainboard.cards | length' deck.json)"
+              SCRYFALL_ID=$(jq -r '[.boards.mainboard.cards[]?.card.scryfall_id] | map(select(. != null)) | .[0] // empty' deck.json)
+              MAIN_ID=$(jq -r '.main.id // empty' deck.json)
+              FACE_ID=$(jq -r '.main.card_faces[0].id // empty' deck.json)
+            fi
+          else
+            note "omitido" "no hubo publicId"
+          fi
+
+          echo
+          echo "== 3. Moxfield: el recorte de arte del comandante =="
+          if [ -n "${FACE_ID:-}" ]; then
+            URL="https://assets.moxfield.net/cards/card-face-$FACE_ID-art_crop.jpg"
+          elif [ -n "${MAIN_ID:-}" ]; then
+            URL="https://assets.moxfield.net/cards/card-$MAIN_ID-art_crop.jpg"
+          fi
+          if [ -n "${URL:-}" ]; then
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: $IMG_UA" "$URL") || code=000
+            note "GET $URL" "$code"
+            [ "$code" = 200 ] || fail=1
+          fi
+
+          echo
+          echo "== 4. Scryfall: /cards/collection =="
+          if [ -n "${SCRYFALL_ID:-}" ]; then
+            printf '{"identifiers":[{"id":"%s"}]}' "$SCRYFALL_ID" > body.json
+            code=$(curl -sS -o cards.json -w '%{http_code}' -X POST \
+              -H "User-Agent: $SCRY_UA" -H "Accept: application/json" -H "Content-Type: application/json" \
+              --data @body.json "https://api.scryfall.com/cards/collection") || code=000
+            note "POST /cards/collection" "$code"
+            [ "$code" = 200 ] || fail=1
+            if [ "$code" = 200 ]; then
+              note "  carta" "$(jq -r '.data[0].name // "ausente"' cards.json)"
+              note "  ¿trae all_parts?" "$(jq -r 'if (.data[0].all_parts // []) | length > 0 then "sí" else "no" end' cards.json)"
+              IMG=$(jq -r '.data[0].image_uris.normal // .data[0].card_faces[0].image_uris.normal // empty' cards.json)
+            fi
+          fi
+
+          echo
+          echo "== 5. Scryfall: el CDN de imágenes con el User-Agent de Coil =="
+          if [ -n "${IMG:-}" ]; then
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: $IMG_UA" "$IMG") || code=000
+            note "GET (con UA descriptivo)" "$code"
+            [ "$code" = 200 ] || fail=1
+            # The failure this guards against: OkHttp's default UA gets a 400.
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -H "User-Agent: okhttp/5.4.0" "$IMG") || code=000
+            note "GET (con el UA por defecto de OkHttp)" "$code — se espera que falle"
+          fi
+
+          echo
+          if [ "$fail" -ne 0 ]; then echo "RESULTADO: alguna llamada no dio 200"; exit 1; fi
+          echo "RESULTADO: el contrato se sostiene contra las APIs reales"

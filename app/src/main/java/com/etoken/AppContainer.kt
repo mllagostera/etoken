@@ -17,8 +17,8 @@ class AppContainer(context: Context) {
 
     val repository: MoxfieldRepository by lazy {
         MoxfieldRepository(
-            moxfield = Network.moxfieldApi(),
-            scryfall = Network.scryfallApi(),
+            moxfield = Network.moxfieldApi(logRequests = BuildConfig.DEBUG),
+            scryfall = Network.scryfallApi(logRequests = BuildConfig.DEBUG),
         )
     }
 

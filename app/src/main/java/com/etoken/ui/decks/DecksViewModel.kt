@@ -44,11 +44,16 @@ sealed interface DecksUiState {
 
 class DecksViewModel(
     private val repository: MoxfieldRepository,
+    private val savedState: SavedStateHandle,
     val username: String,
 ) : ViewModel() {
 
     private val decks = MutableStateFlow<List<DeckSummary>>(emptyList())
-    private val query = MutableStateFlow("")
+
+    // In the SavedStateHandle rather than a plain flow: Android kills backgrounded
+    // processes freely, and coming back to a grid that silently un-filtered itself
+    // reads as the app having lost your place.
+    private val query: StateFlow<String> = savedState.getStateFlow(KEY_QUERY, "")
     private val phase = MutableStateFlow<Phase>(Phase.Loading)
     private val refreshError = MutableStateFlow<LoadError?>(null)
 
@@ -85,11 +90,11 @@ class DecksViewModel(
     fun refresh() = fetch(isRefresh = true)
 
     fun onQueryChange(value: String) {
-        query.value = value
+        savedState[KEY_QUERY] = value
     }
 
     fun clearQuery() {
-        query.value = ""
+        savedState[KEY_QUERY] = ""
     }
 
     fun dismissRefreshError() {
@@ -167,6 +172,7 @@ class DecksViewModel(
 
     companion object {
         private const val MAX_CONCURRENT_HYDRATIONS = 4
+        private const val KEY_QUERY = "deck_query"
 
         /** Route argument carrying the Moxfield username. */
         const val ARG_USERNAME = "username"
@@ -178,6 +184,7 @@ class DecksViewModel(
                 val handle: SavedStateHandle = createSavedStateHandle()
                 DecksViewModel(
                     repository = app.container.repository,
+                    savedState = handle,
                     username = checkNotNull(handle.get<String>(ARG_USERNAME)) { "missing $ARG_USERNAME" },
                 )
             }

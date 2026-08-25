@@ -1,5 +1,6 @@
-<resources>
-    <string name="app_name">etoken</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Brand name: deliberately identical in every language. -->
+    <string name="app_name" tools:ignore="MissingTranslation">etoken</string>
 
     <string name="username_prompt">Escribe tu nombre de usuario de Moxfield para cargar tus mazos públicos.</string>
     <string name="username_label">Usuario de Moxfield</string>
@@ -36,6 +37,7 @@
     <string name="board_begin_turn">Empieza mi turno</string>
     <string name="board_counter_all">+1/+1 a todos</string>
     <string name="board_clear">Vaciar</string>
+    <string name="clear_title">¿Vaciar este token?</string>
     <string name="board_base">Base %1$s</string>
 
     <string name="stack_quantity">Cantidad</string>

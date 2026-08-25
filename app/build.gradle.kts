@@ -64,7 +64,6 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     debugImplementation(libs.androidx.ui.tooling)
 
@@ -75,6 +74,7 @@ dependencies {
     implementation(libs.retrofit.serialization)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
+    // Debug builds only, wired from AppContainer: see Network.moxfieldApi(logRequests).
     implementation(libs.okhttp.logging.interceptor)
 
     // Coil 3: commander art in the deck grid, token art in the token grid.

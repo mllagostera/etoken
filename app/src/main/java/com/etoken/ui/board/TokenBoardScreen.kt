@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -100,6 +101,7 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
     // written to a Bundle, and looking the stack up again means the dialog can
     // never act on a copy that merged or emptied while it was open.
     var askingHowMany by rememberSaveable { mutableStateOf(false) }
+    var confirmingClear by rememberSaveable { mutableStateOf(false) }
     var countersForStackId by rememberSaveable { mutableStateOf<Long?>(null) }
     val countersTarget = countersForStackId?.let { id -> board.stacks.firstOrNull { it.id == id } }
 
@@ -110,7 +112,14 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
     ) {
         item { TokenHeader(token) }
         item { BoardSummary(board) }
-        item { QuickActions(board, viewModel, onAskHowMany = { askingHowMany = true }) }
+        item {
+            QuickActions(
+                board = board,
+                viewModel = viewModel,
+                onAskHowMany = { askingHowMany = true },
+                onAskClear = { confirmingClear = true },
+            )
+        }
 
         if (board.isEmpty) {
             item {
@@ -144,6 +153,31 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
             onConfirm = { amount ->
                 viewModel.add(amount)
                 askingHowMany = false
+            },
+        )
+    }
+
+    if (confirmingClear) {
+        AlertDialog(
+            onDismissRequest = { confirmingClear = false },
+            title = { Text(stringResource(R.string.clear_title)) },
+            text = {
+                Text(pluralStringResource(R.plurals.clear_body, board.total, board.total))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clear()
+                        confirmingClear = false
+                    },
+                ) {
+                    Text(stringResource(R.string.board_clear))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmingClear = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
             },
         )
     }
@@ -243,6 +277,7 @@ private fun QuickActions(
     board: TokenBoard,
     viewModel: TokenBoardViewModel,
     onAskHowMany: () -> Unit,
+    onAskClear: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -271,7 +306,8 @@ private fun QuickActions(
             OutlinedButton(onClick = viewModel::addCounterToAll, enabled = !board.isEmpty) {
                 Text(stringResource(R.string.board_counter_all))
             }
-            TextButton(onClick = viewModel::clear, enabled = !board.isEmpty) {
+            // Destructive, so it asks -- the same courtesy "Nueva partida" gets.
+            TextButton(onClick = onAskClear, enabled = !board.isEmpty) {
                 Text(stringResource(R.string.board_clear))
             }
         }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="tokens_count">
+        <item quantity="one">%1$d token</item>
+        <item quantity="other">%1$d tokens</item>
+    </plurals>
+
+    <plurals name="new_game_body">
+        <item quantity="one">The table will be cleared: %1$d token in play, with its counters and summoning sickness.</item>
+        <item quantity="other">The table will be cleared: %1$d tokens in play, with their counters and summoning sickness.</item>
+    </plurals>
+
+    <plurals name="clear_body">
+        <item quantity="one">%1$d token of this kind leaves the table, with its counters.</item>
+        <item quantity="other">%1$d tokens of this kind leave the table, with their counters.</item>
+    </plurals>
+</resources>
