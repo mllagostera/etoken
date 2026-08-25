@@ -14,6 +14,7 @@ log, and the commit log is its memory.
 |---|---|
 | `[x]` | Done **and verified** — something actually ran and proved it |
 | `[~]` | Written, unit-tested where testable, but **never compiled or run** |
+| `[?]` | **Waiting on a decision**, not on someone doing it |
 | `[ ]` | Not started |
 
 `[~]` covers most of the app and is not a formality: no Android build has ever
@@ -74,7 +75,10 @@ Nothing below A matters until A1 passes.
 - [ ] **B2** The deck's card list is not visible anywhere, only its tokens · M
 - [ ] **B3** Private and unlisted decks are invisible — needs Moxfield auth, if they allow it · L
 - [ ] **B4** The search query is lost if Android kills the process mid-session · S
-- [ ] **B5** Nothing caps content width, so the board screen's rows stretch across a tablet · M
+- [?] **B5** Nothing caps content width: on a tablet the board screen's rows stretch edge to edge · M
+  - **A** — cap it: `widthIn(max = 600.dp)`, centred. One modifier, no new concepts, no tablet-specific code.
+  - **B** — two panes on large screens: the token list beside the open board. Real work, real payoff on a tablet.
+  - Waiting on: whether tablets are a target at all. Nobody has run this on one, so A is cheap insurance and B is a bet.
 - [ ] **B6** Per-token "Vaciar" clears without asking, unlike "Nueva partida" · S
 
 ### C. Quality and infrastructure
@@ -99,4 +103,4 @@ Don't turn these into tasks without asking. The reasoning is in `CLAUDE.md` §6.
 
 ---
 
-**Last reviewed:** 2026-08-25 · 7 commits · 2 954 lines of Kotlin, 1 050 of tests
+**Last reviewed:** 2026-08-25 · 8 commits · 2 954 lines of Kotlin, 1 050 of tests
