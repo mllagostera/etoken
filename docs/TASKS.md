@@ -13,17 +13,18 @@ log, and the commit log is its memory.
 | | |
 |---|---|
 | `[x]` | Done **and verified** — something actually ran and proved it |
-| `[~]` | Written, unit-tested where testable, but **never compiled or run** |
+| `[~]` | Compiles, passes lint and unit tests, but **has never been displayed on a screen** |
 | `[?]` | **Waiting on a decision**, not on someone doing it |
 | `[ ]` | Not started |
 
-`[~]` covers most of the app and is not a formality: no Android build has ever
-been executed, so no screen has been seen working. That is item A1 below, and
-until it is done every `[~]` here is a claim, not a fact.
+`[~]` covers most of the app. It used to mean "no compiler has ever read this";
+since 2026-08-25 CI builds every push, so it now means the narrower and much
+better thing: the code is valid, lint is clean, and the tests pass — but nobody
+has watched a screen do its job. A4 and A5 are what close that gap.
 
 ---
 
-## 1. Verified — 65 unit tests, 0 failures
+## 1. Verified — 65 unit tests, 0 failures, green on CI
 
 The logic layer. All of it is Android-free and runs on the JVM, which is what
 made it testable without an SDK.
@@ -36,12 +37,12 @@ made it testable without an SDK.
 - [x] Battlefield rules: stacks, split, merge, ordering, clamping — `domain/TokenBoardRules.kt`, 18 tests
 - [x] Power/toughness with counters, including `*` and `1+*` — `domain/PowerToughness.kt`, 4 tests
 - [x] Deck search: accent-blind, commander, multi-word AND — `domain/DeckFilter.kt`, 10 tests
-- [x] Whole data layer compiles against the pinned library versions
+- [x] The whole app compiles: `assembleDebug`, `testDebugUnitTest` and `lintDebug` all green — run #3
 
-## 2. Written, never run
+## 2. Compiles, never seen running
 
-Everything the user actually touches. Each has passing tests underneath it
-where there was logic to test; none has been seen on a screen.
+Everything the user actually touches. It builds and lints clean; none of it
+has been seen on a screen.
 
 ### Screens
 - [~] Username entry, remembered in DataStore; insets- and keyboard-aware — `ui/username/`
@@ -61,10 +62,10 @@ where there was logic to test; none has been seen on a screen.
 
 ### A. Verification — blocking
 
-Nothing below A matters until A1 passes.
+A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network.
 
-- [ ] **A1** Get `:app:assembleDebug` green — CI now runs it on every push, so this is iterating on its log · M
-- [ ] **A2** Clear what `:app:lintDebug` reports — same run, after the build passes · S
+- [x] **A1** `:app:assembleDebug` green — two AGP 9 config errors and one missing supertype, all fixed
+- [x] **A2** `:app:lintDebug` clean — nothing to clear, it passed first time
 - [ ] **A3** First real Moxfield call — confirm Cloudflare accepts the app's User-Agent · S
   - A runner can answer this without a device: curl both APIs with the exact headers `Network.kt` sends.
 - [ ] **A4** Confirm both image CDNs load on a device, Moxfield's and Scryfall's · S
@@ -139,4 +140,4 @@ read and acted on without one.
 
 ---
 
-**Last reviewed:** 2026-08-25 · 9 commits · 2 954 lines of Kotlin, 1 050 of tests
+**Last reviewed:** 2026-08-25 · 12 commits · first green build: run #3 · 2 954 lines of Kotlin, 1 050 of tests

@@ -157,21 +157,19 @@ follows.
 
 Honest accounting of what has and has not been run.
 
-**Verified.** The 65 unit tests in `app/src/test/` all pass, covering the
-token rules, the battlefield rules (splitting, merging, ordering, clamping),
-deck search, power/toughness with counters, the Moxfield and Scryfall wire
-formats, and the repository's paging, caching, batching and by-name fallback
-(with fake APIs).
-The whole data layer — Retrofit interfaces, OkHttp interceptors, repository —
-compiles against the exact library versions pinned in the catalog.
+**Verified.** The app builds. CI runs `assembleDebug`, `testDebugUnitTest` and
+`lintDebug` on every push, and all three are green: 65 unit tests pass, lint is
+clean, and the run produces an installable debug APK as an artifact. The tests
+cover the token rules, the battlefield rules, deck search, power/toughness with
+counters, both wire formats, and the repository's paging, caching, batching and
+by-name fallback.
 
-**Not verified.** The UI layer, the Gradle Android build, and any live API
-call. The environment this was written in has no Android SDK available and
-blocks `api2.moxfield.com`, `api.scryfall.com` and `dl.google.com` at the
-network policy, so `:app` has never been assembled and no request has ever
-been made against the real APIs. The endpoint contract is inherited from a
+**Not verified.** Anything that needs eyes or a network. No screen has been
+watched doing its job, and no request has ever been made against the real
+Moxfield or Scryfall — the environment this was written in blocks both hosts,
+and CI does not exercise them either. The endpoint contract is inherited from a
 client that ran in production, not confirmed here.
 
-The first run on a real device is therefore the real smoke test. If decks
-fail to load, `Network.kt`'s Moxfield headers are the first place to look:
-Cloudflare's posture is the part most likely to have moved.
+Installing that APK is therefore the real smoke test. If decks fail to load,
+`Network.kt`'s Moxfield headers are the first place to look: Cloudflare's
+posture is the part most likely to have moved.
