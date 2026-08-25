@@ -3,4 +3,9 @@
         <item quantity="one">%1$d token</item>
         <item quantity="other">%1$d tokens</item>
     </plurals>
+
+    <plurals name="new_game_body">
+        <item quantity="one">Se borrará el estado de la mesa: %1$d token en juego, con sus contadores y su mareo de invocación.</item>
+        <item quantity="other">Se borrará el estado de la mesa: %1$d tokens en juego, con sus contadores y su mareo de invocación.</item>
+    </plurals>
 </resources>

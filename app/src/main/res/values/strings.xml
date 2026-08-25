@@ -17,8 +17,8 @@
 
     <string name="new_game">Nueva partida</string>
     <string name="new_game_title">¿Empezar una partida nueva?</string>
-    <string name="new_game_body">Se quitarán de la mesa todos los tokens, también los de otros mazos.</string>
-    <string name="action_start">Empezar</string>
+    <string name="new_game_warning">Se van también los de otros mazos, y no se puede deshacer.</string>
+    <string name="action_start">Vaciar y empezar</string>
 
     <string name="decks_empty">Este usuario no tiene mazos públicos.</string>
     <string name="deck_untitled">Mazo sin nombre</string>

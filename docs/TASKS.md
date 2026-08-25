@@ -49,7 +49,7 @@ where there was logic to test; none has been seen on a screen.
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
 - [~] Token grid with in-play badges — `ui/tokens/`
 - [~] Token board: quantity, summoning sickness, +1/+1 counters — `ui/board/`
-- [~] New game, clearing every board behind a confirmation — `ui/tokens/TokensScreen.kt`
+- [~] New game, behind a confirmation that names what is lost — `ui/tokens/TokensScreen.kt`
 
 ### Build
 - [~] Gradle setup, catalog aligned with commander-companion's `android/`
@@ -62,7 +62,7 @@ where there was logic to test; none has been seen on a screen.
 
 Nothing below A matters until A1 passes.
 
-- [ ] **A1** Run `./gradlew :app:assembleDebug` once — 1 710 lines of Compose no compiler has read · S
+- [ ] **A1** Run `./gradlew :app:assembleDebug` once — 1 728 lines of Compose no compiler has read · S
 - [ ] **A2** Run `./gradlew :app:lintDebug` and clear what it finds · S
 - [ ] **A3** First real Moxfield call — confirm Cloudflare accepts the app's User-Agent · S
 - [ ] **A4** Confirm both image CDNs load on a device, Moxfield's and Scryfall's · S
@@ -70,11 +70,12 @@ Nothing below A matters until A1 passes.
 
 ### B. Product gaps
 
-- [ ] **B1** No undo. A mistaken "Vaciar" or "Nueva partida" loses the board silently · M
+- [ ] **B1** No undo — nothing brings a board back once it is cleared · M
 - [ ] **B2** The deck's card list is not visible anywhere, only its tokens · M
 - [ ] **B3** Private and unlisted decks are invisible — needs Moxfield auth, if they allow it · L
 - [ ] **B4** The search query is lost if Android kills the process mid-session · S
 - [ ] **B5** Landscape and tablet layouts have never been looked at · S
+- [ ] **B6** Per-token "Vaciar" clears without asking, unlike "Nueva partida" · S
 
 ### C. Quality and infrastructure
 
@@ -98,4 +99,4 @@ Don't turn these into tasks without asking. The reasoning is in `CLAUDE.md` §6.
 
 ---
 
-**Last reviewed:** 2026-08-25 · 4 commits · 2 936 lines of Kotlin, 1 050 of tests
+**Last reviewed:** 2026-08-25 · 5 commits · 2 954 lines of Kotlin, 1 050 of tests

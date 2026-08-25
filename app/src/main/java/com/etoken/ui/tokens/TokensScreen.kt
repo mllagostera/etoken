@@ -59,6 +59,7 @@ fun TokensScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val inPlay by viewModel.inPlay.collectAsStateWithLifecycle()
     var confirmingNewGame by remember { mutableStateOf(false) }
+    val tokensInPlay = inPlay.values.sum()
 
     Scaffold(
         modifier = modifier,
@@ -113,7 +114,24 @@ fun TokensScreen(
         AlertDialog(
             onDismissRequest = { confirmingNewGame = false },
             title = { Text(stringResource(R.string.new_game_title)) },
-            text = { Text(stringResource(R.string.new_game_body)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Naming the number makes the cost concrete: "12 tokens"
+                    // lands where "todos los tokens" does not.
+                    Text(
+                        text = pluralStringResource(
+                            R.plurals.new_game_body,
+                            tokensInPlay,
+                            tokensInPlay,
+                        ),
+                    )
+                    Text(
+                        text = stringResource(R.string.new_game_warning),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
