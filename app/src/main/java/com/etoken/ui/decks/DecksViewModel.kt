@@ -9,13 +9,17 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.etoken.EtokenApplication
 import com.etoken.data.MoxfieldRepository
+import com.etoken.domain.DeckFilter
 import com.etoken.domain.model.DeckSummary
 import com.etoken.ui.common.LoadError
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -25,7 +29,17 @@ sealed interface DecksUiState {
     data object Loading : DecksUiState
     data object Empty : DecksUiState
     data class Failed(val error: LoadError) : DecksUiState
-    data class Ready(val decks: List<DeckSummary>) : DecksUiState
+
+    data class Ready(
+        /** Decks left after applying [query]. */
+        val decks: List<DeckSummary>,
+        /** How many the user has in total, for the "3 de 27" counter. */
+        val total: Int,
+        val query: String,
+        val isRefreshing: Boolean,
+        /** Set when a refresh failed but the list already on screen is still good. */
+        val refreshError: LoadError?,
+    )
 }
 
 class DecksViewModel(
@@ -33,30 +47,83 @@ class DecksViewModel(
     val username: String,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<DecksUiState>(DecksUiState.Loading)
-    val state: StateFlow<DecksUiState> = _state.asStateFlow()
+    private val decks = MutableStateFlow<List<DeckSummary>>(emptyList())
+    private val query = MutableStateFlow("")
+    private val phase = MutableStateFlow<Phase>(Phase.Loading)
+    private val refreshError = MutableStateFlow<LoadError?>(null)
+
+    private var fetchJob: Job? = null
+
+    /**
+     * Derived rather than assigned, so that hydration filling in commander
+     * names re-runs the filter on its own. Assigning the visible list by hand
+     * would mean remembering to re-filter at every one of those updates.
+     */
+    val state: StateFlow<DecksUiState> =
+        combine(phase, decks, query, refreshError) { current, all, text, error ->
+            when {
+                current is Phase.Failed -> DecksUiState.Failed(current.error)
+                current is Phase.Loading -> DecksUiState.Loading
+                all.isEmpty() -> DecksUiState.Empty
+                else -> DecksUiState.Ready(
+                    decks = DeckFilter.apply(all, text),
+                    total = all.size,
+                    query = text,
+                    isRefreshing = current is Phase.Refreshing,
+                    refreshError = error,
+                )
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DecksUiState.Loading)
 
     init {
         load()
     }
 
-    fun load() {
-        viewModelScope.launch {
-            _state.value = DecksUiState.Loading
+    fun load() = fetch(isRefresh = false)
+
+    /** Drops the caches and goes back to Moxfield. */
+    fun refresh() = fetch(isRefresh = true)
+
+    fun onQueryChange(value: String) {
+        query.value = value
+    }
+
+    fun clearQuery() {
+        query.value = ""
+    }
+
+    fun dismissRefreshError() {
+        refreshError.value = null
+    }
+
+    private fun fetch(isRefresh: Boolean) {
+        // Cancels the previous fetch and, with it, any hydration still in
+        // flight — those are children of that coroutine.
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch {
+            val hasSomethingOnScreen = decks.value.isNotEmpty()
+            refreshError.value = null
+            phase.value = if (isRefresh && hasSomethingOnScreen) Phase.Refreshing else Phase.Loading
+
             try {
-                val decks = repository.listDecks(username)
-                if (decks.isEmpty()) {
-                    _state.value = DecksUiState.Empty
-                } else {
-                    _state.value = DecksUiState.Ready(decks)
-                    // Names and covers stream in afterwards, so the grid is
-                    // interactive immediately instead of waiting on N fetches.
-                    hydrate(decks)
-                }
+                if (isRefresh) repository.invalidate()
+
+                val fresh = repository.listDecks(username)
+                decks.value = fresh
+                phase.value = Phase.Ready
+                if (fresh.isNotEmpty()) hydrate(fresh)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _state.value = DecksUiState.Failed(LoadError.from(e))
+                val error = LoadError.from(e)
+                if (isRefresh && hasSomethingOnScreen) {
+                    // A failed refresh must not take away a list that is still
+                    // perfectly usable; it just says so and leaves it alone.
+                    refreshError.value = error
+                    phase.value = Phase.Ready
+                } else {
+                    phase.value = Phase.Failed(error)
+                }
             }
         }
     }
@@ -67,10 +134,10 @@ class DecksViewModel(
      * The concurrency cap matters: a large collection would otherwise fire a
      * hundred simultaneous requests at Moxfield and get rate limited.
      */
-    private fun CoroutineScope.hydrate(decks: List<DeckSummary>) {
+    private fun CoroutineScope.hydrate(pending: List<DeckSummary>) {
         val gate = Semaphore(MAX_CONCURRENT_HYDRATIONS)
 
-        decks.forEach { deck ->
+        pending.forEach { deck ->
             launch {
                 gate.withPermit {
                     // One deck failing to hydrate must not blank the grid; it
@@ -83,15 +150,19 @@ class DecksViewModel(
                         return@withPermit
                     }
 
-                    _state.update { current ->
-                        if (current !is DecksUiState.Ready) return@update current
-                        DecksUiState.Ready(
-                            current.decks.map { if (it.publicId == hydrated.publicId) hydrated else it },
-                        )
+                    decks.update { current ->
+                        current.map { if (it.publicId == hydrated.publicId) hydrated else it }
                     }
                 }
             }
         }
+    }
+
+    private sealed interface Phase {
+        data object Loading : Phase
+        data object Ready : Phase
+        data object Refreshing : Phase
+        data class Failed(val error: LoadError) : Phase
     }
 
     companion object {

@@ -30,7 +30,7 @@ sealed interface TokensUiState {
 
 class TokensViewModel(
     private val repository: MoxfieldRepository,
-    boards: TokenBoardStore,
+    private val boards: TokenBoardStore,
     private val publicId: String,
     val deckName: String,
 ) : ViewModel() {
@@ -45,6 +45,17 @@ class TokensViewModel(
 
     init {
         load()
+    }
+
+    /**
+     * Clears every board, not just this deck's.
+     *
+     * Token ids are Scryfall ids, so the same Goblin is the same entry whatever
+     * deck brought it. A new game empties the table, and leaving another deck's
+     * leftovers behind would show stale counts the moment you switched.
+     */
+    fun startNewGame() {
+        boards.clearAll()
     }
 
     fun load() {

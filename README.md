@@ -105,6 +105,7 @@ com.etoken
 ├── domain/
 │   ├── TokenExtractor.kt  which tokens a deck can make — pure, no I/O
 │   ├── TokenBoardRules.kt what is on the battlefield — pure, no I/O
+│   ├── DeckFilter.kt      accent-blind search over name and commander
 │   ├── PowerToughness.kt  printed size plus counters, `*` and all
 │   └── model/
 └── ui/                    four screens, one ViewModel each
@@ -114,7 +115,19 @@ Dependencies are wired by hand in `AppContainer` rather than with Hilt: this
 app has one repository and one preferences store, so a container built in
 `EtokenApplication` keeps the build free of KSP.
 
-Two decisions worth knowing about:
+Three things the deck grid does that are easy to miss:
+
+- **Search is accent-blind and covers the commander.** Typing `canon` finds
+  "Cañón", and `markov` finds a deck whose name never mentions Edgar. A
+  multi-word query has to match on every word, in any order.
+- **Refresh drops both caches**, decks and tokens together: a deck whose
+  contents changed also makes a different set of tokens. A refresh that fails
+  keeps the list already on screen and says so, rather than replacing something
+  usable with an error page.
+- **"New game" clears every board**, not just the open deck's. Token ids are
+  Scryfall ids, so the same Goblin is the same entry whichever deck brought it.
+
+Two more decisions worth knowing about:
 
 - **The deck grid streams.** Deck names appear as soon as search returns;
   covers fill in afterwards, four decks at a time, and one deck failing to
@@ -141,10 +154,11 @@ Android Studio and it will offer to install what's missing.
 
 Honest accounting of what has and has not been run.
 
-**Verified.** The 55 unit tests in `app/src/test/` all pass, covering the
+**Verified.** The 65 unit tests in `app/src/test/` all pass, covering the
 token rules, the battlefield rules (splitting, merging, ordering, clamping),
-power/toughness with counters, the Moxfield and Scryfall wire formats, and the
-repository's paging, caching, batching and by-name fallback (with fake APIs).
+deck search, power/toughness with counters, the Moxfield and Scryfall wire
+formats, and the repository's paging, caching, batching and by-name fallback
+(with fake APIs).
 The whole data layer — Retrofit interfaces, OkHttp interceptors, repository —
 compiles against the exact library versions pinned in the catalog.
 

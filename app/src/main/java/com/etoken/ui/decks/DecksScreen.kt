@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,9 +16,14 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.etoken.R
 import com.etoken.domain.model.DeckSummary
+import com.etoken.ui.common.ActionButton
 import com.etoken.ui.common.BackButton
 import com.etoken.ui.common.ErrorView
 import com.etoken.ui.common.LoadingView
@@ -48,13 +56,42 @@ fun DecksScreen(
     viewModel: DecksViewModel = viewModel(factory = DecksViewModel.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val ready = state as? DecksUiState.Ready
 
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = { Text(viewModel.username) },
+                title = {
+                    Column {
+                        Text(
+                            text = viewModel.username,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        // Only worth saying while a filter is actually hiding something.
+                        if (ready != null && ready.query.isNotBlank()) {
+                            Text(
+                                text = stringResource(
+                                    R.string.decks_filtered_count,
+                                    ready.decks.size,
+                                    ready.total,
+                                ),
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        }
+                    }
+                },
                 navigationIcon = { BackButton(onBack) },
+                actions = {
+                    ActionButton(
+                        icon = R.drawable.ic_refresh,
+                        description = stringResource(R.string.action_refresh),
+                        onClick = viewModel::refresh,
+                        // Nothing to refresh mid-refresh, or before the first load.
+                        enabled = ready != null && !ready.isRefreshing,
+                    )
+                },
             )
         },
     ) { padding ->
@@ -63,8 +100,94 @@ fun DecksScreen(
                 DecksUiState.Loading -> LoadingView()
                 DecksUiState.Empty -> MessageView(stringResource(R.string.decks_empty))
                 is DecksUiState.Failed -> ErrorView(current.error, onRetry = viewModel::load)
-                is DecksUiState.Ready -> DeckGrid(current.decks, onDeckClick)
+                is DecksUiState.Ready -> DecksReady(current, viewModel, onDeckClick)
             }
+        }
+    }
+}
+
+@Composable
+private fun DecksReady(
+    state: DecksUiState.Ready,
+    viewModel: DecksViewModel,
+    onDeckClick: (DeckSummary) -> Unit,
+) {
+    Column(Modifier.fillMaxSize()) {
+        if (state.isRefreshing) {
+            LinearProgressIndicator(Modifier.fillMaxWidth())
+        }
+
+        state.refreshError?.let { error ->
+            RefreshErrorBanner(error.messageRes, onDismiss = viewModel::dismissRefreshError)
+        }
+
+        SearchField(
+            query = state.query,
+            onQueryChange = viewModel::onQueryChange,
+            onClear = viewModel::clearQuery,
+        )
+
+        // weight(1f) rather than fillMaxSize: the grid takes what is left after
+        // the search field and the banner, whatever height those end up being.
+        Box(Modifier.weight(1f)) {
+            if (state.decks.isEmpty()) {
+                MessageView(stringResource(R.string.decks_no_matches, state.query))
+            } else {
+                DeckGrid(state.decks, onDeckClick)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClear: () -> Unit,
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        placeholder = { Text(stringResource(R.string.decks_search_hint)) },
+        singleLine = true,
+        leadingIcon = {
+            Icon(
+                painter = painterResource(R.drawable.ic_search),
+                contentDescription = null,
+            )
+        },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                ActionButton(
+                    icon = R.drawable.ic_close,
+                    description = stringResource(R.string.decks_search_clear),
+                    onClick = onClear,
+                )
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    )
+}
+
+@Composable
+private fun RefreshErrorBanner(messageRes: Int, onDismiss: () -> Unit) {
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(messageRes),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_dismiss)) }
         }
     }
 }

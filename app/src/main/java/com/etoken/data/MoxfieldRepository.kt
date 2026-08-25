@@ -78,6 +78,20 @@ class MoxfieldRepository(
         )
     }
 
+    /**
+     * Throws away everything cached, so the next load goes back to the network.
+     *
+     * Both caches go together on purpose: a deck whose contents changed on
+     * Moxfield also creates a different set of tokens, and keeping the old
+     * token list would be worse than refetching it.
+     */
+    suspend fun invalidate() {
+        cacheMutex.withLock {
+            deckCache.clear()
+            tokenCache.clear()
+        }
+    }
+
     /** Cached: the deck grid and the token screen both need the same payload. */
     suspend fun deckDetail(publicId: String): DeckDetail {
         cacheMutex.withLock { deckCache[publicId] }?.let { return it }
