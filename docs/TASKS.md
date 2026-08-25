@@ -38,6 +38,9 @@ made it testable without an SDK.
 - [x] Power/toughness with counters, including `*` and `1+*` — `domain/PowerToughness.kt`, 4 tests
 - [x] Deck search: accent-blind, commander, multi-word AND — `domain/DeckFilter.kt`, 10 tests
 - [x] The whole app compiles: `assembleDebug`, `testDebugUnitTest` and `lintDebug` all green — run #3
+- [x] Scryfall's half of the contract, live: `/cards/collection` answers 200 and `all_parts` is there
+- [x] Scryfall's image CDN really does answer **400** to OkHttp's default User-Agent, and 200 to a
+  descriptive one — the gotcha inherited from commander-companion, now confirmed rather than trusted
 
 ## 2. Compiles, never seen running
 
@@ -66,9 +69,11 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 
 - [x] **A1** `:app:assembleDebug` green — two AGP 9 config errors and one missing supertype, all fixed
 - [x] **A2** `:app:lintDebug` clean — nothing to clear, it passed first time
-- [ ] **A3** First real Moxfield call — confirm Cloudflare accepts the app's User-Agent · S
-  - A runner can answer this without a device: curl both APIs with the exact headers `Network.kt` sends.
-- [ ] **A4** Confirm both image CDNs load on a device, Moxfield's and Scryfall's · S
+- [ ] **A3** Moxfield answers **403** to the app's headers from a CI runner · M
+  - Run via `.github/workflows/api-smoke.yml`, 2026-08-25. Inconclusive rather than damning: a GitHub
+    runner is a datacenter IP, which Cloudflare treats far more harshly than a phone on mobile data.
+  - Settling it needs the APK on a real device. If it 403s there too, `Network.kt`'s headers are the place to look.
+- [ ] **A4** Confirm Moxfield's image CDN loads on a device · S — Scryfall's is confirmed, see §1
 - [ ] **A5** Check the board screen on a small phone — it is the longest layout · S
 
 ### B. Product gaps
@@ -76,21 +81,21 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 - [ ] **B1** No undo — nothing brings a board back once it is cleared · M
 - [ ] **B2** The deck's card list is not visible anywhere, only its tokens · M
 - [ ] **B3** Private and unlisted decks are invisible — needs Moxfield auth, if they allow it · L
-- [ ] **B4** The search query is lost if Android kills the process mid-session · S
+- [x] **B4** The search query survives process death — it lives in the `SavedStateHandle`
 - [ ] **B5** Two panes on large screens: the token list beside the open board · L
   - **Decided 2026-08-25:** tablets are a realistic target, so option B. Capping the width was the cheap
     alternative and is explicitly not what we are doing.
   - Needs a `WindowSizeClass` split, and the board becoming a pane rather than its own route.
-- [ ] **B6** Per-token "Vaciar" clears without asking, unlike "Nueva partida" · S
+- [x] **B6** "Vaciar" asks first and names how many tokens leave the table
 
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
 - [ ] **C2** No `androidTest/`, although `testInstrumentationRunner` is declared · M
-- [ ] **C3** Only `values/`. `values-ca` and `values-en` are missing, unlike commander-companion · S
+- [x] **C3** Seven locales: Spanish default plus `ca`, `en`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
-- [ ] **C6** Two declared dependencies are unused: `okhttp-logging-interceptor`, `ui-tooling-preview` · S
+- [x] **C6** `ui-tooling-preview` dropped; the logging interceptor is now wired, debug builds only
 - [ ] **C7** Accessibility never tested. Content descriptions exist; TalkBack has not seen them · S
 
 ## 4. Deliberate decisions — not gaps
@@ -140,4 +145,4 @@ read and acted on without one.
 
 ---
 
-**Last reviewed:** 2026-08-25 · 12 commits · first green build: run #3 · 2 954 lines of Kotlin, 1 050 of tests
+**Last reviewed:** 2026-08-25 · 15 commits · CI green · Scryfall verified live, Moxfield 403 from CI
