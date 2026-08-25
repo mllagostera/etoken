@@ -63,9 +63,10 @@ where there was logic to test; none has been seen on a screen.
 
 Nothing below A matters until A1 passes.
 
-- [ ] **A1** Run `./gradlew :app:assembleDebug` once — 1 728 lines of Compose no compiler has read · S
-- [ ] **A2** Run `./gradlew :app:lintDebug` and clear what it finds · S
+- [ ] **A1** Get `:app:assembleDebug` green — CI now runs it on every push, so this is iterating on its log · M
+- [ ] **A2** Clear what `:app:lintDebug` reports — same run, after the build passes · S
 - [ ] **A3** First real Moxfield call — confirm Cloudflare accepts the app's User-Agent · S
+  - A runner can answer this without a device: curl both APIs with the exact headers `Network.kt` sends.
 - [ ] **A4** Confirm both image CDNs load on a device, Moxfield's and Scryfall's · S
 - [ ] **A5** Check the board screen on a small phone — it is the longest layout · S
 
@@ -75,15 +76,15 @@ Nothing below A matters until A1 passes.
 - [ ] **B2** The deck's card list is not visible anywhere, only its tokens · M
 - [ ] **B3** Private and unlisted decks are invisible — needs Moxfield auth, if they allow it · L
 - [ ] **B4** The search query is lost if Android kills the process mid-session · S
-- [?] **B5** Nothing caps content width: on a tablet the board screen's rows stretch edge to edge · M
-  - **A** — cap it: `widthIn(max = 600.dp)`, centred. One modifier, no new concepts, no tablet-specific code.
-  - **B** — two panes on large screens: the token list beside the open board. Real work, real payoff on a tablet.
-  - Waiting on: whether tablets are a target at all. Nobody has run this on one, so A is cheap insurance and B is a bet.
+- [ ] **B5** Two panes on large screens: the token list beside the open board · L
+  - **Decided 2026-08-25:** tablets are a realistic target, so option B. Capping the width was the cheap
+    alternative and is explicitly not what we are doing.
+  - Needs a `WindowSizeClass` split, and the board becoming a pane rather than its own route.
 - [ ] **B6** Per-token "Vaciar" clears without asking, unlike "Nueva partida" · S
 
 ### C. Quality and infrastructure
 
-- [ ] **C1** No CI. Model it on commander-companion's `.github/workflows/android-ci.yml` · S
+- [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
 - [ ] **C2** No `androidTest/`, although `testInstrumentationRunner` is declared · M
 - [ ] **C3** Only `values/`. `values-ca` and `values-en` are missing, unlike commander-companion · S
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
@@ -101,6 +102,41 @@ Don't turn these into tasks without asking. The reasoning is in `CLAUDE.md` §6.
 - No backend: the app talks to Moxfield and Scryfall directly.
 - No Hilt, and no `material-icons-*` artifacts.
 
+## 5. Order of work
+
+Priority follows one rule: **nothing here is trustworthy until the build is
+green.** Every `[~]` in §2 is a claim, and claims cost nothing to make and
+everything to rely on. So anything that moves compilation forward outranks
+anything that doesn't, however tempting the feature.
+
+CI changed what that means. Until 2026-08-25 the first compile needed a human
+with an Android SDK; now a runner does it on every push, and its log can be
+read and acted on without one.
+
+### Tonight, autonomously
+
+1. **A1 — get the build green.** A loop: read the run, fix what it names, push,
+   repeat. This is the night's actual work; everything below is what to do
+   between runs.
+2. **A2 — clear lint**, once the build stops failing ahead of it.
+3. **A3 through CI** — a `workflow_dispatch` job that curls Moxfield and
+   Scryfall with the exact headers `Network.kt` sends. Answers the Cloudflare
+   question without waiting for a device.
+4. **C6 — drop the two unused dependencies.** Independent of everything else.
+5. **B6 — confirm before "Vaciar"**, reusing the "Nueva partida" pattern.
+6. **B4 — keep the search query across process death.**
+
+### Deliberately not tonight
+
+- **B5** is decided and wanted, but it is the largest UI change on the list.
+  Building a two-pane layout on code that has never compiled is laying bricks
+  on wet concrete. It goes first once the build is green and *stays* green.
+- **B1** (undo) needs a design pass — what it restores, and how far back —
+  not just code.
+- **C3** (Catalan and English strings) is translation work. A bad translation
+  is worse than an honest gap.
+- **A4, A5** need a real device. They stay with you.
+
 ---
 
-**Last reviewed:** 2026-08-25 · 8 commits · 2 954 lines of Kotlin, 1 050 of tests
+**Last reviewed:** 2026-08-25 · 9 commits · 2 954 lines of Kotlin, 1 050 of tests
