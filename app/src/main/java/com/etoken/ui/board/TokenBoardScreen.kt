@@ -1,0 +1,450 @@
+package com.etoken.ui.board
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
+import com.etoken.R
+import com.etoken.domain.PowerToughness
+import com.etoken.domain.model.TokenBoard
+import com.etoken.domain.model.TokenCard
+import com.etoken.domain.model.TokenStack
+import com.etoken.ui.common.BackButton
+import com.etoken.ui.common.ErrorView
+import com.etoken.ui.common.LoadingView
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TokenBoardScreen(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: TokenBoardViewModel = viewModel(factory = TokenBoardViewModel.Factory),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = (state as? TokenBoardUiState.Ready)?.token?.name.orEmpty(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                navigationIcon = { BackButton(onBack) },
+            )
+        },
+    ) { padding ->
+        Box(Modifier.padding(padding)) {
+            when (val current = state) {
+                TokenBoardUiState.Loading -> LoadingView()
+                is TokenBoardUiState.Failed -> ErrorView(current.error, onRetry = viewModel::load)
+                is TokenBoardUiState.Ready -> BoardContent(current.token, current.board, viewModel)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBoardViewModel) {
+    var askingHowMany by remember { mutableStateOf(false) }
+    var countersFor by remember { mutableStateOf<TokenStack?>(null) }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        item { TokenHeader(token) }
+        item { BoardSummary(board) }
+        item { QuickActions(board, viewModel, onAskHowMany = { askingHowMany = true }) }
+
+        if (board.isEmpty) {
+            item {
+                Text(
+                    text = stringResource(R.string.board_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+        }
+
+        items(board.stacks, key = { it.id }) { stack ->
+            StackCard(
+                stack = stack,
+                token = token,
+                onQuantity = { delta -> viewModel.changeQuantity(stack.id, delta) },
+                onCounters = { delta -> viewModel.changeCounters(stack.id, delta) },
+                onToggleSick = { viewModel.setSummoningSick(stack.id, !stack.summoningSick) },
+                onCountersForSome = { countersFor = stack },
+            )
+        }
+    }
+
+    if (askingHowMany) {
+        NumberDialog(
+            title = stringResource(R.string.dialog_how_many),
+            initial = 1,
+            max = 999,
+            onDismiss = { askingHowMany = false },
+            onConfirm = { amount ->
+                viewModel.add(amount)
+                askingHowMany = false
+            },
+        )
+    }
+
+    countersFor?.let { stack ->
+        NumberDialog(
+            title = stringResource(R.string.dialog_how_many_of, stack.quantity),
+            initial = 1,
+            max = stack.quantity,
+            onDismiss = { countersFor = null },
+            onConfirm = { amount ->
+                viewModel.changeCounters(stack.id, delta = 1, appliesTo = amount)
+                countersFor = null
+            },
+        )
+    }
+}
+
+@Composable
+private fun TokenHeader(token: TokenCard) {
+    Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+        Box(
+            modifier = Modifier
+                .width(96.dp)
+                .aspectRatio(488f / 680f)
+                .clip(RoundedCornerShape(8.dp)),
+        ) {
+            if (token.imageUrl != null) {
+                AsyncImage(
+                    model = token.imageUrl,
+                    contentDescription = token.name,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(token.typeLine, style = MaterialTheme.typography.bodyMedium)
+
+            PowerToughness.display(token.power, token.toughness, counters = 0)?.let { base ->
+                Text(
+                    text = stringResource(R.string.board_base, base),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (token.createdBy.isNotEmpty()) {
+                Text(
+                    text = stringResource(
+                        R.string.tokens_created_by,
+                        token.createdBy.joinToString(", "),
+                    ),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun BoardSummary(board: TokenBoard) {
+    Card {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(
+                text = board.total.toString(),
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Bold,
+            )
+            Column {
+                Text(
+                    text = stringResource(R.string.board_in_play),
+                    style = MaterialTheme.typography.labelLarge,
+                )
+                Text(
+                    text = if (board.summoningSickCount == 0) {
+                        stringResource(R.string.board_none_sick)
+                    } else {
+                        stringResource(R.string.board_sick, board.summoningSickCount)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun QuickActions(
+    board: TokenBoard,
+    viewModel: TokenBoardViewModel,
+    onAskHowMany: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Fixed steps cover the common triggers; the dialog covers Krenko,
+            // where the count is whatever is on the battlefield right now.
+            listOf(1, 2, 5).forEach { amount ->
+                FilledTonalButton(
+                    onClick = { viewModel.add(amount) },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("+$amount")
+                }
+            }
+            FilledTonalButton(onClick = onAskHowMany, modifier = Modifier.weight(1.4f)) {
+                Text(stringResource(R.string.board_add_other), maxLines = 1)
+            }
+        }
+
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(
+                onClick = viewModel::beginTurn,
+                enabled = board.summoningSickCount > 0,
+            ) {
+                Text(stringResource(R.string.board_begin_turn))
+            }
+            OutlinedButton(onClick = viewModel::addCounterToAll, enabled = !board.isEmpty) {
+                Text(stringResource(R.string.board_counter_all))
+            }
+            TextButton(onClick = viewModel::clear, enabled = !board.isEmpty) {
+                Text(stringResource(R.string.board_clear))
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun StackCard(
+    stack: TokenStack,
+    token: TokenCard,
+    onQuantity: (Int) -> Unit,
+    onCounters: (Int) -> Unit,
+    onToggleSick: () -> Unit,
+    onCountersForSome: () -> Unit,
+) {
+    Card {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    text = "${stack.quantity} ×",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                PowerToughness.display(token.power, token.toughness, stack.plusOneCounters)
+                    ?.let { size ->
+                        Text(size, style = MaterialTheme.typography.titleMedium)
+                    }
+            }
+
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (stack.plusOneCounters > 0) {
+                    StateBadge(
+                        text = stringResource(R.string.stack_counters_chip, stack.plusOneCounters),
+                        container = MaterialTheme.colorScheme.primaryContainer,
+                        content = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+                StateBadge(
+                    text = if (stack.summoningSick) {
+                        stringResource(R.string.stack_sick)
+                    } else {
+                        stringResource(R.string.stack_ready)
+                    },
+                    container = if (stack.summoningSick) {
+                        MaterialTheme.colorScheme.tertiaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+                    content = if (stack.summoningSick) {
+                        MaterialTheme.colorScheme.onTertiaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    onClick = onToggleSick,
+                )
+            }
+
+            HorizontalDivider()
+
+            Stepper(
+                label = stringResource(R.string.stack_quantity),
+                value = stack.quantity.toString(),
+                onMinus = { onQuantity(-1) },
+                onPlus = { onQuantity(1) },
+                minusDescription = stringResource(R.string.stack_remove),
+                plusDescription = stringResource(R.string.stack_add),
+            )
+            Stepper(
+                label = stringResource(R.string.stack_counters),
+                value = stack.plusOneCounters.toString(),
+                onMinus = { onCounters(-1) },
+                onPlus = { onCounters(1) },
+                minusDescription = stringResource(R.string.stack_counter_remove),
+                plusDescription = stringResource(R.string.stack_counter_add),
+            )
+
+            if (stack.quantity > 1) {
+                TextButton(onClick = onCountersForSome, contentPadding = PaddingValues(0.dp)) {
+                    Text(stringResource(R.string.stack_counter_some))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Stepper(
+    label: String,
+    value: String,
+    onMinus: () -> Unit,
+    onPlus: () -> Unit,
+    minusDescription: String,
+    plusDescription: String,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        FilledTonalIconButton(onClick = onMinus) {
+            Text("−", style = MaterialTheme.typography.titleMedium)
+        }
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.width(32.dp),
+        )
+        FilledTonalIconButton(onClick = onPlus) {
+            Text("+", style = MaterialTheme.typography.titleMedium)
+        }
+    }
+}
+
+@Composable
+private fun StateBadge(
+    text: String,
+    container: Color,
+    content: Color,
+    onClick: (() -> Unit)? = null,
+) {
+    val shape = RoundedCornerShape(6.dp)
+    val body: @Composable () -> Unit = {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
+        )
+    }
+
+    Surface(
+        color = container,
+        contentColor = content,
+        shape = shape,
+        modifier = if (onClick == null) Modifier else Modifier.clickable(onClick = onClick),
+    ) {
+        body()
+    }
+}
+
+@Composable
+private fun NumberDialog(
+    title: String,
+    initial: Int,
+    max: Int,
+    onDismiss: () -> Unit,
+    onConfirm: (Int) -> Unit,
+) {
+    var text by remember { mutableStateOf(initial.toString()) }
+    val parsed = text.toIntOrNull()
+    val valid = parsed != null && parsed in 1..max
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { input -> text = input.filter { it.isDigit() }.take(3) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { parsed?.let(onConfirm) }, enabled = valid) {
+                Text(stringResource(R.string.action_accept))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
+}

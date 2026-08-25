@@ -4,7 +4,9 @@ An Android app that answers one question: **which tokens can this deck make?**
 
 Type a Moxfield username, get that user's public decks in a grid of commander
 art, tap one, and see every token its cards are able to create — each with its
-own artwork and the list of cards that create it.
+own artwork and the list of cards that create it. Tap a token and it becomes a
+tracker for the game in progress: how many are on the battlefield, which ones
+are still summoning sick, and what +1/+1 counters they carry.
 
 ---
 
@@ -13,8 +15,9 @@ own artwork and the list of cards that create it.
 Three screens, and two APIs behind them.
 
 ```
-username  ──▶  deck grid  ──▶  token grid
-              (Moxfield)      (Moxfield + Scryfall)
+username  ──▶  deck grid  ──▶  token grid  ──▶  token board
+              (Moxfield)      (Moxfield       (in-memory,
+                               + Scryfall)     no network)
 ```
 
 **Listing a user's decks.** Moxfield has no "decks of user X" endpoint. The
@@ -46,6 +49,19 @@ is. Both are chunked at Scryfall's 75-identifier limit.
 
 This means the app never parses rules text to work out what makes tokens.
 Scryfall already knows.
+
+**Tracking them in play.** The board screen is local state only — no request
+leaves the device. It holds *stacks*: groups of copies that are genuinely
+identical. Magic tracks counters and summoning sickness per permanent, so four
+Goblins where one carries a +1/+1 counter are not interchangeable, and a single
+count with counters bolted on would be a lie. Adding tokens creates a
+summoning-sick stack; starting your turn clears sickness across the board;
+putting a counter on only some of a stack splits it, and taking that counter
+off merges it straight back. `TokenBoardRules` enforces both invariants —
+merge what has become identical, drop what has emptied — in one place.
+
+The state is deliberately not persisted. It belongs to the game on the table,
+and a stale board restored three days later would be worse than an empty one.
 
 ## 2. Prior art this is built on
 
@@ -84,11 +100,14 @@ com.etoken
 │   ├── Network.kt         OkHttp: headers, rate limiting, retries
 │   ├── DeckMapper.kt      Moxfield's board-keyed JSON ──▶ domain model
 │   ├── MoxfieldRepository.kt
+│   ├── TokenBoardStore.kt in-memory battlefield state, shared across screens
 │   └── UserPreferences.kt DataStore: remembers the last username
 ├── domain/
-│   ├── TokenExtractor.kt  the token rules — pure, no I/O, no Android
+│   ├── TokenExtractor.kt  which tokens a deck can make — pure, no I/O
+│   ├── TokenBoardRules.kt what is on the battlefield — pure, no I/O
+│   ├── PowerToughness.kt  printed size plus counters, `*` and all
 │   └── model/
-└── ui/                    three screens, one ViewModel each
+└── ui/                    four screens, one ViewModel each
 ```
 
 Dependencies are wired by hand in `AppContainer` rather than with Hilt: this
@@ -122,11 +141,12 @@ Android Studio and it will offer to install what's missing.
 
 Honest accounting of what has and has not been run.
 
-**Verified.** The 33 unit tests in `app/src/test/` all pass, covering the
-token rules, the Moxfield and Scryfall wire formats, and the repository's
-paging, caching, batching and by-name fallback (with fake APIs). The whole
-data layer — Retrofit interfaces, OkHttp interceptors, repository — compiles
-against the exact library versions pinned in the catalog.
+**Verified.** The 55 unit tests in `app/src/test/` all pass, covering the
+token rules, the battlefield rules (splitting, merging, ordering, clamping),
+power/toughness with counters, the Moxfield and Scryfall wire formats, and the
+repository's paging, caching, batching and by-name fallback (with fake APIs).
+The whole data layer — Retrofit interfaces, OkHttp interceptors, repository —
+compiles against the exact library versions pinned in the catalog.
 
 **Not verified.** The UI layer, the Gradle Android build, and any live API
 call. The environment this was written in has no Android SDK available and

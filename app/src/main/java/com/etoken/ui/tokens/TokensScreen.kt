@@ -1,6 +1,7 @@
 package com.etoken.ui.tokens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -43,11 +45,13 @@ import com.etoken.ui.common.MessageView
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TokensScreen(
+    onTokenClick: (TokenCard) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TokensViewModel = viewModel(factory = TokensViewModel.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val inPlay by viewModel.inPlay.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -82,14 +86,18 @@ fun TokensScreen(
                 TokensUiState.Loading -> LoadingView()
                 TokensUiState.Empty -> MessageView(stringResource(R.string.tokens_empty))
                 is TokensUiState.Failed -> ErrorView(current.error, onRetry = viewModel::load)
-                is TokensUiState.Ready -> TokenGrid(current.tokens)
+                is TokensUiState.Ready -> TokenGrid(current.tokens, inPlay, onTokenClick)
             }
         }
     }
 }
 
 @Composable
-private fun TokenGrid(tokens: List<TokenCard>) {
+private fun TokenGrid(
+    tokens: List<TokenCard>,
+    inPlay: Map<String, Int>,
+    onTokenClick: (TokenCard) -> Unit,
+) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 150.dp),
         modifier = Modifier.fillMaxSize(),
@@ -97,13 +105,22 @@ private fun TokenGrid(tokens: List<TokenCard>) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        items(tokens, key = { it.id }) { token -> TokenCell(token) }
+        items(tokens, key = { it.id }) { token ->
+            TokenCell(
+                token = token,
+                inPlay = inPlay[token.id] ?: 0,
+                onClick = { onTokenClick(token) },
+            )
+        }
     }
 }
 
 @Composable
-private fun TokenCell(token: TokenCard) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+private fun TokenCell(token: TokenCard, inPlay: Int, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier.clickable(onClick = onClick),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -128,6 +145,22 @@ private fun TokenCell(token: TokenCard) {
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(8.dp),
                 )
+            }
+
+            if (inPlay > 0) {
+                Surface(
+                    color = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(bottomStart = 10.dp),
+                    modifier = Modifier.align(Alignment.TopEnd),
+                ) {
+                    Text(
+                        text = "×$inPlay",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                    )
+                }
             }
         }
 

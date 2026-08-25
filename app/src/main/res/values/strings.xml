@@ -14,6 +14,33 @@
     <string name="tokens_empty">Ninguna carta de este mazo crea tokens.</string>
     <string name="tokens_created_by">Lo crean: %1$s</string>
 
+    <string name="board_in_play">En juego</string>
+    <string name="board_sick">%1$d con mareo de invocación</string>
+    <string name="board_none_sick">Ninguno con mareo</string>
+    <string name="board_empty">Todavía no tienes ninguno en juego.</string>
+    <string name="board_add">Añadir</string>
+    <string name="board_add_other">Otra cantidad…</string>
+    <string name="board_begin_turn">Empieza mi turno</string>
+    <string name="board_counter_all">+1/+1 a todos</string>
+    <string name="board_clear">Vaciar</string>
+    <string name="board_base">Base %1$s</string>
+
+    <string name="stack_quantity">Cantidad</string>
+    <string name="stack_counters">+1/+1</string>
+    <string name="stack_counters_chip">+1/+1 ×%1$d</string>
+    <string name="stack_sick">Mareo</string>
+    <string name="stack_ready">Puede atacar</string>
+    <string name="stack_counter_some">+1/+1 a solo algunos…</string>
+    <string name="stack_remove">Quitar uno</string>
+    <string name="stack_add">Poner uno más</string>
+    <string name="stack_counter_remove">Quitar un contador</string>
+    <string name="stack_counter_add">Poner un contador</string>
+
+    <string name="dialog_how_many">¿Cuántos tokens?</string>
+    <string name="dialog_how_many_of">¿A cuántos de los %1$d?</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_accept">Aceptar</string>
+
     <string name="error_user_not_found">No hemos encontrado ese usuario en Moxfield. Revisa que esté bien escrito.</string>
     <string name="error_blocked">Moxfield ha rechazado la petición. Prueba otra vez en unos minutos.</string>
     <string name="error_network">No hay conexión. Comprueba tu red e inténtalo de nuevo.</string>

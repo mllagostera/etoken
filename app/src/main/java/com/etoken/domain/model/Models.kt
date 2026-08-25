@@ -35,4 +35,7 @@ data class TokenCard(
     val oracleText: String?,
     /** Names of the deck's cards that create this token, sorted, deduplicated. */
     val createdBy: List<String>,
+    /** Printed power/toughness. Strings because Magic uses `*` and `1+*`. */
+    val power: String? = null,
+    val toughness: String? = null,
 )

@@ -77,6 +77,8 @@ object TokenExtractor {
                     imageUrl = card.imageUrl(),
                     oracleText = card.oracleText,
                     createdBy = creators.toList(),
+                    power = card.power,
+                    toughness = card.toughness,
                 )
             } else {
                 existing.copy(
@@ -92,6 +94,16 @@ object TokenExtractor {
             .sortedWith(compareBy({ it.typeLine }, { it.name }))
     }
 
-    private fun dedupeKey(card: ScryfallCard): String =
-        "${card.name.lowercase()}|${card.typeLine.orEmpty().lowercase()}|${card.oracleText.orEmpty().lowercase()}"
+    /**
+     * Power/toughness is part of the key: a 1/1 Goblin and a 2/2 Goblin share a
+     * name, a type line and an empty rules text, and collapsing them would lose
+     * the only thing that tells them apart.
+     */
+    private fun dedupeKey(card: ScryfallCard): String = listOf(
+        card.name,
+        card.typeLine.orEmpty(),
+        card.oracleText.orEmpty(),
+        card.power.orEmpty(),
+        card.toughness.orEmpty(),
+    ).joinToString("|") { it.lowercase() }
 }

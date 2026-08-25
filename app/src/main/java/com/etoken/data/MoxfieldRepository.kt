@@ -22,6 +22,7 @@ class MoxfieldRepository(
 
     private val cacheMutex = Mutex()
     private val deckCache = mutableMapOf<String, DeckDetail>()
+    private val tokenCache = mutableMapOf<String, List<TokenCard>>()
 
     /**
      * Every public deck belonging to [username], newest update first.
@@ -95,7 +96,19 @@ class MoxfieldRepository(
      * tokens) and then the tokens themselves (which is where the artwork is).
      * Both are batched at Scryfall's 75-identifier limit.
      */
-    suspend fun tokensFor(publicId: String): List<TokenCard> = withContext(Dispatchers.IO) {
+    suspend fun tokensFor(publicId: String): List<TokenCard> {
+        cacheMutex.withLock { tokenCache[publicId] }?.let { return it }
+
+        val tokens = computeTokens(publicId)
+        cacheMutex.withLock { tokenCache[publicId] = tokens }
+        return tokens
+    }
+
+    /** The token the board screen is showing, out of the cached deck lookup. */
+    suspend fun token(publicId: String, tokenId: String): TokenCard? =
+        tokensFor(publicId).firstOrNull { it.id == tokenId }
+
+    private suspend fun computeTokens(publicId: String): List<TokenCard> = withContext(Dispatchers.IO) {
         val deck = deckDetail(publicId)
 
         val identifiers = deck.cards
