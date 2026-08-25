@@ -152,6 +152,9 @@ Android Studio and it will offer to install what's missing.
 
 ## 5. State of verification
 
+Item-by-item status lives in [docs/TASKS.md](docs/TASKS.md); the summary
+follows.
+
 Honest accounting of what has and has not been run.
 
 **Verified.** The 65 unit tests in `app/src/test/` all pass, covering the

@@ -44,6 +44,7 @@ import com.etoken.domain.model.DeckSummary
 import com.etoken.ui.common.ActionButton
 import com.etoken.ui.common.BackButton
 import com.etoken.ui.common.ErrorView
+import com.etoken.ui.common.LoadError
 import com.etoken.ui.common.LoadingView
 import com.etoken.ui.common.MessageView
 
@@ -118,7 +119,7 @@ private fun DecksReady(
         }
 
         state.refreshError?.let { error ->
-            RefreshErrorBanner(error.messageRes, onDismiss = viewModel::dismissRefreshError)
+            RefreshErrorBanner(error, onDismiss = viewModel::dismissRefreshError)
         }
 
         SearchField(
@@ -172,21 +173,29 @@ private fun SearchField(
 }
 
 @Composable
-private fun RefreshErrorBanner(messageRes: Int, onDismiss: () -> Unit) {
+private fun RefreshErrorBanner(error: LoadError, onDismiss: () -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.errorContainer,
         contentColor = MaterialTheme.colorScheme.onErrorContainer,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+            modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = stringResource(messageRes),
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.weight(1f),
-            )
+            Column(Modifier.weight(1f)) {
+                // What happened to the list, which is the part the user cares
+                // about here: it is still the last good one.
+                Text(
+                    text = stringResource(R.string.refresh_failed),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                // And why, which is the part they can act on.
+                Text(
+                    text = stringResource(error.messageRes),
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_dismiss)) }
         }
     }

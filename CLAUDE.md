@@ -115,6 +115,10 @@ Not gaps. Don't "fix" them without asking.
 
 ## 7. State of the repo
 
+**Start at [docs/TASKS.md](docs/TASKS.md)** — what works, what is merely
+written, and what is pending, audited against the code rather than against
+filenames. Update it in the same change that resolves an item.
+
 The unit tests pass and cover the logic. **The UI layer has never been
 compiled**, and no request has ever been made against the real APIs — the
 environment this was written in has no Android SDK and blocks both hosts. Treat
