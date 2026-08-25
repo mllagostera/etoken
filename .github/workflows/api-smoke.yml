@@ -91,8 +91,17 @@ jobs:
 
           echo
           echo "== 4. Scryfall: /cards/collection =="
+          # Independent of Moxfield on purpose: when Cloudflare turns the first
+          # half away, the second half is still worth knowing about. Falls back
+          # to a name identifier, which is the same path the app uses for cards
+          # Moxfield gave no scryfall_id for.
           if [ -n "${SCRYFALL_ID:-}" ]; then
             printf '{"identifiers":[{"id":"%s"}]}' "$SCRYFALL_ID" > body.json
+          else
+            note "sin id de Moxfield" "se busca por nombre"
+            printf '{"identifiers":[{"name":"Krenko, Mob Boss"}]}' > body.json
+          fi
+          if true; then
             code=$(curl -sS -o cards.json -w '%{http_code}' -X POST \
               -H "User-Agent: $SCRY_UA" -H "Accept: application/json" -H "Content-Type: application/json" \
               --data @body.json "https://api.scryfall.com/cards/collection") || code=000
