@@ -43,7 +43,7 @@ Everything the user actually touches. Each has passing tests underneath it
 where there was logic to test; none has been seen on a screen.
 
 ### Screens
-- [~] Username entry, remembered in DataStore — `ui/username/`
+- [~] Username entry, remembered in DataStore; insets- and keyboard-aware — `ui/username/`
 - [~] Deck grid with commander art and streaming hydration — `ui/decks/`
 - [~] Deck search field with result counter — `ui/decks/DecksScreen.kt`
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
@@ -74,7 +74,7 @@ Nothing below A matters until A1 passes.
 - [ ] **B2** The deck's card list is not visible anywhere, only its tokens · M
 - [ ] **B3** Private and unlisted decks are invisible — needs Moxfield auth, if they allow it · L
 - [ ] **B4** The search query is lost if Android kills the process mid-session · S
-- [ ] **B5** Landscape and tablet layouts have never been looked at · S
+- [ ] **B5** Nothing caps content width, so the board screen's rows stretch across a tablet · M
 - [ ] **B6** Per-token "Vaciar" clears without asking, unlike "Nueva partida" · S
 
 ### C. Quality and infrastructure
@@ -99,4 +99,4 @@ Don't turn these into tasks without asking. The reasoning is in `CLAUDE.md` §6.
 
 ---
 
-**Last reviewed:** 2026-08-25 · 5 commits · 2 954 lines of Kotlin, 1 050 of tests
+**Last reviewed:** 2026-08-25 · 7 commits · 2 954 lines of Kotlin, 1 050 of tests

@@ -25,7 +25,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,7 +58,9 @@ fun TokensScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val inPlay by viewModel.inPlay.collectAsStateWithLifecycle()
-    var confirmingNewGame by remember { mutableStateOf(false) }
+    // Saveable, not remember: a rotation with the dialog open would otherwise
+    // dismiss it, which on a destructive confirmation is the worst way to lose it.
+    var confirmingNewGame by rememberSaveable { mutableStateOf(false) }
     val tokensInPlay = inPlay.values.sum()
 
     Scaffold(

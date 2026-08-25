@@ -34,7 +34,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -95,8 +95,13 @@ fun TokenBoardScreen(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBoardViewModel) {
-    var askingHowMany by remember { mutableStateOf(false) }
-    var countersFor by remember { mutableStateOf<TokenStack?>(null) }
+    // Saveable so a rotation doesn't throw away a half-answered dialog. The
+    // second one holds a stack *id* rather than the stack: ids survive being
+    // written to a Bundle, and looking the stack up again means the dialog can
+    // never act on a copy that merged or emptied while it was open.
+    var askingHowMany by rememberSaveable { mutableStateOf(false) }
+    var countersForStackId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val countersTarget = countersForStackId?.let { id -> board.stacks.firstOrNull { it.id == id } }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -125,7 +130,7 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
                 onQuantity = { delta -> viewModel.changeQuantity(stack.id, delta) },
                 onCounters = { delta -> viewModel.changeCounters(stack.id, delta) },
                 onToggleSick = { viewModel.setSummoningSick(stack.id, !stack.summoningSick) },
-                onCountersForSome = { countersFor = stack },
+                onCountersForSome = { countersForStackId = stack.id },
             )
         }
     }
@@ -143,15 +148,15 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
         )
     }
 
-    countersFor?.let { stack ->
+    countersTarget?.let { stack ->
         NumberDialog(
             title = stringResource(R.string.dialog_how_many_of, stack.quantity),
             initial = 1,
             max = stack.quantity,
-            onDismiss = { countersFor = null },
+            onDismiss = { countersForStackId = null },
             onConfirm = { amount ->
                 viewModel.changeCounters(stack.id, delta = 1, appliesTo = amount)
-                countersFor = null
+                countersForStackId = null
             },
         )
     }
@@ -423,7 +428,7 @@ private fun NumberDialog(
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit,
 ) {
-    var text by remember { mutableStateOf(initial.toString()) }
+    var text by rememberSaveable { mutableStateOf(initial.toString()) }
     val parsed = text.toIntOrNull()
     val valid = parsed != null && parsed in 1..max
 
