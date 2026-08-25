@@ -34,13 +34,13 @@ jobs:
       # Compilation first, deliberately: it is the signal this project has
       # never had. Lint and tests are worth little while the code may not build.
       - name: Build (assembleDebug)
-        run: ./gradlew :app:assembleDebug --stacktrace
+        run: ./gradlew :app:assembleDebug
 
       - name: Tests unitarios
-        run: ./gradlew :app:testDebugUnitTest --stacktrace
+        run: ./gradlew :app:testDebugUnitTest
 
       - name: Android Lint
-        run: ./gradlew :app:lintDebug --stacktrace
+        run: ./gradlew :app:lintDebug
 
       - name: Publicar reportes y APK
         if: always()

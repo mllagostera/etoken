@@ -39,7 +39,7 @@ sealed interface DecksUiState {
         val isRefreshing: Boolean,
         /** Set when a refresh failed but the list already on screen is still good. */
         val refreshError: LoadError?,
-    )
+    ) : DecksUiState
 }
 
 class DecksViewModel(
