@@ -30,8 +30,19 @@ with `values-ca` and `values-en` as the overrides. etoken currently ships
 
 ## 2. Branching, commits, PRs
 
-- Work on `claude/<topic>-<suffix>` branches, matching commander-companion
-  (`claude/admin-dashboard-l3fexw`). Never commit straight to `main`.
+Branch names carry a type prefix. Taken from what commander-companion actually
+uses across its history, not from a style guide:
+
+| Prefix | For | Example |
+|---|---|---|
+| `claude/<topic>-<suffix>` | Work started from Claude Code, which appends its own six-character suffix | `claude/admin-dashboard-l3fexw` |
+| `feat/<topic>` | A feature branch opened by hand | `feat/tracker-fullscreen-api` |
+| `chore/<topic>` | Tooling, dependencies, docs | `chore/pre-push-md-filter` |
+
+Topics are kebab-case and name the work, not the files it touches. One old
+branch used `feature/` instead of `feat/`; treat it as a stray, not a variant.
+
+- Never commit straight to `main`.
 - Integrate through a pull request. Don't open one unless the owner asks.
 - Commit subjects: English, imperative, sentence case, no Conventional Commits
   prefix. "Add the friends screen to Android", not "feat(android): add screen".
