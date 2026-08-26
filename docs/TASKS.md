@@ -13,21 +13,23 @@ log, and the commit log is its memory.
 | | |
 |---|---|
 | `[x]` | Done **and verified** — something actually ran and proved it |
-| `[~]` | Compiles, passes lint and unit tests, but **has never been displayed on a screen** |
+| `[~]` | Driven by instrumented tests on an emulator, but **never looked at by a person** |
 | `[?]` | **Waiting on a decision**, not on someone doing it |
 | `[ ]` | Not started |
 
-`[~]` covers most of the app. It used to mean "no compiler has ever read this";
-since 2026-08-25 CI builds every push, so it now means the narrower and much
-better thing: the code is valid, lint is clean, and the tests pass — but nobody
-has watched a screen do its job. A4 and A5 are what close that gap.
+`[~]` has narrowed twice. It began as "no compiler has ever read this"; CI
+build made it "the code is valid"; and since 2026-08-26 an emulator drives the
+real screens on every push, so it now means the screens *work* — they render,
+they respond, and the state behind them moves correctly. What is left is
+perceptual: nobody has looked at whether any of it is legible, well spaced, or
+not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 65 unit tests, 0 failures, green on CI
+## 1. Verified — 66 unit and 11 instrumented tests, 0 failures, green on CI
 
-The logic layer. All of it is Android-free and runs on the JVM, which is what
-made it testable without an SDK.
+The logic layer runs on the JVM; the screens run on an emulator in CI. Only
+the two APIs are ever faked.
 
 - [x] Moxfield wire contract: search paging, v3 deck, board flattening — `data/moxfield/`, 8 tests
 - [x] Art-crop URLs, including the two-faced `card-face-` case — `data/moxfield/MoxfieldImages.kt`
@@ -41,11 +43,15 @@ made it testable without an SDK.
 - [x] Scryfall's half of the contract, live: `/cards/collection` answers 200 and `all_parts` is there
 - [x] Scryfall's image CDN really does answer **400** to OkHttp's default User-Agent, and 200 to a
   descriptive one — the gotcha inherited from commander-companion, now confirmed rather than trusted
+- [x] The screens run: a remembered username returns, decks reach the grid and name their commanders,
+  search narrows by name and by commander, tapping a deck reports the right one, tokens arrive
+  summoning sick and the untap step clears them, a counter turns a 1/1 into a 2/2, and clearing asks
+  first — `app/src/androidTest/`, 11 tests on an AVD
 
-## 2. Compiles, never seen running
+## 2. Works, never looked at
 
-Everything the user actually touches. It builds and lints clean; none of it
-has been seen on a screen.
+Everything the user actually touches. An emulator drives all of it on every
+push; no person has looked at any of it.
 
 ### Screens
 - [~] Username entry, remembered in DataStore; insets- and keyboard-aware — `ui/username/`
@@ -80,7 +86,8 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     runner is a datacenter IP, which Cloudflare treats far more harshly than a phone on mobile data.
   - Settling it needs the APK on a real device. If it 403s there too, `Network.kt`'s headers are the place to look.
 - [ ] **A4** Confirm Moxfield's image CDN loads on a device · S — Scryfall's is confirmed, see §1
-- [ ] **A5** Check the board screen on a small phone — it is the longest layout · S
+- [ ] **A5** Look at the board screen on a small phone — it is the longest layout · S
+  - The emulator proves it *works*; it says nothing about whether it fits.
 
 ### B. Product gaps
 
@@ -97,7 +104,7 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
-- [ ] **C2** No `androidTest/`, although `testInstrumentationRunner` is declared · M
+- [x] **C2** 11 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
 - [x] **C3** Seven locales: Spanish default plus `ca`, `en`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
@@ -143,4 +150,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-25 · 18 commits · CI green · PR #1 open · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 22 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI

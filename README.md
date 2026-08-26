@@ -205,12 +205,16 @@ dependency on that project at runtime.
 
 Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
-**Verified.** The app builds. CI runs `assembleDebug`, `testDebugUnitTest` and
-`lintDebug` on every push and all three are green: 65 unit tests pass, lint is
-clean, and the run produces an installable APK.
+**Verified.** The app builds and the screens work. CI runs `assembleDebug`,
+`testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
+runs the instrumented suite against it: 66 unit tests and 11 UI tests pass,
+lint is clean, and the run produces an installable APK. The UI tests drive the
+real screens and view models with only the two APIs faked, so they fail when
+the app breaks rather than when a double does.
 
-**Not verified.** Anything that needs eyes or a live network. No screen has
-been watched doing its job. The `api-smoke` workflow walks the real APIs with
+**Not verified.** Anything that needs eyes or a live network. The screens are
+exercised, not inspected — nothing has checked that a layout is legible, well
+spaced, or that a German compound noun fits the badge it lands in. The `api-smoke` workflow walks the real APIs with
 the app's own headers, and its first run got **HTTP 403 from Moxfield** — from
 a GitHub runner, which is a datacenter IP that Cloudflare treats far more
 harshly than a phone on mobile data, so that result is a warning rather than a
