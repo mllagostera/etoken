@@ -2,10 +2,13 @@ package com.etoken
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -52,7 +55,10 @@ class TokensScreenTest {
         compose.setContent {
             EtokenTheme { TokensScreen(onTokenClick = {}, onBack = {}, viewModel = viewModel) }
         }
-        awaitText(Fakes.TOKEN_NAME)
+        // The top bar's count, not a token name: the deck is called "Krenko
+        // Goblins", so waiting on the Goblin would match the title and return
+        // while the screen was still loading.
+        awaitText(plural(R.plurals.tokens_count, 3))
     }
 
     /** Puts Goblins on the battlefield without going through the board screen. */
@@ -64,12 +70,14 @@ class TokensScreenTest {
     fun all_of_the_decks_tokens_reach_the_grid() {
         showTokens()
 
-        compose.onNodeWithText(Fakes.TOKEN_NAME).assertIsDisplayed()
-        compose.onNodeWithText(Fakes.TREASURE_TOKEN_NAME).assertIsDisplayed()
-        // Existence for the third one: it is the only cell on the grid's
-        // second row, and whether that row is on screen depends on how tall
-        // the device running this happens to be.
-        compose.onNodeWithText(Fakes.HASTE_TOKEN_NAME).assertExists()
+        // One at a time, each scrolled to first. The order is the grid's own —
+        // by type line, so the Treasure leads — and what is being asserted is
+        // that all three are in the grid, not that a screen exists tall enough
+        // to hold them at once.
+        for (name in listOf(Fakes.TREASURE_TOKEN_NAME, Fakes.TOKEN_NAME, Fakes.HASTE_TOKEN_NAME)) {
+            scrollToCell(name)
+            compose.onNodeWithText(name).assertIsDisplayed()
+        }
     }
 
     @Test
@@ -96,14 +104,12 @@ class TokensScreenTest {
 
         compose.onNodeWithText(str(R.string.tokens_filter_in_play)).performClick()
 
-        // assertExists rather than assertIsDisplayed, and the emulator is why:
-        // the grid is lazy, so an item that comes back is in the semantics tree
-        // a frame before it is placed, and asserting it is on screen right here
-        // is a race. What this test is about is what the grid holds. That the
-        // cell is genuinely visible is covered above, on a grid nothing has
-        // filtered.
+        // Waited for and then scrolled to, like every other assertion about a
+        // cell here: an item coming back to a lazy grid is not on screen the
+        // same frame, and on this grid it may not be composed at all.
         awaitText(Fakes.TREASURE_TOKEN_NAME)
-        compose.onNodeWithText(Fakes.TREASURE_TOKEN_NAME).assertExists()
+        scrollToCell(Fakes.TREASURE_TOKEN_NAME)
+        compose.onNodeWithText(Fakes.TREASURE_TOKEN_NAME).assertIsDisplayed()
         // The top bar is not lazy: it going back to counting the deck's tokens
         // is the filter being off, not merely the grid being wider.
         compose.onNodeWithText(plural(R.plurals.tokens_count, 3)).assertIsDisplayed()
@@ -126,10 +132,11 @@ class TokensScreenTest {
 
         compose.onNodeWithText(str(R.string.tokens_filter_in_play)).performClick()
 
-        // Existence again, for the reason given above: both cells are being
-        // re-added to a lazy grid at this instant.
+        // Both cells are being re-added to a lazy grid at this instant, and the
+        // Goblin's is the second of the three: scrolling is what reaches it.
         awaitText(Fakes.TREASURE_TOKEN_NAME)
-        compose.onNodeWithText(Fakes.TOKEN_NAME).assertExists()
+        scrollToCell(Fakes.TOKEN_NAME)
+        compose.onNodeWithText(Fakes.TOKEN_NAME).assertIsDisplayed()
         compose.onNodeWithText(plural(R.plurals.tokens_count, 3)).assertIsDisplayed()
     }
 
@@ -137,6 +144,10 @@ class TokensScreenTest {
     fun the_grid_says_what_counters_the_copies_carry() {
         showTokens()
         putGoblinsInPlay()
+        // The chip appearing is the board having reached the screen; scrolling
+        // after it means the grid is no longer about to move underneath us.
+        awaitText(str(R.string.tokens_filter_in_play))
+        scrollToCell(Fakes.TOKEN_NAME)
         awaitText("×3")
 
         // Two +1/+1 counters on the whole stack: every Goblin in play carries
@@ -157,6 +168,8 @@ class TokensScreenTest {
         boards.update(Fakes.TOKEN_ID) { board ->
             TokenBoardRules.addCounters(board, board.stacks.single().id, delta = 2)
         }
+        awaitText(str(R.string.tokens_filter_in_play))
+        scrollToCell(Fakes.TOKEN_NAME)
         awaitText(str(R.string.stack_counters_chip, 2))
 
         // One of the three loses its counters, and now the table holds two
@@ -173,6 +186,22 @@ class TokensScreenTest {
         awaitGone(str(R.string.stack_counters_chip, 2))
         // The count is untouched: three Goblins are still three Goblins.
         compose.onNodeWithText("×3").assertExists()
+    }
+
+    /**
+     * Brings one token's cell into view, and into existence.
+     *
+     * The grid is lazy, and CI's emulator is the default AVD rather than a
+     * phone: 320x640dp, which `GridCells.Adaptive(150.dp)` answers with a
+     * single column of cells about 480dp tall. Two rows reach the viewport;
+     * the third is not merely off screen, it is never composed, so it is
+     * absent from the semantics tree and `assertExists` fails on it. The
+     * second row goes the same way the moment the filter chip claims its
+     * 48dp. Scrolling is what puts a cell in the tree, and it is also what
+     * makes `assertIsDisplayed` mean anything afterwards.
+     */
+    private fun scrollToCell(name: String) {
+        compose.onNode(hasScrollAction()).performScrollToNode(hasText(name))
     }
 
     private fun awaitText(text: String) = compose.waitUntil(TIMEOUT) {
