@@ -21,6 +21,9 @@
     <string name="tokens_title">Tokens</string>
     <string name="tokens_empty">Cap carta d\'aquest deck crea tokens.</string>
     <string name="tokens_created_by">Els creen: %1$s</string>
+    <string name="tokens_filter_in_play">Només en joc</string>
+    <string name="tokens_filtered_count">%1$d de %2$d</string>
+    <string name="tokens_none_in_play">No tens cap token en joc.</string>
     <string name="board_in_play">En joc</string>
     <string name="board_sick">%1$d amb mareig d\'invocació</string>
     <string name="board_none_sick">Cap amb mareig</string>

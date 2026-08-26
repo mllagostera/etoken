@@ -21,6 +21,9 @@
     <string name="tokens_title">Spielsteine</string>
     <string name="tokens_empty">Keine Karte in diesem Deck erzeugt Spielsteine.</string>
     <string name="tokens_created_by">Erzeugt von: %1$s</string>
+    <string name="tokens_filter_in_play">Nur im Spiel</string>
+    <string name="tokens_filtered_count">%1$d von %2$d</string>
+    <string name="tokens_none_in_play">Du hast keine Spielsteine im Spiel.</string>
     <string name="board_in_play">Im Spiel</string>
     <string name="board_sick">%1$d mit Einsatzverzögerung</string>
     <string name="board_none_sick">Keiner mit Einsatzverzögerung</string>

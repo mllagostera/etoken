@@ -27,6 +27,9 @@
     <string name="tokens_title">Tokens</string>
     <string name="tokens_empty">Ninguna carta de este mazo crea tokens.</string>
     <string name="tokens_created_by">Lo crean: %1$s</string>
+    <string name="tokens_filter_in_play">Solo en juego</string>
+    <string name="tokens_filtered_count">%1$d de %2$d</string>
+    <string name="tokens_none_in_play">No tienes ningún token en juego.</string>
 
     <string name="board_in_play">En juego</string>
     <string name="board_sick">%1$d con mareo de invocación</string>

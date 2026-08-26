@@ -21,6 +21,9 @@
     <string name="tokens_title">Jetons</string>
     <string name="tokens_empty">Aucune carte de ce deck ne crée de jetons.</string>
     <string name="tokens_created_by">Créé par : %1$s</string>
+    <string name="tokens_filter_in_play">En jeu seulement</string>
+    <string name="tokens_filtered_count">%1$d sur %2$d</string>
+    <string name="tokens_none_in_play">Tu n\'as aucun jeton en jeu.</string>
     <string name="board_in_play">En jeu</string>
     <string name="board_sick">%1$d avec le mal d\'invocation</string>
     <string name="board_none_sick">Aucun avec le mal d\'invocation</string>
