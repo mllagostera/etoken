@@ -85,6 +85,7 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - Run via `.github/workflows/api-smoke.yml`, 2026-08-25. Inconclusive rather than damning: a GitHub
     runner is a datacenter IP, which Cloudflare treats far more harshly than a phone on mobile data.
   - Settling it needs the APK on a real device. If it 403s there too, `Network.kt`'s headers are the place to look.
+  - C9 is the same question asked the other way round, and stays red until this one is answered.
 - [ ] **A4** Confirm Moxfield's image CDN loads on a device · S — Scryfall's is confirmed, see §1
 - [ ] **A5** Look at the board screen on a small phone — it is the longest layout · S
   - The emulator proves it *works*; it says nothing about whether it fits.
@@ -124,6 +125,21 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 - [ ] **C8** The six new locales have never been rendered · S
   - Lint is satisfied and the keys line up, which says nothing about layout. `Einsatzverzögerung`
     is 19 characters in a badge sized for `Mareo`, and Japanese breaks lines by rules Latin text does not.
+- [ ] **C9** An end-to-end test in CI against the real Moxfield user `vansid` · M — **blocked by A3**
+  - One test walking the whole path with nothing faked: `vansid` → the deck list → one deck → its
+    tokens with images. That account has more than enough decks to exercise search paging, the v3
+    deck fetch, commander art, and a token set worth extracting.
+  - Everything green today is green against fakes. `api-smoke.yml` touches the real APIs but only
+    asks whether they answer; this asks whether the app's own repository can carry a real account
+    from a username to a screenful of tokens.
+  - It cannot pass until A3 does: Moxfield answers 403 to a GitHub runner's datacenter IP. The
+    answer to that is a real device or asking Moxfield for API access — **not** hunting for a header
+    combination that gets past Cloudflare, which is a protection they put there deliberately.
+  - So build it now and let it stay red, or leave it written down until A3 falls. Either way it wants
+    its own workflow rather than a place in `android-ci.yml`: a test that depends on a third party's
+    availability must never be what turns a pull request red.
+  - Assert on shape, not on contents: deck count > 0, every deck named, some deck yielding tokens.
+    `vansid` can rename a deck tomorrow and no test should care.
 
 ## 4. Deliberate decisions — not gaps
 
