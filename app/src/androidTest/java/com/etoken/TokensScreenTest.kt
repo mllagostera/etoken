@@ -19,10 +19,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * The quick filter, driven through the screen rather than the rule underneath
- * it: [com.etoken.domain.TokenFilter] decides what "in play" means and is
- * unit-tested, and this is about the chip being wired to it — that it appears
- * when there is a table to filter, and that what it hides comes back.
+ * The quick filter and the cells' badges, driven through the screen rather than
+ * the rules underneath them: [com.etoken.domain.TokenFilter] decides what "in
+ * play" means and [com.etoken.domain.model.TokenBoard] decides when the counters
+ * can be named, both unit-tested. This is about the screen being wired to them —
+ * that the chip appears when there is a table to filter, that what it hides
+ * comes back, and that a cell says what its copies are carrying.
  *
  * Krenko's deck makes two tokens here, a Goblin and a Treasure, so a filter has
  * something to keep and something to hide.
@@ -125,6 +127,48 @@ class TokensScreenTest {
         awaitText(Fakes.TREASURE_TOKEN_NAME)
         compose.onNodeWithText(Fakes.TOKEN_NAME).assertExists()
         compose.onNodeWithText(plural(R.plurals.tokens_count, 2)).assertIsDisplayed()
+    }
+
+    @Test
+    fun the_grid_says_what_counters_the_copies_carry() {
+        showTokens()
+        putGoblinsInPlay()
+        awaitText("×3")
+
+        // Two +1/+1 counters on the whole stack: every Goblin in play carries
+        // them, so the cell can say so without lying about any of them.
+        boards.update(Fakes.TOKEN_ID) { board ->
+            TokenBoardRules.addCounters(board, board.stacks.single().id, delta = 2)
+        }
+
+        awaitText(str(R.string.stack_counters_chip, 2))
+        // The count is still there beside it: the badge adds to it, not replaces it.
+        compose.onNodeWithText("×3").assertExists()
+    }
+
+    @Test
+    fun a_split_stack_leaves_the_counters_off_the_grid() {
+        showTokens()
+        putGoblinsInPlay()
+        boards.update(Fakes.TOKEN_ID) { board ->
+            TokenBoardRules.addCounters(board, board.stacks.single().id, delta = 2)
+        }
+        awaitText(str(R.string.stack_counters_chip, 2))
+
+        // One of the three loses its counters, and now the table holds two
+        // different things. One badge cannot describe both, so it goes.
+        boards.update(Fakes.TOKEN_ID) { board ->
+            TokenBoardRules.addCounters(
+                board,
+                board.stacks.single().id,
+                delta = -2,
+                appliesTo = 1,
+            )
+        }
+
+        awaitGone(str(R.string.stack_counters_chip, 2))
+        // The count is untouched: three Goblins are still three Goblins.
+        compose.onNodeWithText("×3").assertExists()
     }
 
     private fun awaitText(text: String) = compose.waitUntil(TIMEOUT) {
