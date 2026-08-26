@@ -1,6 +1,7 @@
 package com.etoken
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -79,11 +80,17 @@ class CopyTokenBoardTest {
         addCopy("+2", "Krenko, Mob Boss")
         addCopy("+1", "Atraxa")
 
-        // Three tokens in play across two rows, not one row of three.
-        compose.onNodeWithText("Krenko, Mob Boss").assertIsDisplayed()
-        compose.onNodeWithText("Atraxa").assertIsDisplayed()
-        compose.onNodeWithText("2 ×").assertIsDisplayed()
-        compose.onNodeWithText("1 ×").assertIsDisplayed()
+        // Three tokens across two rows, not one row of three. The rows are
+        // asserted to exist rather than to be visible: two stack cards do not
+        // both fit above the fold on a phone, and this test is about how the
+        // board is divided, not about what fits on screen.
+        compose.onNodeWithText("Krenko, Mob Boss").assertExists()
+        compose.onNodeWithText("Atraxa").assertExists()
+        compose.onNodeWithText("2 ×").assertExists()
+        compose.onNodeWithText("1 ×").assertExists()
+
+        // The running total is at the top, so it really is displayed.
+        compose.onNodeWithText("3").assertIsDisplayed()
     }
 
     @Test
