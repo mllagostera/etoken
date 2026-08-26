@@ -37,6 +37,8 @@
     <string name="board_clear">Svuota</string>
     <string name="clear_title">Svuotare questa pedina?</string>
     <string name="board_base">Base %1$s</string>
+    <string name="board_haste">Rapidità</string>
+    <string name="board_haste_note">Entra senza svogliatezza da evocazione. La rapidità data da un\'altra carta la segni tu su ogni gruppo.</string>
     <string name="stack_quantity">Quantità</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>

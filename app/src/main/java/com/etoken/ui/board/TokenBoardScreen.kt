@@ -257,6 +257,20 @@ private fun TokenHeader(token: TokenCard) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            if (token.hasHaste) {
+                StateBadge(
+                    text = stringResource(R.string.board_haste),
+                    container = MaterialTheme.colorScheme.secondaryContainer,
+                    content = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+                // Said out loud, because the absence of "Mareo" on a stack is
+                // otherwise indistinguishable from the app getting it wrong.
+                Text(
+                    text = stringResource(R.string.board_haste_note),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             if (token.createdBy.isNotEmpty()) {
                 Text(
                     text = stringResource(

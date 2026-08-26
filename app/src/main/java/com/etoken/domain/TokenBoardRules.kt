@@ -15,20 +15,31 @@ import com.etoken.domain.model.TokenStack
 object TokenBoardRules {
 
     /**
-     * Puts [quantity] new copies onto the battlefield.
+     * Puts [quantity] new copies onto the battlefield, with no counters.
      *
-     * They arrive with summoning sickness and no counters, which is what
-     * actually happens: a token that entered this turn can't attack or tap.
-     * Correcting a miscount is what the per-stack controls are for.
+     * [entersSick] is what the caller knows about the token itself: copies
+     * arrive summoning sick, which is what actually happens, unless the token
+     * is printed with haste and can attack the turn it enters. It is a
+     * parameter rather than an assumption because the rule lives on the token,
+     * and only the caller has it.
+     *
+     * Haste given at the table by another permanent is not in it: nothing here
+     * can see the rest of the battlefield, so that stays the per-stack chip's
+     * job — as does correcting a miscount.
      */
-    fun add(board: TokenBoard, quantity: Int, copying: String? = null): TokenBoard {
+    fun add(
+        board: TokenBoard,
+        quantity: Int,
+        copying: String? = null,
+        entersSick: Boolean = true,
+    ): TokenBoard {
         if (quantity <= 0) return board
 
         val entering = TokenStack(
             id = board.nextStackId,
             quantity = quantity,
             plusOneCounters = 0,
-            summoningSick = true,
+            summoningSick = entersSick,
             copying = copying?.trim()?.takeIf { it.isNotEmpty() },
         )
         return normalize(

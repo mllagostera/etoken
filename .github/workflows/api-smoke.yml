@@ -126,5 +126,44 @@ jobs:
           fi
 
           echo
+          echo "== 6. Scryfall: ¿un token trae la lista de keywords? =="
+          # What the haste rule rests on. The app reads printed haste off the
+          # token's structured `keywords` and never out of its rules text, so
+          # if token card objects came back without that field the rule would
+          # be silently doing nothing. Hellion Crucible makes a 4/4 Hellion
+          # with haste, which is as clear an answer as this can get.
+          printf '{"identifiers":[{"name":"Hellion Crucible"}]}' > maker.json
+          code=$(curl -sS -o maker-card.json -w '%{http_code}' -X POST \
+            -H "User-Agent: $SCRY_UA" -H "Accept: application/json" -H "Content-Type: application/json" \
+            --data @maker.json "https://api.scryfall.com/cards/collection") || code=000
+          note "POST /cards/collection (Hellion Crucible)" "$code"
+          [ "$code" = 200 ] || fail=1
+          if [ "$code" = 200 ]; then
+            HASTE_TOKEN=$(jq -r '[.data[0].all_parts[]? | select(.component == "token")][0].id // empty' maker-card.json)
+            note "  id del token" "${HASTE_TOKEN:-ninguno}"
+          fi
+
+          if [ -n "${HASTE_TOKEN:-}" ]; then
+            printf '{"identifiers":[{"id":"%s"}]}' "$HASTE_TOKEN" > token-body.json
+            code=$(curl -sS -o token.json -w '%{http_code}' -X POST \
+              -H "User-Agent: $SCRY_UA" -H "Accept: application/json" -H "Content-Type: application/json" \
+              --data @token-body.json "https://api.scryfall.com/cards/collection") || code=000
+            note "POST /cards/collection (el token)" "$code"
+            [ "$code" = 200 ] || fail=1
+            if [ "$code" = 200 ]; then
+              note "  token" "$(jq -r '.data[0].name // "ausente"' token.json)"
+              note "  keywords" "$(jq -rc '.data[0].keywords // "ausente"' token.json)"
+              if jq -e '[.data[0].keywords[]?] | index("Haste")' token.json > /dev/null; then
+                note "  ¿trae Haste?" "sí — TokenCard.hasHaste tiene de dónde salir"
+              else
+                note "  ¿trae Haste?" "NO — la regla de prisa no se sostiene"
+                fail=1
+              fi
+            fi
+          else
+            note "omitido" "la carta no declaró ningún token"
+          fi
+
+          echo
           if [ "$fail" -ne 0 ]; then echo "RESULTADO: alguna llamada no dio 200"; exit 1; fi
           echo "RESULTADO: el contrato se sostiene contra las APIs reales"

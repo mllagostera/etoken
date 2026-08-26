@@ -37,6 +37,8 @@
     <string name="board_clear">Clear</string>
     <string name="clear_title">Clear this token?</string>
     <string name="board_base">Base %1$s</string>
+    <string name="board_haste">Haste</string>
+    <string name="board_haste_note">Enters ready to attack. Haste given by another card is yours to mark on each stack.</string>
     <string name="stack_quantity">Quantity</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>

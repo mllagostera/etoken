@@ -72,7 +72,12 @@ Magic tracks counters and summoning sickness per permanent, so seven Goblins of
 which three carry a +1/+1 counter are not interchangeable, and a single count
 with counters bolted onto it would be a lie. So:
 
-- Tokens arrive **summoning sick**, which is what actually happens.
+- Tokens arrive **summoning sick**, which is what actually happens — unless the
+  token is printed with **haste**, in which case they enter able to attack and
+  the board says so. Printed haste comes from Scryfall's `keywords`, never from
+  reading rules text: a token that *grants* haste to other creatures has none
+  itself. Haste handed out at the table by another permanent is something no
+  app can see, so that half stays a chip the player taps.
 - **"My turn begins"** clears sickness across every stack at once.
 - Putting a counter on **only some** of a stack splits it; taking that counter
   off merges it straight back.
@@ -160,16 +165,17 @@ etoken/
     │   ├── values-night/             dark theme
     │   └── drawable/                 local vector icons; no material-icons artifacts
     │
-    └── test/java/com/etoken/         94 unit tests, all on the JVM
+    └── test/java/com/etoken/         104 unit tests, all on the JVM
         ├── TokenBoardRulesTest.kt        24
         ├── MoxfieldRepositoryTest.kt     11
         ├── DeckFilterTest.kt             10
         ├── TokenFilterTest.kt            6
         ├── TokenExtractorTest.kt         9
         ├── MoxfieldParsingTest.kt        8
+        ├── ScryfallParsingTest.kt        8
+        ├── HasteTokenTest.kt             8
         ├── TokenBoardStoreTest.kt        7
         ├── UndoHistoryTest.kt            6
-        ├── ScryfallParsingTest.kt        6
         ├── PowerToughnessTest.kt         4
         └── CopyTokenTest.kt              3
 ```
@@ -249,7 +255,7 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: 94 unit tests and 24 UI tests pass,
+runs the instrumented suite against it: 104 unit tests and 28 UI tests pass,
 lint is clean, and the run produces an installable APK. The UI tests drive the
 real screens and view models with only the two APIs faked, so they fail when
 the app breaks rather than when a double does.
@@ -261,3 +267,9 @@ the app's own headers, and its first run got **HTTP 403 from Moxfield** — from
 a GitHub runner, which is a datacenter IP that Cloudflare treats far more
 harshly than a phone on mobile data, so that result is a warning rather than a
 verdict. Installing the APK is still the real test.
+
+One live question is neither of those and needs nothing but a button press:
+whether Scryfall puts `keywords` on **token** card objects, which is what the
+haste rule reads. `api-smoke` asks it and goes red if the answer is no; nobody
+has run it since. Until then a token printed with haste could quietly keep
+arriving summoning sick, which is exactly how it behaved before.

@@ -79,12 +79,17 @@ object TokenExtractor {
                     createdBy = creators.toList(),
                     power = card.power,
                     toughness = card.toughness,
+                    hasHaste = hasHaste(card),
                 )
             } else {
                 existing.copy(
                     // A later printing may be the one that actually has art.
                     imageUrl = existing.imageUrl ?: card.imageUrl(),
                     createdBy = (existing.createdBy + creators).distinct(),
+                    // Printings that collapse together are the same token and
+                    // should agree here; if one of them came back without its
+                    // keywords, the one that has them is the truthful answer.
+                    hasHaste = existing.hasHaste || hasHaste(card),
                 )
             }
         }
@@ -93,6 +98,16 @@ object TokenExtractor {
             .map { it.copy(createdBy = it.createdBy.sorted()) }
             .sortedWith(compareBy({ it.typeLine }, { it.name }))
     }
+
+    /**
+     * Printed haste, off Scryfall's structured keyword list.
+     *
+     * Never off the rules text: a token reading "Other Goblins you control
+     * have haste" does not itself have haste, and separating those two in
+     * prose is the kind of parsing this app deliberately stays out of.
+     */
+    private fun hasHaste(card: ScryfallCard): Boolean =
+        card.keywords.any { it.equals(HASTE, ignoreCase = true) }
 
     /**
      * Power/toughness is part of the key: a 1/1 Goblin and a 2/2 Goblin share a
@@ -106,4 +121,7 @@ object TokenExtractor {
         card.power.orEmpty(),
         card.toughness.orEmpty(),
     ).joinToString("|") { it.lowercase() }
+
+    /** Scryfall's own spelling; its keyword list is English in every locale. */
+    private const val HASTE = "Haste"
 }

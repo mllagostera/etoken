@@ -37,6 +37,8 @@
     <string name="board_clear">Buida</string>
     <string name="clear_title">Vols buidar aquest token?</string>
     <string name="board_base">Base %1$s</string>
+    <string name="board_haste">Pressa</string>
+    <string name="board_haste_note">Entra sense mareig d\'invocació. Si la pressa l\'hi dona una altra carta, marca-ho tu a cada grup.</string>
     <string name="stack_quantity">Quantitat</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>

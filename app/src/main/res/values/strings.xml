@@ -44,6 +44,8 @@
     <string name="board_clear">Vaciar</string>
     <string name="clear_title">¿Vaciar este token?</string>
     <string name="board_base">Base %1$s</string>
+    <string name="board_haste">Prisa</string>
+    <string name="board_haste_note">Entra sin mareo de invocación. Si la prisa se la da otra carta, márcalo tú en cada grupo.</string>
 
     <string name="stack_quantity">Cantidad</string>
     <string name="stack_counters">+1/+1</string>
