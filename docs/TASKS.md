@@ -76,6 +76,7 @@ push; no person has looked at any of it.
 - [~] Manual DI in `AppContainer`, no Hilt
 - [~] Coil `ImageLoader` with the User-Agent Scryfall's CDN demands
 - [x] `api-smoke.yml`: walks the real APIs with the app's own headers, on demand
+- [x] Every green run publishes an installable debug APK of its own, kept 90 days — `android-ci.yml`
 
 ## 3. Pending
 
@@ -168,7 +169,8 @@ clean, the tests pass. But every `[~]` in §2 is still a claim about behaviour
 **nobody has watched happen**, and that is now the only thing standing between
 this and a working app.
 
-1. **A4 and A5, and they need you.** Install the APK from the latest green run.
+1. **A4 and A5, and they need you.** Install the APK from the latest green run:
+   Actions → the run → `etoken-debug-apk-<run number>` at the bottom, unzipped.
    Everything below is guesswork ranked against an app no one has used.
 2. **A3 resolves itself from that.** If Moxfield answers on a phone, the 403
    was the runner's datacenter IP and there is nothing to fix. If it does not,

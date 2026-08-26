@@ -36,6 +36,18 @@ jobs:
       - name: Build (assembleDebug)
         run: ./gradlew :app:assembleDebug
 
+      # Published straight after the build and on its own, so it survives a
+      # later step going red and so installing it is one click rather than
+      # unzipping it out of the reports. This is how the app reaches a real
+      # device: A3, A4 and A5 in docs/TASKS.md all need one.
+      - name: Publicar el APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: etoken-debug-apk-${{ github.run_number }}
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 90
+          if-no-files-found: error
+
       - name: Tests unitarios
         run: ./gradlew :app:testDebugUnitTest
 
@@ -47,7 +59,7 @@ jobs:
       - name: Compilar los tests instrumentados
         run: ./gradlew :app:assembleDebugAndroidTest
 
-      - name: Publicar reportes y APK
+      - name: Publicar los informes
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -55,7 +67,6 @@ jobs:
           path: |
             app/build/reports/lint-results-debug.html
             app/build/test-results/**/*.xml
-            app/build/outputs/apk/debug/*.apk
           retention-days: 14
 
   instrumented:

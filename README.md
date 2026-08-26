@@ -187,8 +187,17 @@ fast.
 Requires an Android SDK — `compileSdk 37`, `minSdk 26`, JDK 21. Opening the
 project in Android Studio will offer to install whatever is missing.
 
-CI runs all three on every push and uploads the debug APK as an artifact, so a
-green run produces something installable rather than just a green tick.
+CI runs all three on every push and publishes the debug APK as its own
+artifact, so a green run produces something installable rather than just a
+green tick.
+
+**Installing it on a device.** Open the run under the repository's *Actions*
+tab, and download `etoken-debug-apk-<run number>` from the artifacts at the
+bottom of the summary. GitHub serves artifacts as a zip, so unzip it to get
+`app-debug.apk`. It is signed with the standard debug key, which is enough to
+install but means Android will ask you to allow installs from whichever app is
+delivering it. It coexists with nothing — the application id is `com.etoken` —
+and it needs Android 8.0 or newer. Artifacts are kept for 90 days.
 
 ## 4. Languages
 
