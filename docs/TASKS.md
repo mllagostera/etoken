@@ -26,7 +26,7 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 104 unit and 26 instrumented tests, 0 failures, green on CI
+## 1. Verified — 104 unit and 28 instrumented tests, 0 failures, green on CI
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -55,6 +55,8 @@ the two APIs are ever faked.
   different creatures stay two rows — `domain/`, `ui/board/`, 3 unit and 4 instrumented tests
 - [x] The quick filter appears with the first token on the table, hides the rest of the grid, and
   says so instead of going blank when the table empties — `ui/tokens/`, 4 instrumented tests
+- [x] The public-decks limit is on screen before the username is typed, and again on an empty deck
+  list — `ui/username/`, `ui/decks/`, 2 instrumented tests
 - [x] Printed haste: `keywords` off the wire, `TokenCard.hasHaste`, copies that enter able to
   attack, and a chip that still overrides it — `domain/`, `ui/board/`, 10 unit and 4 instrumented tests
 
@@ -78,6 +80,7 @@ push; no person has looked at any of it.
 
 ### Text
 - [~] Seven locales: Spanish default, plus `ca`, `en`, `fr`, `de`, `it`, `ja` — key parity and XML verified
+- [~] The note saying private and unlisted decks are not read — `ui/username/`, `ui/decks/`
 
 ### Build
 - [~] Gradle setup, catalog aligned with commander-companion's `android/`
@@ -100,16 +103,16 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - Settling it needs the APK on a real device. If it 403s there too, `Network.kt`'s headers are the place to look.
   - C9 is the same question asked the other way round, and stays red until this one is answered.
 - [ ] **A4** Confirm Moxfield's image CDN loads on a device · S — Scryfall's is confirmed, see §1
+- [ ] **A5** Look at the board screen on a small phone — it is the longest layout · S
+  - The emulator proves it *works*; it says nothing about whether it fits.
+  - The same goes for the two-pane layout: it is driven by tests at 1280dp, but 1280dp is wider than
+    the AVD's screen, so nobody has seen the two panes side by side.
 - [ ] **A6** Confirm Scryfall really populates `keywords` on **token** card objects · S
   - The haste rule rests on it, and the app fails quiet if it is wrong: a hasty token would simply
     keep arriving summoning sick, exactly as before B9.
   - `api-smoke.yml` §6 now asks, through Hellion Crucible's 4/4 Hellion, and turns the job red if
     the token comes back without `Haste` among its keywords. Nobody has run it yet — and it does not
     need a device, unlike A3 and A4, only someone pressing the button.
-- [ ] **A5** Look at the board screen on a small phone — it is the longest layout · S
-  - The emulator proves it *works*; it says nothing about whether it fits.
-  - The same goes for the two-pane layout: it is driven by tests at 1280dp, but 1280dp is wider than
-    the AVD's screen, so nobody has seen the two panes side by side.
 
 ### B. Product gaps
 
@@ -123,6 +126,12 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     play aid, and nothing in the app hints at one.
 - [ ] **B2** The deck's card list is not visible anywhere, only its tokens · M
 - [ ] **B3** Private and unlisted decks are invisible — needs Moxfield auth, if they allow it · L
+  - **Said out loud since 2026-08-26**, which is not the same as fixed: the username screen and the
+    empty deck list both name the limit. Until auth exists, the failure mode worth avoiding is a user
+    reading a missing deck as a broken app.
+  - The search endpoint never mentions the decks it is not allowed to show, so an account with only
+    private decks is indistinguishable from an empty one. That is why the note lives on the empty
+    state rather than being computed from anything.
 - [x] **B4** The search query survives process death — it lives in the `SavedStateHandle`
 - [x] **B5** Two panes past 840dp: the token grid beside the open board — `ui/TokensAndBoard.kt`
   - The split reads the layout's own constraints instead of pulling in `material3-window-size-class`:
@@ -227,4 +236,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 42 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 47 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI

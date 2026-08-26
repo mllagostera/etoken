@@ -18,6 +18,13 @@ sick, and what +1/+1 counters they carry.
 You enter a Moxfield username once; the app remembers it. It then lists that
 user's public decks as a grid of commander artwork.
 
+**Public** is the whole of it: the app reads Moxfield without signing in, so
+private and unlisted decks are invisible to it. Moxfield's search endpoint does
+not mention the decks it will not show, which means an account with only
+private decks looks exactly like an empty one — so the app says so where the
+question comes up, under the username field and again on an empty list, rather
+than leaving a missing deck to read as a bug.
+
 The grid streams rather than blocks. Deck names appear as soon as the search
 endpoint answers, and the cover art fills in afterwards four decks at a time,
 so the grid is usable immediately instead of waiting on a request per deck. One
@@ -158,16 +165,17 @@ etoken/
     │   ├── values-night/             dark theme
     │   └── drawable/                 local vector icons; no material-icons artifacts
     │
-    └── test/java/com/etoken/         94 unit tests, all on the JVM
+    └── test/java/com/etoken/         104 unit tests, all on the JVM
         ├── TokenBoardRulesTest.kt        24
         ├── MoxfieldRepositoryTest.kt     11
         ├── DeckFilterTest.kt             10
         ├── TokenFilterTest.kt            6
         ├── TokenExtractorTest.kt         9
         ├── MoxfieldParsingTest.kt        8
+        ├── ScryfallParsingTest.kt        8
+        ├── HasteTokenTest.kt             8
         ├── TokenBoardStoreTest.kt        7
         ├── UndoHistoryTest.kt            6
-        ├── ScryfallParsingTest.kt        6
         ├── PowerToughnessTest.kt         4
         └── CopyTokenTest.kt              3
 ```
@@ -247,7 +255,7 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: 104 unit tests and 26 UI tests pass,
+runs the instrumented suite against it: 104 unit tests and 28 UI tests pass,
 lint is clean, and the run produces an installable APK. The UI tests drive the
 real screens and view models with only the two APIs faked, so they fail when
 the app breaks rather than when a double does.

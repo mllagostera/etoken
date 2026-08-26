@@ -89,6 +89,19 @@ class DecksScreenTest {
         assertEquals(Fakes.DECK_ID, clicked)
     }
 
+    @Test
+    fun an_account_with_no_public_decks_is_told_why_it_might_look_empty() {
+        val viewModel = DecksViewModel(Fakes.emptyRepository(), SavedStateHandle(), "someone")
+        compose.setContent {
+            EtokenTheme { DecksScreen(onDeckClick = {}, onBack = {}, viewModel = viewModel) }
+        }
+
+        // "No public decks" on its own reads as "this account is empty", which
+        // is the one reading that is usually wrong.
+        awaitText(str(R.string.decks_empty))
+        compose.onNodeWithText(str(R.string.public_decks_only)).assertIsDisplayed()
+    }
+
     private fun nodesWithText(text: String) =
         compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes()
 

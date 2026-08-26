@@ -46,6 +46,13 @@ object Fakes {
     const val HASTE_TOKEN_NAME = "Hellion"
 
     fun repository(): MoxfieldRepository = MoxfieldRepository(FakeMoxfield(), FakeScryfall())
+
+    /**
+     * A user whose deck search comes back empty — which is what an account
+     * with only private or unlisted decks looks like from here, since the
+     * search endpoint never mentions the decks it is not allowed to show.
+     */
+    fun emptyRepository(): MoxfieldRepository = MoxfieldRepository(EmptyMoxfield(), FakeScryfall())
 }
 
 private val KRENKO = DeckResponse(
@@ -132,6 +139,22 @@ private class FakeMoxfield : MoxfieldApi {
         Fakes.OTHER_DECK_ID -> ATRAXA
         else -> KRENKO
     }
+}
+
+private class EmptyMoxfield : MoxfieldApi {
+
+    override suspend fun searchDecks(
+        username: String,
+        pageNumber: Int,
+        pageSize: Int,
+        sortType: String,
+        sortDirection: String,
+        includePinned: Boolean,
+        showIllegal: Boolean,
+    ): SearchResponse = SearchResponse()
+
+    override suspend fun deck(publicId: String): DeckResponse =
+        error("nothing public to open")
 }
 
 private class FakeScryfall : ScryfallApi {
