@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="username_prompt">Moxfield のユーザー名を入力すると、公開デッキを読み込みます。</string>
+    <string name="public_decks_only">非公開デッキと限定公開デッキは表示されません。アプリはログインせずに Moxfield を読み込みます。</string>
     <string name="username_label">Moxfield のユーザー名</string>
     <string name="action_load_decks">デッキを読み込む</string>
     <string name="action_retry">再試行</string>
@@ -36,6 +37,8 @@
     <string name="board_clear">空にする</string>
     <string name="clear_title">このトークンを空にしますか？</string>
     <string name="board_base">基本 %1$s</string>
+    <string name="board_haste">速攻</string>
+    <string name="board_haste_note">召喚酔いなしで戦場に出ます。他のカードが与える速攻は、グループごとに自分で設定してください。</string>
     <string name="stack_quantity">数</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>

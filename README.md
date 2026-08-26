@@ -18,6 +18,13 @@ sick, and what +1/+1 counters they carry.
 You enter a Moxfield username once; the app remembers it. It then lists that
 user's public decks as a grid of commander artwork.
 
+**Public** is the whole of it: the app reads Moxfield without signing in, so
+private and unlisted decks are invisible to it. Moxfield's search endpoint does
+not mention the decks it will not show, which means an account with only
+private decks looks exactly like an empty one — so the app says so where the
+question comes up, under the username field and again on an empty list, rather
+than leaving a missing deck to read as a bug.
+
 The grid streams rather than blocks. Deck names appear as soon as the search
 endpoint answers, and the cover art fills in afterwards four decks at a time,
 so the grid is usable immediately instead of waiting on a request per deck. One
@@ -71,7 +78,12 @@ Magic tracks counters and summoning sickness per permanent, so seven Goblins of
 which three carry a +1/+1 counter are not interchangeable, and a single count
 with counters bolted onto it would be a lie. So:
 
-- Tokens arrive **summoning sick**, which is what actually happens.
+- Tokens arrive **summoning sick**, which is what actually happens — unless the
+  token is printed with **haste**, in which case they enter able to attack and
+  the board says so. Printed haste comes from Scryfall's `keywords`, never from
+  reading rules text: a token that *grants* haste to other creatures has none
+  itself. Haste handed out at the table by another permanent is something no
+  app can see, so that half stays a chip the player taps.
 - **"My turn begins"** clears sickness across every stack at once.
 - Putting a counter on **only some** of a stack splits it; taking that counter
   off merges it straight back.
@@ -159,16 +171,17 @@ etoken/
     │   ├── values-night/             dark theme
     │   └── drawable/                 local vector icons; no material-icons artifacts
     │
-    └── test/java/com/etoken/         99 unit tests, all on the JVM
+    └── test/java/com/etoken/         109 unit tests, all on the JVM
         ├── TokenBoardRulesTest.kt        29
         ├── MoxfieldRepositoryTest.kt     11
         ├── DeckFilterTest.kt             10
         ├── TokenFilterTest.kt            6
         ├── TokenExtractorTest.kt         9
         ├── MoxfieldParsingTest.kt        8
+        ├── ScryfallParsingTest.kt        8
+        ├── HasteTokenTest.kt             8
         ├── TokenBoardStoreTest.kt        7
         ├── UndoHistoryTest.kt            6
-        ├── ScryfallParsingTest.kt        6
         ├── PowerToughnessTest.kt         4
         └── CopyTokenTest.kt              3
 ```
@@ -248,17 +261,17 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: the last green run covered 94 unit
-tests and 22 UI tests, lint was clean, and it produced an installable APK. The
-UI tests drive the real screens and view models with only the two APIs faked,
-so they fail when the app breaks rather than when a double does.
+runs the instrumented suite against it: 104 unit tests and 28 UI tests pass,
+lint is clean, and the run produces an installable APK. The UI tests drive the
+real screens and view models with only the two APIs faked, so they fail when
+the app breaks rather than when a double does.
 
-The tree above counts 99 unit and 24 UI tests, and the seven of those added
-for the grid's counter badge have not been through CI: its runs for that branch
-never started — one was cancelled while queued, the next failed at startup.
-The five **unit** tests among them have been run by hand since, compiling
+The tree above counts 109 unit and 30 UI tests. The seven added for the grid's
+counter badge are not in the figures above: CI never ran them — one run was
+cancelled while queued, the next failed at startup, neither producing a log.
+The five **unit** tests among them were run by hand instead, compiling
 `domain/` and its tests with Kotlin 2.4.10 straight from the command line, no
-Gradle and no Android: 35 tests over `TokenBoardRules` and `TokenFilter` pass,
+Gradle and no Android: `TokenBoardRulesTest` and `TokenFilterTest` pass whole,
 which is what the rule behind the badge rests on. The **two instrumented**
 tests, and the change to `TokensScreen` itself, have been compiled nowhere —
 that needs the Android SDK, which this environment cannot reach. Treat those
@@ -271,3 +284,9 @@ the app's own headers, and its first run got **HTTP 403 from Moxfield** — from
 a GitHub runner, which is a datacenter IP that Cloudflare treats far more
 harshly than a phone on mobile data, so that result is a warning rather than a
 verdict. Installing the APK is still the real test.
+
+One live question is neither of those and needs nothing but a button press:
+whether Scryfall puts `keywords` on **token** card objects, which is what the
+haste rule reads. `api-smoke` asks it and goes red if the answer is no; nobody
+has run it since. Until then a token printed with haste could quietly keep
+arriving summoning sick, which is exactly how it behaved before.

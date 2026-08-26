@@ -85,5 +85,16 @@ fun UsernameScreen(
         ) {
             Text(stringResource(R.string.action_load_decks))
         }
+
+        // Under the button rather than above it: the prompt already says
+        // "public decks", and this is the small print that explains what that
+        // leaves out. Said here so a missing deck later reads as a limit of
+        // the app rather than as a bug.
+        Text(
+            text = stringResource(R.string.public_decks_only),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
     }
 }

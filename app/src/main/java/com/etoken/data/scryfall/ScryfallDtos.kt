@@ -46,6 +46,16 @@ data class ScryfallCard(
     val layout: String? = null,
     @SerialName("type_line") val typeLine: String? = null,
     @SerialName("oracle_text") val oracleText: String? = null,
+    /**
+     * Scryfall's structured keyword list: "Flying", "Haste", "Trample".
+     *
+     * Printed haste is read off this rather than out of [oracleText], which is
+     * the same rule the tokens themselves follow — they come from `all_parts`,
+     * never from parsing a card's text. A token that merely *grants* haste to
+     * other creatures does not appear here, and telling those two apart in
+     * prose is exactly the bug a parser would keep producing.
+     */
+    val keywords: List<String> = emptyList(),
     /** Strings, not numbers: Magic prints `*`, `1+*` and `X` as power/toughness. */
     val power: String? = null,
     val toughness: String? = null,

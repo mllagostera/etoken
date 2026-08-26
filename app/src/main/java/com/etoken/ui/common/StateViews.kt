@@ -45,12 +45,28 @@ fun ErrorView(
 }
 
 @Composable
-fun MessageView(message: String, modifier: Modifier = Modifier) {
+fun MessageView(message: String, modifier: Modifier = Modifier, detail: String? = null) {
     Box(modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-        )
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+            )
+            // The state itself first, then why it might be that way. Quieter
+            // than the message it explains, so an empty list still reads as
+            // one line at a glance.
+            if (detail != null) {
+                Text(
+                    text = detail,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
     }
 }

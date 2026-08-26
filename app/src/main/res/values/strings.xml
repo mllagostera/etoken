@@ -3,6 +3,7 @@
     <string name="app_name" tools:ignore="MissingTranslation">etoken</string>
 
     <string name="username_prompt">Escribe tu nombre de usuario de Moxfield para cargar tus mazos públicos.</string>
+    <string name="public_decks_only">Los mazos privados y los no listados no aparecen: la app lee Moxfield sin iniciar sesión.</string>
     <string name="username_label">Usuario de Moxfield</string>
     <string name="action_load_decks">Cargar mazos</string>
     <string name="action_retry">Reintentar</string>
@@ -43,6 +44,8 @@
     <string name="board_clear">Vaciar</string>
     <string name="clear_title">¿Vaciar este token?</string>
     <string name="board_base">Base %1$s</string>
+    <string name="board_haste">Prisa</string>
+    <string name="board_haste_note">Entra sin mareo de invocación. Si la prisa se la da otra carta, márcalo tú en cada grupo.</string>
 
     <string name="stack_quantity">Cantidad</string>
     <string name="stack_counters">+1/+1</string>

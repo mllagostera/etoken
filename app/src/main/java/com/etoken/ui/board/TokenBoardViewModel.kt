@@ -75,8 +75,15 @@ class TokenBoardViewModel(
         }
     }
 
-    fun add(quantity: Int, copying: String? = null) =
-        edit { TokenBoardRules.add(it, quantity, copying) }
+    /**
+     * A token printed with haste enters able to attack, so nobody has to clear
+     * summoning sickness by hand every single time one lands. Haste given by
+     * another permanent is table state the app cannot see, and stays what the
+     * per-stack chip is for.
+     */
+    fun add(quantity: Int, copying: String? = null) = edit {
+        TokenBoardRules.add(it, quantity, copying, entersSick = token.value?.hasHaste != true)
+    }
 
     fun changeQuantity(stackId: Long, delta: Int) =
         edit { TokenBoardRules.changeQuantity(it, stackId, delta) }

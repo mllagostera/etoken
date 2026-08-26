@@ -40,8 +40,19 @@ object Fakes {
     const val TREASURE_TOKEN_NAME = "Treasure"
     const val COPY_TOKEN_ID = "copy-sid"
     const val COPY_TOKEN_NAME = "Copy"
+    // Printed with haste, unlike the Goblin: the board has to treat the two
+    // differently, and only a token that really carries the keyword shows it.
+    const val HASTE_TOKEN_ID = "hellion-sid"
+    const val HASTE_TOKEN_NAME = "Hellion"
 
     fun repository(): MoxfieldRepository = MoxfieldRepository(FakeMoxfield(), FakeScryfall())
+
+    /**
+     * A user whose deck search comes back empty — which is what an account
+     * with only private or unlisted decks looks like from here, since the
+     * search endpoint never mentions the decks it is not allowed to show.
+     */
+    fun emptyRepository(): MoxfieldRepository = MoxfieldRepository(EmptyMoxfield(), FakeScryfall())
 }
 
 private val KRENKO = DeckResponse(
@@ -58,13 +69,16 @@ private val KRENKO = DeckResponse(
             ),
         ),
         mainboard = Board(
-            count = 2,
+            count = 3,
             cards = mapOf(
                 "m1" to BoardEntry(
                     card = MoxfieldCard(id = "cH13f", name = "Goblin Chieftain", scryfallId = "chieftain-sid"),
                 ),
                 "m2" to BoardEntry(
                     card = MoxfieldCard(id = "d0Ck5", name = "Dockside Extortionist", scryfallId = "dockside-sid"),
+                ),
+                "m3" to BoardEntry(
+                    card = MoxfieldCard(id = "hC1uc", name = "Hellion Crucible", scryfallId = "crucible-sid"),
                 ),
             ),
         ),
@@ -127,6 +141,22 @@ private class FakeMoxfield : MoxfieldApi {
     }
 }
 
+private class EmptyMoxfield : MoxfieldApi {
+
+    override suspend fun searchDecks(
+        username: String,
+        pageNumber: Int,
+        pageSize: Int,
+        sortType: String,
+        sortDirection: String,
+        includePinned: Boolean,
+        showIllegal: Boolean,
+    ): SearchResponse = SearchResponse()
+
+    override suspend fun deck(publicId: String): DeckResponse =
+        error("nothing public to open")
+}
+
 private class FakeScryfall : ScryfallApi {
 
     private val cards = mapOf(
@@ -143,6 +173,20 @@ private class FakeScryfall : ScryfallApi {
             ),
         ),
         "chieftain-sid" to ScryfallCard(id = "chieftain-sid", name = "Goblin Chieftain"),
+        // The deck's one hasty token, so a board can be opened on a token that
+        // enters able to attack and on one that does not.
+        "crucible-sid" to ScryfallCard(
+            id = "crucible-sid",
+            name = "Hellion Crucible",
+            allParts = listOf(
+                RelatedCard(
+                    id = Fakes.HASTE_TOKEN_ID,
+                    component = "token",
+                    name = Fakes.HASTE_TOKEN_NAME,
+                    typeLine = "Token Creature — Hellion",
+                ),
+            ),
+        ),
         "dockside-sid" to ScryfallCard(
             id = "dockside-sid",
             name = "Dockside Extortionist",
@@ -178,6 +222,15 @@ private class FakeScryfall : ScryfallApi {
             id = Fakes.TREASURE_TOKEN_ID,
             name = Fakes.TREASURE_TOKEN_NAME,
             typeLine = "Token Artifact — Treasure",
+        ),
+        Fakes.HASTE_TOKEN_ID to ScryfallCard(
+            id = Fakes.HASTE_TOKEN_ID,
+            name = Fakes.HASTE_TOKEN_NAME,
+            typeLine = "Token Creature — Hellion",
+            // The field the whole feature reads, and the only place it looks.
+            keywords = listOf("Haste"),
+            power = "4",
+            toughness = "4",
         ),
         Fakes.TOKEN_ID to ScryfallCard(
             id = Fakes.TOKEN_ID,
