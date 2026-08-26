@@ -68,7 +68,14 @@ class MoxfieldRepository(
      * costs no request at all.
      */
     suspend fun hydrate(summary: DeckSummary): DeckSummary {
-        if (summary.name.isNotBlank() && summary.imageUrl != null) return summary
+        // The commander is part of "complete", not an afterthought: the grid
+        // prints it under every deck and the search matches on it. Search never
+        // returns one, so leaving it out of this check meant that whenever
+        // search did supply a name and a cover, the commander stayed null and
+        // both of those features quietly did nothing.
+        if (summary.name.isNotBlank() && summary.imageUrl != null && summary.commander != null) {
+            return summary
+        }
 
         val detail = deckDetail(summary.publicId)
         return summary.copy(

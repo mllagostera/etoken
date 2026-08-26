@@ -59,12 +59,15 @@ class TokenBoardScreenTest {
 
         // Seven in play, and every one of them still summoning sick.
         awaitText(str(R.string.board_sick, 7))
-        compose.onNodeWithText("7").assertIsDisplayed()
+        // "7" alone is ambiguous -- the running total and the stack's quantity
+        // stepper both show it. The stack header does not.
+        compose.onNodeWithText("7 ×").assertIsDisplayed()
 
         compose.onNodeWithText(str(R.string.board_begin_turn)).performClick()
 
         awaitText(str(R.string.board_none_sick))
-        compose.onNodeWithText("7").assertIsDisplayed()
+        compose.onNodeWithText("7 ×").assertIsDisplayed()
+        compose.onNodeWithText(str(R.string.stack_ready)).assertIsDisplayed()
     }
 
     @Test
