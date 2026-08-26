@@ -59,6 +59,29 @@ class ScryfallParsingTest {
     }
 
     @Test
+    fun `reads the keyword list, which is where printed haste comes from`() {
+        val payload = """
+            {"data":[{
+              "id":"dragon-t","name":"Dragon","type_line":"Token Creature — Dragon",
+              "power":"5","toughness":"5","keywords":["Flying","Haste"]}]}
+        """.trimIndent()
+
+        val card = json.decodeFromString<CollectionResponse>(payload).data.single()
+
+        assertEquals(listOf("Flying", "Haste"), card.keywords)
+    }
+
+    @Test
+    fun `a card that lists no keywords decodes to an empty list`() {
+        val payload = """{"data":[{"id":"goblin-t","name":"Goblin"}]}"""
+
+        assertEquals(
+            emptyList<String>(),
+            json.decodeFromString<CollectionResponse>(payload).data.single().keywords,
+        )
+    }
+
+    @Test
     fun `finds artwork on a double-faced card, which has none at the top level`() {
         val payload = """
             {"data":[{

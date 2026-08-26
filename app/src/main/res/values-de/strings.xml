@@ -36,6 +36,8 @@
     <string name="board_clear">Leeren</string>
     <string name="clear_title">Diesen Spielstein leeren?</string>
     <string name="board_base">Basis %1$s</string>
+    <string name="board_haste">Eile</string>
+    <string name="board_haste_note">Kommt ohne Einsatzverzögerung ins Spiel. Eile von einer anderen Karte markierst du selbst an jedem Stapel.</string>
     <string name="stack_quantity">Anzahl</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>

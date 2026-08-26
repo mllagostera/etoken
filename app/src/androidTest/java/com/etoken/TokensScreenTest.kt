@@ -24,8 +24,8 @@ import org.junit.runner.RunWith
  * unit-tested, and this is about the chip being wired to it — that it appears
  * when there is a table to filter, and that what it hides comes back.
  *
- * Krenko's deck makes two tokens here, a Goblin and a Treasure, so a filter has
- * something to keep and something to hide.
+ * Krenko's deck makes three tokens here — a Goblin, a Treasure and a hasty
+ * Hellion — so a filter has something to keep and something to hide.
  */
 @RunWith(AndroidJUnit4::class)
 class TokensScreenTest {
@@ -59,11 +59,15 @@ class TokensScreenTest {
     }
 
     @Test
-    fun both_of_the_decks_tokens_reach_the_grid() {
+    fun all_of_the_decks_tokens_reach_the_grid() {
         showTokens()
 
         compose.onNodeWithText(Fakes.TOKEN_NAME).assertIsDisplayed()
         compose.onNodeWithText(Fakes.TREASURE_TOKEN_NAME).assertIsDisplayed()
+        // Existence for the third one: it is the only cell on the grid's
+        // second row, and whether that row is on screen depends on how tall
+        // the device running this happens to be.
+        compose.onNodeWithText(Fakes.HASTE_TOKEN_NAME).assertExists()
     }
 
     @Test
@@ -85,8 +89,8 @@ class TokensScreenTest {
         // The Goblins are on the table; the Treasures are not.
         awaitGone(Fakes.TREASURE_TOKEN_NAME)
         compose.onNodeWithText(Fakes.TOKEN_NAME).assertIsDisplayed()
-        // And the top bar says what is being hidden: 1 of the deck's 2 tokens.
-        compose.onNodeWithText(str(R.string.tokens_filtered_count, 1, 2)).assertIsDisplayed()
+        // And the top bar says what is being hidden: 1 of the deck's 3 tokens.
+        compose.onNodeWithText(str(R.string.tokens_filtered_count, 1, 3)).assertIsDisplayed()
 
         compose.onNodeWithText(str(R.string.tokens_filter_in_play)).performClick()
 
@@ -100,7 +104,7 @@ class TokensScreenTest {
         compose.onNodeWithText(Fakes.TREASURE_TOKEN_NAME).assertExists()
         // The top bar is not lazy: it going back to counting the deck's tokens
         // is the filter being off, not merely the grid being wider.
-        compose.onNodeWithText(plural(R.plurals.tokens_count, 2)).assertIsDisplayed()
+        compose.onNodeWithText(plural(R.plurals.tokens_count, 3)).assertIsDisplayed()
     }
 
     @Test
@@ -124,7 +128,7 @@ class TokensScreenTest {
         // re-added to a lazy grid at this instant.
         awaitText(Fakes.TREASURE_TOKEN_NAME)
         compose.onNodeWithText(Fakes.TOKEN_NAME).assertExists()
-        compose.onNodeWithText(plural(R.plurals.tokens_count, 2)).assertIsDisplayed()
+        compose.onNodeWithText(plural(R.plurals.tokens_count, 3)).assertIsDisplayed()
     }
 
     private fun awaitText(text: String) = compose.waitUntil(TIMEOUT) {

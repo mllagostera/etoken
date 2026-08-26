@@ -26,7 +26,7 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 94 unit and 22 instrumented tests, 0 failures, green on CI
+## 1. Verified — 104 unit and 26 instrumented tests, 0 failures, green on CI
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -55,6 +55,8 @@ the two APIs are ever faked.
   different creatures stay two rows — `domain/`, `ui/board/`, 3 unit and 4 instrumented tests
 - [x] The quick filter appears with the first token on the table, hides the rest of the grid, and
   says so instead of going blank when the table empties — `ui/tokens/`, 4 instrumented tests
+- [x] Printed haste: `keywords` off the wire, `TokenCard.hasHaste`, copies that enter able to
+  attack, and a chip that still overrides it — `domain/`, `ui/board/`, 10 unit and 4 instrumented tests
 
 ## 2. Works, never looked at
 
@@ -69,6 +71,7 @@ push; no person has looked at any of it.
 - [~] Token grid with in-play badges — `ui/tokens/`
 - [~] Quick filter chip: only the tokens with copies on the table — `ui/tokens/TokensScreen.kt`
 - [~] Token board: quantity, summoning sickness, +1/+1 counters — `ui/board/`
+- [~] A "Prisa" badge and one line saying why a hasty token shows no "Mareo" — `ui/board/`
 - [~] Both destructive actions confirm and name what is lost — `ui/board/`, `ui/tokens/`
 - [~] Every dialog survives rotation, and the counters one holds a stack id rather than a stack
 - [~] New game, behind a confirmation that names what is lost — `ui/tokens/TokensScreen.kt`
@@ -97,6 +100,12 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - Settling it needs the APK on a real device. If it 403s there too, `Network.kt`'s headers are the place to look.
   - C9 is the same question asked the other way round, and stays red until this one is answered.
 - [ ] **A4** Confirm Moxfield's image CDN loads on a device · S — Scryfall's is confirmed, see §1
+- [ ] **A6** Confirm Scryfall really populates `keywords` on **token** card objects · S
+  - The haste rule rests on it, and the app fails quiet if it is wrong: a hasty token would simply
+    keep arriving summoning sick, exactly as before B9.
+  - `api-smoke.yml` §6 now asks, through Hellion Crucible's 4/4 Hellion, and turns the job red if
+    the token comes back without `Haste` among its keywords. Nobody has run it yet — and it does not
+    need a device, unlike A3 and A4, only someone pressing the button.
 - [ ] **A5** Look at the board screen on a small phone — it is the longest layout · S
   - The emulator proves it *works*; it says nothing about whether it fits.
   - The same goes for the two-pane layout: it is driven by tests at 1280dp, but 1280dp is wider than
@@ -140,21 +149,20 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - Left alone by "Nueva partida" and by undo on purpose: the filter is the user's, not the board's.
   - In the `SavedStateHandle` like the deck search, for the same reason: coming back from a killed
     process to a grid that had quietly un-filtered itself reads as having lost your place.
-- [ ] **B9** Tokens printed with haste still arrive summoning sick · S
-  - `TokenBoardRules.add` sets `summoningSick = true` unconditionally, so a Dragon with haste has
-    to be corrected by hand with the per-stack chip every single time it enters. The word "haste"
-    appears nowhere in the code: this is missing, not half-done.
-  - The fix that fits the repo: ask Scryfall for **`keywords`** -- the structured list, which
-    `ScryfallCard` does not request today -- expose it as `TokenCard.hasHaste`, and let `add` take
-    whether the copies enter sick instead of assuming it. **No rules-text parsing**, per CLAUDE.md
-    §5; `oracleText` is kept for dedupe and display and should stay that way.
-  - The manual chip stays whatever happens. Haste handed out by another permanent -- Goblin
-    Chieftain, Anger -- is table state the app cannot know, so printed haste is the only half of
-    this that can ever be automatic. Worth saying on the board screen so an absent "Mareo" does
-    not read as a bug.
-  - **Unverified assumption**: that Scryfall populates `keywords` on token card objects. It could
-    not be checked from the environment this was written in, which the proxy blocks with 403.
-    `api-smoke.yml` is where to settle it before the rule is trusted.
+- [x] **B9** Tokens printed with haste arrive able to attack
+  - Done as written: `ScryfallCard.keywords` off the wire, `TokenCard.hasHaste` off that list, and
+    `TokenBoardRules.add` taking `entersSick` instead of assuming it. No rules-text parsing — a
+    token reading "Other creatures you control have haste" has none itself, and only the structured
+    list tells those two apart.
+  - The parameter defaults to `true`, so every caller that has no token in hand still gets the
+    rule that holds for almost every token. The board screen is the one that knows, and it asks
+    the token.
+  - The manual chip is untouched, and the board says "Prisa" with a line of explanation: printed
+    haste is the only half of this the app can ever know, so an absent "Mareo" had to stop looking
+    like a bug. Haste handed out by another permanent is still the player's to mark.
+  - The assumption underneath — that Scryfall populates `keywords` on token card objects — is now
+    **A6**: `api-smoke.yml` §6 asks it and fails if the answer is no. It could not be asked from
+    here, where the proxy blocks Scryfall with 403.
 
 ### C. Quality and infrastructure
 
@@ -168,6 +176,8 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 - [ ] **C8** The six new locales have never been rendered · S
   - Lint is satisfied and the keys line up, which says nothing about layout. `Einsatzverzögerung`
     is 19 characters in a badge sized for `Mareo`, and Japanese breaks lines by rules Latin text does not.
+  - `board_haste_note` joins that list and is the longest string in the app: a full sentence in the
+    narrow column beside the token's artwork, in seven languages.
 - [ ] **C9** An end-to-end test in CI against the real Moxfield user `vansid` · M — **blocked by A3**
   - One test walking the whole path with nothing faked: `vansid` → the deck list → one deck → its
     tokens with images. That account has more than enough decks to exercise search paging, the v3
@@ -217,4 +227,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 41 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 42 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI

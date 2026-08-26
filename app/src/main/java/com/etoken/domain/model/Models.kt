@@ -38,6 +38,15 @@ data class TokenCard(
     /** Printed power/toughness. Strings because Magic uses `*` and `1+*`. */
     val power: String? = null,
     val toughness: String? = null,
+    /**
+     * Whether the token is *printed* with haste, out of Scryfall's `keywords`.
+     *
+     * Printed haste is the only half of it the app can ever know: copies of
+     * this token enter able to attack. Haste handed out at the table by
+     * another permanent — Goblin Chieftain, Anger — is state nothing here
+     * can see, and stays the per-stack chip's job.
+     */
+    val hasHaste: Boolean = false,
 ) {
     /**
      * Whether this is a token that copies something else.

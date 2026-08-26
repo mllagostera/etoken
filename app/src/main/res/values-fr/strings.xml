@@ -36,6 +36,8 @@
     <string name="board_clear">Vider</string>
     <string name="clear_title">Vider ce jeton ?</string>
     <string name="board_base">Base %1$s</string>
+    <string name="board_haste">Célérité</string>
+    <string name="board_haste_note">Arrive sans mal d\'invocation. La célérité donnée par une autre carte, c\'est à toi de la marquer sur chaque groupe.</string>
     <string name="stack_quantity">Quantité</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>
