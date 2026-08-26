@@ -248,10 +248,16 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: 99 unit tests and 24 UI tests pass,
-lint is clean, and the run produces an installable APK. The UI tests drive the
-real screens and view models with only the two APIs faked, so they fail when
-the app breaks rather than when a double does.
+runs the instrumented suite against it: the last green run covered 94 unit
+tests and 22 UI tests, lint was clean, and it produced an installable APK. The
+UI tests drive the real screens and view models with only the two APIs faked,
+so they fail when the app breaks rather than when a double does.
+
+The tree above counts 99 unit and 24 UI tests: the five unit and two
+instrumented tests added for the grid's counter badge have **not run yet** —
+their run sat in the queue without a runner and was cancelled before executing
+a step. Until a green run says otherwise, treat those seven as written, not
+as passing.
 
 **Not verified.** Anything that needs eyes or a live network. The screens are
 exercised, not inspected — nothing has checked that a layout is legible, well

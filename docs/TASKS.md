@@ -166,11 +166,15 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     nothing new needed a translation.
   - The screen now reads the boards themselves rather than a map of totals, which is also what
     `TokenFilter` takes — one source for the filter and the badges, as B8 intended.
+  - **Not yet run anywhere**: the environment this was written in has no Android SDK, and the first
+    CI run for it (#54) sat in the queue without a runner and was cancelled before executing a step.
+    Five unit tests and two instrumented ones cover it on paper. A green run is what settles it.
 
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
-- [x] **C2** 24 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
+- [x] **C2** 22 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
+  - B10 adds 2 more, which no run has executed yet: see its note above.
 - [x] **C3** Seven locales: Spanish default plus `ca`, `en`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
