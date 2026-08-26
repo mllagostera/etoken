@@ -13,11 +13,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Etoken">
 
+        <!--
+            The launch theme, not the app's: the window the system puts up
+            before the activity has drawn anything comes from here, and that
+            window is the splash. MainActivity.onCreate swaps it for
+            Theme.Etoken through installSplashScreen().
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Etoken">
+            android:theme="@style/Theme.Etoken.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

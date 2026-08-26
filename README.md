@@ -18,6 +18,15 @@ sick, and what +1/+1 counters they carry.
 You enter a Moxfield username once; the app remembers it. It then lists that
 user's public decks as a grid of commander artwork.
 
+Before any of that there is a splash: the launcher icon's mark on the icon's
+own background. Android 12 and later put one up whether an app asks or not, so
+this is less about adding a screen than about deciding what that screen looks
+like — and about drawing the same one on Android 8 through 11, which otherwise
+open on a blank window. It is held for the moment it takes to read the
+remembered username out of DataStore, so the field is already filled the first
+time it is seen rather than a beat later, and it is bounded: a store that never
+answers costs a second, not a splash that never leaves.
+
 **Public** is the whole of it: the app reads Moxfield without signing in, so
 private and unlisted decks are invisible to it. Moxfield's search endpoint does
 not mention the decks it will not show, which means an account with only
@@ -303,7 +312,17 @@ six unit tests and two UI tests come with it, and the counts above include them
 on the assumption that they pass. Until a run says otherwise, treat them as
 claims. One part of that feature has no test at all and is called out below.
 
-**Not verified.** Anything that needs eyes or a live network. The screens are
+The splash screen is newer still, and brings one UI test — the only one in the
+suite that launches the real `MainActivity` instead of a composable in a test
+activity, which is what makes it able to fail on a misconfigured launch theme.
+It cannot fail on the thing worth watching: the splash holds the *drawing* of
+the first frame, and a composable that is never drawn still reports itself
+displayed, so a splash that hung would pass. That one needs eyes, and joins the
+list below.
+
+**Not verified.** Anything that needs eyes or a live network. Nobody has
+watched a cold start, so nothing has confirmed that the splash hands over to
+the username screen without a flicker between them. The screens are
 exercised, not inspected — nothing has checked that a layout is legible, well
 spaced, or that a German compound noun fits the badge it lands in. The `api-smoke` workflow walks the real APIs with
 the app's own headers, and its first run got **HTTP 403 from Moxfield** — from

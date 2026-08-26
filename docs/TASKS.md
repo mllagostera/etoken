@@ -28,9 +28,9 @@ not truncated. A4, A5 and C8 are that gap.
 
 ## 1. Verified — 109 unit and 30 instrumented tests, 0 failures, green on CI
 
-> The language picker (B11) adds 6 unit and 2 instrumented tests that **no run
-> has executed yet**. They are not in the figures above, and they will not be
-> until a run says they pass.
+> The language picker (B11) adds 6 unit and 2 instrumented tests, and the
+> splash screen (B12) 1 more, that **no run has executed yet**. They are not in
+> the figures above, and they will not be until a run says they pass.
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -81,6 +81,7 @@ push; no person has looked at any of it.
 - [~] Both destructive actions confirm and name what is lost — `ui/board/`, `ui/tokens/`
 - [~] Every dialog survives rotation, and the counters one holds a stack id rather than a stack
 - [~] New game, behind a confirmation that names what is lost — `ui/tokens/TokensScreen.kt`
+- [~] A splash screen on every version, held while the remembered username is read — `MainActivity`, `res/values/themes.xml`
 
 ### Text
 - [~] Seven locales: **English default**, plus `es`, `ca`, `fr`, `de`, `it`, `ja` — key parity and XML verified
@@ -118,6 +119,13 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - `api-smoke.yml` §6 now asks, through Hellion Crucible's 4/4 Hellion, and turns the job red if
     the token comes back without `Haste` among its keywords. Nobody has run it yet — and it does not
     need a device, unlike A3 and A4, only someone pressing the button.
+
+- [ ] **A7** Watch a cold start: the splash, and the handover to the username screen · S
+  - What no test can reach — whether the splash is held long enough to be seen and short enough not
+    to be waited on, and whether the field is already filled when it appears or fills in visibly.
+  - It is also the second thing installing an APK answers for free, after A4 and A5, and wants no
+    setup at all: launch the app from the launcher icon rather than from Studio, which is the only
+    way to get a real starting window.
 
 ### B. Product gaps
 
@@ -221,6 +229,32 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     covers the part that can be: 6 unit tests, including one that fails if a language is offered
     with no `values-` folder behind it.
 
+- [~] **B12** A splash screen, and the same one on every version the app supports
+  - Android 12 draws a splash from the launcher icon whether an app asks or not, so on half the
+    supported versions this was never a question of whether to have one — only of whether it was
+    chosen. Below 12 there was no splash at all: a blank window in the theme's background colour
+    until the first frame. `androidx.core:core-splashscreen` is what makes those two the same
+    screen, and it is the reason the launch theme is `Theme.Etoken.Splash` in the manifest and
+    `installSplashScreen()` is the first line of `onCreate` — that call is what swaps it for
+    `Theme.Etoken`, and without it the app would wear the splash theme and never draw.
+  - The mark is the launcher icon's, redrawn at 1.5x as `ic_splash_logo`. Reusing
+    `ic_launcher_foreground` was the obvious move and is wrong: an adaptive foreground keeps its
+    content inside the middle 2/3 of the canvas, which is the same safe zone the platform sizes a
+    splash icon against, so the mark would arrive at a third of the size it should be.
+  - The background is the launcher icon's background, in light and dark alike. Not an oversight:
+    the mark is a pale purple and an amber picked to sit on `#1C1A21`, and neither has any contrast
+    left on white.
+  - It is **held** until DataStore answers with the remembered username, which is the one thing the
+    first screen shows and cannot show synchronously. Bounded at a second — a splash that never
+    leaves is a worse bug than an empty field, and an empty field is what a first-time user sees
+    anyway. Cold start only: a language change applies itself by recreating the activity, and
+    splashing again there would read as the app restarting.
+  - One instrumented test, and it is the first in the suite to launch the real `MainActivity` —
+    every other one drives a composable inside a test activity, which is why B11's
+    `attachBaseContext` hole exists. It fails on a launch theme the library cannot use. It cannot
+    fail on a splash that hangs: the condition holds *drawing*, and an undrawn composable still
+    reports itself displayed to the semantics tree. That half is A7.
+
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
@@ -233,6 +267,8 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 - [x] **C3** Seven locales: English default plus `es`, `ca`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
+  - Now in two places: B12's splash draws the same mark, scaled up. Replacing the icon means
+    replacing `ic_splash_logo` in the same change, or the launcher and the splash stop agreeing.
 - [x] **C6** `ui-tooling-preview` dropped; the logging interceptor is now wired, debug builds only
 - [x] **C10** One debug key for every build, so an APK from CI installs over the last one
   - CI signed with AGP's auto-generated `~/.android/debug.keystore`, which a GitHub runner does not
@@ -288,7 +324,7 @@ clean, the tests pass. But every `[~]` in §2 is still a claim about behaviour
 **nobody has watched happen**, and that is now the only thing standing between
 this and a working app.
 
-1. **A4 and A5, and they need you.** Install the APK from the latest green run:
+1. **A4, A5 and A7, and they need you.** Install the APK from the latest green run:
    Actions → the run → `etoken-debug-apk-<run number>` at the bottom, unzipped.
    Everything below is guesswork ranked against an app no one has used.
 2. **A3 resolves itself from that.** If Moxfield answers on a phone, the 403
@@ -306,4 +342,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 48 commits · CI green including the emulator, all 30 instrumented tests · Scryfall verified live, Moxfield 403 from CI · B11's own tests written but not yet run
+**Last reviewed:** 2026-08-26 · 48 commits · CI green including the emulator, all 30 instrumented tests · Scryfall verified live, Moxfield 403 from CI · B11's and B12's own tests written but not yet run

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The launcher icon's mark, scaled up to fill the splash screen's safe zone.
+
+    Not @drawable/ic_launcher_foreground itself: an adaptive foreground is drawn
+    at 108dp with its content inside the inner 72dp, and this one keeps well
+    inside even that, so reusing it puts a mark a third the size it should be in
+    the middle of the splash. Same two shapes, same two colours, scaled 1.5x
+    about the centre so they reach the 72dp circle the platform sizes the splash
+    icon against.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#D0BCFF"
+        android:pathData="M54,18L78,33L78,75L54,90L30,75L30,33Z" />
+    <path
+        android:fillColor="#E0A458"
+        android:pathData="M54,36L64.5,42L64.5,66L54,72L43.5,66L43.5,42Z" />
+</vector>
