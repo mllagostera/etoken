@@ -100,6 +100,16 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     alternative and is explicitly not what we are doing.
   - Needs a `WindowSizeClass` split, and the board becoming a pane rather than its own route.
 - [x] **B6** "Vaciar" asks first and names how many tokens leave the table
+- [ ] **B7** A copy token should ask what it is copying · M
+  - Adding one pops a dialog for the name, so the board reads "Copy — Krenko, Mob Boss" rather than
+    an anonymous "Copy" the player has to remember.
+  - The name belongs to the **stack**, not the token: two copies of different creatures are two
+    stacks. So it joins `TokenStack` *and* the merge signature in `TokenBoardRules`, which is
+    currently `plusOneCounters to summoningSick`. Leaving it out would silently merge a copy of
+    Krenko with a copy of Atraxa — the exact failure the stack model exists to prevent.
+  - Open: how to recognise one. Name of "Copy", an empty subtype, or oracle text about copying — that
+    wants settling against real Scryfall data rather than guesswork, so it waits on A3/A4.
+  - In memory like the rest of the board, and cleared by "Nueva partida".
 
 ### C. Quality and infrastructure
 
@@ -150,4 +160,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 22 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 23 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
