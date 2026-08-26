@@ -43,6 +43,12 @@ These come from Scryfall's `all_parts`, which names the tokens related to a
 card. **The app never parses rules text to work out what a card creates.**
 Scryfall already knows, and a text parser would be a permanent source of bugs.
 
+A quick filter sits above the grid: one chip that narrows it to the tokens with
+copies on the battlefield. It appears with the first token on the table — a
+filter with nothing to filter is noise — and it reads the same counts the grid's
+badges are drawn from, so the two can never disagree. Emptying the table leaves
+the chip in place and the grid saying so, rather than blank.
+
 Tokens are collapsed by name, type, rules text and printed power/toughness
 rather than by id. `all_parts` points at one specific *printing*, so a deck
 drawing on several sets would otherwise show the same 1/1 Soldier four times
@@ -124,6 +130,7 @@ etoken/
     │   │   ├── TokenExtractor.kt         which tokens a deck can make
     │   │   ├── TokenBoardRules.kt        what is on the battlefield
     │   │   ├── DeckFilter.kt             accent-blind search over name and commander
+    │   │   ├── TokenFilter.kt            the quick filter: what counts as in play
     │   │   ├── PowerToughness.kt         printed size plus counters, `*` included
     │   │   ├── UndoHistory.kt            a bounded trail, and what counts as a step
     │   │   └── model/
@@ -135,7 +142,7 @@ etoken/
     │       ├── TokensAndBoard.kt         one pane or two, decided by the width
     │       ├── username/                 screen 1 — who are you on Moxfield
     │       ├── decks/                    screen 2 — the deck grid, search, refresh
-    │       ├── tokens/                   screen 3 — what this deck can create
+    │       ├── tokens/                   screen 3 — what this deck can create, and the quick filter
     │       ├── board/                    screen 4 — what is on the table
     │       ├── common/                   error states, icon buttons, LoadError
     │       └── theme/                    colours, dynamic colour on Android 12+
@@ -146,10 +153,11 @@ etoken/
     │   ├── values-night/             dark theme
     │   └── drawable/                 local vector icons; no material-icons artifacts
     │
-    └── test/java/com/etoken/         88 unit tests, all on the JVM
+    └── test/java/com/etoken/         94 unit tests, all on the JVM
         ├── TokenBoardRulesTest.kt        24
         ├── MoxfieldRepositoryTest.kt     11
         ├── DeckFilterTest.kt             10
+        ├── TokenFilterTest.kt            6
         ├── TokenExtractorTest.kt         9
         ├── MoxfieldParsingTest.kt        8
         ├── TokenBoardStoreTest.kt        7
@@ -234,7 +242,7 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: 88 unit tests and 18 UI tests pass,
+runs the instrumented suite against it: 94 unit tests and 22 UI tests pass,
 lint is clean, and the run produces an installable APK. The UI tests drive the
 real screens and view models with only the two APIs faked, so they fail when
 the app breaks rather than when a double does.

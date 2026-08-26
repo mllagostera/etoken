@@ -21,6 +21,9 @@
     <string name="tokens_title">Pedine</string>
     <string name="tokens_empty">Nessuna carta di questo mazzo crea pedine.</string>
     <string name="tokens_created_by">Le creano: %1$s</string>
+    <string name="tokens_filter_in_play">Solo in gioco</string>
+    <string name="tokens_filtered_count">%1$d di %2$d</string>
+    <string name="tokens_none_in_play">Non hai nessuna pedina in gioco.</string>
     <string name="board_in_play">In gioco</string>
     <string name="board_sick">%1$d con svogliatezza da evocazione</string>
     <string name="board_none_sick">Nessuna con svogliatezza</string>

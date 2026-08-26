@@ -34,6 +34,10 @@ object Fakes {
     const val COMMANDER = "Krenko, Mob Boss"
     const val TOKEN_ID = "goblin-sid"
     const val TOKEN_NAME = "Goblin"
+    // A second token in the same deck, so a test can watch a filter hide one
+    // token and keep the other.
+    const val TREASURE_TOKEN_ID = "treasure-sid"
+    const val TREASURE_TOKEN_NAME = "Treasure"
     const val COPY_TOKEN_ID = "copy-sid"
     const val COPY_TOKEN_NAME = "Copy"
 
@@ -54,10 +58,13 @@ private val KRENKO = DeckResponse(
             ),
         ),
         mainboard = Board(
-            count = 1,
+            count = 2,
             cards = mapOf(
                 "m1" to BoardEntry(
                     card = MoxfieldCard(id = "cH13f", name = "Goblin Chieftain", scryfallId = "chieftain-sid"),
+                ),
+                "m2" to BoardEntry(
+                    card = MoxfieldCard(id = "d0Ck5", name = "Dockside Extortionist", scryfallId = "dockside-sid"),
                 ),
             ),
         ),
@@ -136,6 +143,18 @@ private class FakeScryfall : ScryfallApi {
             ),
         ),
         "chieftain-sid" to ScryfallCard(id = "chieftain-sid", name = "Goblin Chieftain"),
+        "dockside-sid" to ScryfallCard(
+            id = "dockside-sid",
+            name = "Dockside Extortionist",
+            allParts = listOf(
+                RelatedCard(
+                    id = Fakes.TREASURE_TOKEN_ID,
+                    component = "token",
+                    name = Fakes.TREASURE_TOKEN_NAME,
+                    typeLine = "Token Artifact — Treasure",
+                ),
+            ),
+        ),
         // Atraxa's deck makes a copy token; Krenko's does not. Keeping them in
         // separate decks lets the copy tests have a board to themselves.
         "atraxa-sid" to ScryfallCard(
@@ -154,6 +173,11 @@ private class FakeScryfall : ScryfallApi {
             id = Fakes.COPY_TOKEN_ID,
             name = Fakes.COPY_TOKEN_NAME,
             typeLine = "Token",
+        ),
+        Fakes.TREASURE_TOKEN_ID to ScryfallCard(
+            id = Fakes.TREASURE_TOKEN_ID,
+            name = Fakes.TREASURE_TOKEN_NAME,
+            typeLine = "Token Artifact — Treasure",
         ),
         Fakes.TOKEN_ID to ScryfallCard(
             id = Fakes.TOKEN_ID,

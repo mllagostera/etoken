@@ -11,12 +11,16 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -32,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -85,11 +90,23 @@ fun TokensScreen(
                         val current = state
                         if (current is TokensUiState.Ready) {
                             Text(
-                                text = pluralStringResource(
-                                    R.plurals.tokens_count,
-                                    current.tokens.size,
-                                    current.tokens.size,
-                                ),
+                                // "3 de 12" while the filter is hiding something,
+                                // and the plain count otherwise: the deck's total
+                                // is only worth naming when it is not what is on
+                                // screen.
+                                text = if (current.onlyInPlay) {
+                                    stringResource(
+                                        R.string.tokens_filtered_count,
+                                        current.tokens.size,
+                                        current.total,
+                                    )
+                                } else {
+                                    pluralStringResource(
+                                        R.plurals.tokens_count,
+                                        current.tokens.size,
+                                        current.tokens.size,
+                                    )
+                                },
                                 style = MaterialTheme.typography.labelMedium,
                             )
                         }
@@ -123,8 +140,13 @@ fun TokensScreen(
                 TokensUiState.Loading -> LoadingView()
                 TokensUiState.Empty -> MessageView(stringResource(R.string.tokens_empty))
                 is TokensUiState.Failed -> ErrorView(current.error, onRetry = viewModel::load)
-                is TokensUiState.Ready ->
-                    TokenGrid(current.tokens, inPlay, selectedTokenId, onTokenClick)
+                is TokensUiState.Ready -> TokensReady(
+                    state = current,
+                    inPlay = inPlay,
+                    selectedTokenId = selectedTokenId,
+                    onToggleFilter = viewModel::toggleOnlyInPlay,
+                    onTokenClick = onTokenClick,
+                )
             }
         }
     }
@@ -169,6 +191,62 @@ fun TokensScreen(
             },
         )
     }
+}
+
+@Composable
+private fun TokensReady(
+    state: TokensUiState.Ready,
+    inPlay: Map<String, Int>,
+    selectedTokenId: String?,
+    onToggleFilter: () -> Unit,
+    onTokenClick: (TokenCard) -> Unit,
+) {
+    Column(Modifier.fillMaxSize()) {
+        // A filter with nothing to filter is noise, so the chip arrives with the
+        // first token on the table. It stays while it is on even after the table
+        // empties -- taking it away then would leave the grid filtered down to
+        // nothing with no way to say otherwise.
+        if (inPlay.isNotEmpty() || state.onlyInPlay) {
+            InPlayFilter(selected = state.onlyInPlay, onToggle = onToggleFilter)
+        }
+
+        // weight(1f) rather than fillMaxSize: the grid takes what is left below
+        // the chip, and the whole height when there is no chip.
+        Box(Modifier.weight(1f)) {
+            if (state.tokens.isEmpty()) {
+                // Reachable only with the filter on -- a deck that creates no
+                // tokens at all is TokensUiState.Empty, one screen up.
+                MessageView(stringResource(R.string.tokens_none_in_play))
+            } else {
+                TokenGrid(state.tokens, inPlay, selectedTokenId, onTokenClick)
+            }
+        }
+    }
+}
+
+@Composable
+private fun InPlayFilter(selected: Boolean, onToggle: () -> Unit) {
+    FilterChip(
+        selected = selected,
+        onClick = onToggle,
+        label = { Text(stringResource(R.string.tokens_filter_in_play)) },
+        leadingIcon = if (selected) {
+            {
+                Icon(
+                    // Decorative: the label beside it already says what is on, and
+                    // the chip reports its own selected state to TalkBack.
+                    painter = painterResource(R.drawable.ic_check),
+                    contentDescription = null,
+                    modifier = Modifier.size(FilterChipDefaults.IconSize),
+                )
+            }
+        } else {
+            null
+        },
+        // The same gutter the deck grid's search field sits in, so the two
+        // screens line up when one is a pane beside the other.
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+    )
 }
 
 @Composable

@@ -21,6 +21,9 @@
     <string name="tokens_title">Tokens</string>
     <string name="tokens_empty">No card in this deck creates tokens.</string>
     <string name="tokens_created_by">Created by: %1$s</string>
+    <string name="tokens_filter_in_play">In play only</string>
+    <string name="tokens_filtered_count">%1$d of %2$d</string>
+    <string name="tokens_none_in_play">You have no tokens in play.</string>
     <string name="board_in_play">In play</string>
     <string name="board_sick">%1$d with summoning sickness</string>
     <string name="board_none_sick">None summoning sick</string>

@@ -26,7 +26,7 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 88 unit and 18 instrumented tests, 0 failures, green on CI
+## 1. Verified — 94 unit and 22 instrumented tests, 0 failures, green on CI
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -41,6 +41,8 @@ the two APIs are ever faked.
   back — `domain/UndoHistory.kt`, `data/TokenBoardStore.kt`, 13 tests
 - [x] Power/toughness with counters, including `*` and `1+*` — `domain/PowerToughness.kt`, 4 tests
 - [x] Deck search: accent-blind, commander, multi-word AND — `domain/DeckFilter.kt`, 10 tests
+- [x] Token quick filter: what counts as in play, deck order kept, another deck's board ignored —
+  `domain/TokenFilter.kt`, 6 tests
 - [x] The whole app compiles: `assembleDebug`, `testDebugUnitTest` and `lintDebug` all green — run #3
 - [x] Scryfall's half of the contract, live: `/cards/collection` answers 200 and `all_parts` is there
 - [x] Scryfall's image CDN really does answer **400** to OkHttp's default User-Agent, and 200 to a
@@ -51,6 +53,8 @@ the two APIs are ever faked.
   first — `app/src/androidTest/`, 18 tests on an AVD
 - [x] A copy token asks what it is copying, keeps the answer on the stack, and two copies of
   different creatures stay two rows — `domain/`, `ui/board/`, 3 unit and 4 instrumented tests
+- [x] The quick filter appears with the first token on the table, hides the rest of the grid, and
+  says so instead of going blank when the table empties — `ui/tokens/`, 4 instrumented tests
 
 ## 2. Works, never looked at
 
@@ -63,6 +67,7 @@ push; no person has looked at any of it.
 - [~] Deck search field with result counter — `ui/decks/DecksScreen.kt`
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
 - [~] Token grid with in-play badges — `ui/tokens/`
+- [~] Quick filter chip: only the tokens with copies on the table — `ui/tokens/TokensScreen.kt`
 - [~] Token board: quantity, summoning sickness, +1/+1 counters — `ui/board/`
 - [~] Both destructive actions confirm and name what is lost — `ui/board/`, `ui/tokens/`
 - [~] Every dialog survives rotation, and the counters one holds a stack id rather than a stack
@@ -122,6 +127,19 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - The name lives on the **stack**, not the token, and joined the merge signature in
     `TokenBoardRules`: a copy of Krenko and a copy of Atraxa are two stacks, not three tokens in one.
   - In memory like the rest of the board, and cleared by "Nueva partida".
+- [x] **B8** A quick filter over the token grid: only what has copies on the battlefield
+  - A deck that makes a dozen tokens shows two or three of them at a time in a real game. Mid-turn
+    the question is "what have I got out?", and the answer was spread across a grid of mostly empty
+    cells.
+  - One chip rather than a search field: the grid is short, and the only cut worth making quickly is
+    the one the badges already draw. It reads the same map those badges do, so what the filter keeps
+    and what carries a badge cannot disagree.
+  - The chip only appears once something is in play — and stays while it is on, so emptying the table
+    cannot strand a grid filtered down to nothing. In that case the grid says the table is empty
+    rather than going blank.
+  - Left alone by "Nueva partida" and by undo on purpose: the filter is the user's, not the board's.
+  - In the `SavedStateHandle` like the deck search, for the same reason: coming back from a killed
+    process to a grid that had quietly un-filtered itself reads as having lost your place.
 
 ### C. Quality and infrastructure
 

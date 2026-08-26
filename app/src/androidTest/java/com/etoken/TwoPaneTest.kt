@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.etoken.data.TokenBoardStore
@@ -52,6 +53,7 @@ class TwoPaneTest {
         val tokens = TokensViewModel(
             repository = Fakes.repository(),
             boards = boards,
+            savedState = SavedStateHandle(),
             publicId = Fakes.DECK_ID,
             deckName = Fakes.DECK_NAME,
         )
