@@ -33,8 +33,11 @@ class UsernameScreenTest {
         val preferences = UserPreferences(context)
         runBlocking { preferences.setUsername("seeded-user") }
 
+        // Built outside setContent: a view model constructed inside a composable
+        // would be rebuilt on every recomposition, which lint rightly rejects.
+        val viewModel = UsernameViewModel(preferences)
         compose.setContent {
-            EtokenTheme { UsernameScreen(onSubmit = {}, viewModel = UsernameViewModel(preferences)) }
+            EtokenTheme { UsernameScreen(onSubmit = {}, viewModel = viewModel) }
         }
 
         awaitText("seeded-user")
@@ -46,10 +49,9 @@ class UsernameScreenTest {
         runBlocking { preferences.setUsername("seeded-user") }
 
         var submitted: String? = null
+        val viewModel = UsernameViewModel(preferences)
         compose.setContent {
-            EtokenTheme {
-                UsernameScreen(onSubmit = { submitted = it }, viewModel = UsernameViewModel(preferences))
-            }
+            EtokenTheme { UsernameScreen(onSubmit = { submitted = it }, viewModel = viewModel) }
         }
 
         // Waiting for the remembered value first is what stops this racing the
