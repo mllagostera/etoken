@@ -26,7 +26,7 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 66 unit and 11 instrumented tests, 0 failures, green on CI
+## 1. Verified — 75 unit and 15 instrumented tests, 0 failures, green on CI
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -35,8 +35,8 @@ the two APIs are ever faked.
 - [x] Art-crop URLs, including the two-faced `card-face-` case — `data/moxfield/MoxfieldImages.kt`
 - [x] Scryfall collection envelope and identifier serialization — `data/scryfall/`, 6 tests
 - [x] Token extraction from `all_parts`, dedupe, emblems, self-reference — `domain/TokenExtractor.kt`, 9 tests
-- [x] Repository: paging, caching, 75-id batching, by-name fallback — `data/MoxfieldRepository.kt`, 10 tests
-- [x] Battlefield rules: stacks, split, merge, ordering, clamping — `domain/TokenBoardRules.kt`, 18 tests
+- [x] Repository: paging, caching, 75-id batching, by-name fallback — `data/MoxfieldRepository.kt`, 11 tests
+- [x] Battlefield rules: stacks, split, merge, ordering, clamping — `domain/TokenBoardRules.kt`, 24 tests
 - [x] Power/toughness with counters, including `*` and `1+*` — `domain/PowerToughness.kt`, 4 tests
 - [x] Deck search: accent-blind, commander, multi-word AND — `domain/DeckFilter.kt`, 10 tests
 - [x] The whole app compiles: `assembleDebug`, `testDebugUnitTest` and `lintDebug` all green — run #3
@@ -46,7 +46,9 @@ the two APIs are ever faked.
 - [x] The screens run: a remembered username returns, decks reach the grid and name their commanders,
   search narrows by name and by commander, tapping a deck reports the right one, tokens arrive
   summoning sick and the untap step clears them, a counter turns a 1/1 into a 2/2, and clearing asks
-  first — `app/src/androidTest/`, 11 tests on an AVD
+  first — `app/src/androidTest/`, 15 tests on an AVD
+- [x] A copy token asks what it is copying, keeps the answer on the stack, and two copies of
+  different creatures stay two rows — `domain/`, `ui/board/`, 3 unit and 4 instrumented tests
 
 ## 2. Works, never looked at
 
@@ -101,22 +103,15 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     alternative and is explicitly not what we are doing.
   - Needs a `WindowSizeClass` split, and the board becoming a pane rather than its own route.
 - [x] **B6** "Vaciar" asks first and names how many tokens leave the table
-- [ ] **B7** A copy token should ask what it is copying · M
-  - Adding one pops a dialog for the name, so the board reads "Copy — Krenko, Mob Boss" rather than
-    an anonymous "Copy" the player has to remember.
-  - The name belongs to the **stack**, not the token: two copies of different creatures are two
-    stacks. So it joins `TokenStack` *and* the merge signature in `TokenBoardRules`, which is
-    currently `plusOneCounters to summoningSick`. Leaving it out would silently merge a copy of
-    Krenko with a copy of Atraxa — the exact failure the stack model exists to prevent.
-  - Recognised by name: Scryfall calls them `Copy`. Settled 2026-08-26, so this no longer waits on
-    A3/A4. Worth a named predicate in `domain/` rather than a string literal at the call site —
-    it is one rule, it wants one test, and card names are English regardless of the app's locale.
+- [x] **B7** A copy token asks what it is copying — recognised by name, since Scryfall calls them `Copy`
+  - The name lives on the **stack**, not the token, and joined the merge signature in
+    `TokenBoardRules`: a copy of Krenko and a copy of Atraxa are two stacks, not three tokens in one.
   - In memory like the rest of the board, and cleared by "Nueva partida".
 
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
-- [x] **C2** 11 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
+- [x] **C2** 15 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
 - [x] **C3** Seven locales: Spanish default plus `ca`, `en`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
@@ -177,4 +172,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 23 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 27 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
