@@ -28,6 +28,10 @@ not truncated. A4, A5 and C8 are that gap.
 
 ## 1. Verified — 109 unit and 30 instrumented tests, 0 failures, green on CI
 
+> The language picker (B11) adds 6 unit and 2 instrumented tests that **no run
+> has executed yet**. They are not in the figures above, and they will not be
+> until a run says they pass.
+
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
 
@@ -79,7 +83,8 @@ push; no person has looked at any of it.
 - [~] New game, behind a confirmation that names what is lost — `ui/tokens/TokensScreen.kt`
 
 ### Text
-- [~] Seven locales: Spanish default, plus `ca`, `en`, `fr`, `de`, `it`, `ja` — key parity and XML verified
+- [~] Seven locales: **English default**, plus `es`, `ca`, `fr`, `de`, `it`, `ja` — key parity and XML verified
+- [~] A language picker in the corner of the username screen, and the choice remembered — `ui/common/LanguagePicker.kt`
 - [~] The note saying private and unlisted decks are not read — `ui/username/`, `ui/decks/`
 
 ### Build
@@ -191,6 +196,31 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     composed, and the filter chip's 48dp is enough to push the second out. The tests now scroll to a
     cell before asserting on it. #65 runs all thirty green, `TokensScreen.kt` included.
 
+- [~] **B11** A language picker, and English as the default locale
+  - Two things at once, and only one of them is the switch. `values/` was Spanish, which meant a
+    phone set to a language the app does not ship — Portuguese, Polish, anything — fell back to
+    Spanish. It falls back to English now. A phone in Spanish is untouched: `values-es/` answers
+    first, and `values-en/` is gone because English *is* the default.
+  - The picker sits in the top corner of the **username screen**, which is the one screen every
+    launch passes through and the only one where a screen-level control does not compete with the
+    game. Not a settings screen: there is one setting, and a route for it would be a screen the app
+    would then have to explain.
+  - Each language names itself — `Español`, `日本語` — and the entries are deliberately untranslated.
+    A picker exists for the person who cannot read the language they are stuck in; "Spanish" in
+    Japanese is no help to them.
+  - `SharedPreferences`, not the DataStore holding the username. The locale must be applied in
+    `attachBaseContext`, which runs before `onCreate` with nothing to suspend in, and DataStore can
+    only be read from a coroutine. Applying it means recreating the activity: `Resources` are built
+    from that context once and no recomposition reaches them.
+  - Android 13's per-app language setting does the same job and was not used: `minSdk` is 26, and
+    on Android 8 through 12 that setting does not exist.
+  - **The half nobody can test is the half that matters.** The dialog and the stored choice are
+    covered — 2 instrumented tests — but `MainActivity.attachBaseContext` never runs under a test
+    activity, so nothing in CI can tell you whether picking Japanese actually redraws the app in
+    Japanese. That needs the APK on a device, and it joins A5 in wanting one. `AppLanguageTest`
+    covers the part that can be: 6 unit tests, including one that fails if a language is offered
+    with no `values-` folder behind it.
+
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
@@ -200,7 +230,7 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     held on a taller screen — but it means an assertion about a lazy list has to scroll to its item
     first. A cell below the fold is not off screen, it is never composed, and absent from the
     semantics tree: `assertExists` fails on it as surely as `assertIsDisplayed` would.
-- [x] **C3** Seven locales: Spanish default plus `ca`, `en`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
+- [x] **C3** Seven locales: English default plus `es`, `ca`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
 - [x] **C6** `ui-tooling-preview` dropped; the logging interceptor is now wired, debug builds only
@@ -215,11 +245,15 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     `BuildConfig` carries the version, so its task stops hitting the build cache — and buys an APK
     the phone can order against the one already on it.
 - [ ] **C7** Accessibility never tested. Content descriptions exist; TalkBack has not seen them · S
-- [ ] **C8** The six new locales have never been rendered · S
+- [ ] **C8** Six of the seven locales have never been rendered, and now neither has the picker · S
   - Lint is satisfied and the keys line up, which says nothing about layout. `Einsatzverzögerung`
     is 19 characters in a badge sized for `Mareo`, and Japanese breaks lines by rules Latin text does not.
   - `board_haste_note` joins that list and is the longest string in the app: a full sentence in the
     narrow column beside the token's artwork, in seven languages.
+  - B11 makes this cheap to do properly: the languages are now two taps apart inside the app rather
+    than a trip through the phone's settings, so one pass through the screens covers all seven.
+    Look at the picker itself while you are there — eight rows in a dialog on a 320x640dp screen is
+    exactly the shape of thing that scrolls when nobody expected it to.
 - [ ] **C9** An end-to-end test in CI against the real Moxfield user `vansid` · M — **blocked by A3**
   - One test walking the whole path with nothing faked: `vansid` → the deck list → one deck → its
     tokens with images. That account has more than enough decks to exercise search paging, the v3
@@ -261,12 +295,15 @@ this and a working app.
    was the runner's datacenter IP and there is nothing to fix. If it does not,
    `Network.kt`'s headers are the work, and they are the part of the inherited
    contract most likely to have moved.
-3. **C8** — look at the six locales while you are there. It costs one pass
-   through the screens with the phone's language changed.
+3. **C8** — look at the locales while you are there. It costs one pass through
+   the screens per language, and B11 made that two taps inside the app rather
+   than a trip through the phone's settings. It is also the only way to find
+   out whether the switch works at all: nothing in CI runs the code that
+   applies it.
 4. The rest of C is housekeeping, in any order.
 
 Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 48 commits · CI green including the emulator, all 30 instrumented tests · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 48 commits · CI green including the emulator, all 30 instrumented tests · Scryfall verified live, Moxfield 403 from CI · B11's own tests written but not yet run

@@ -1,0 +1,16 @@
+<resources>
+    <plurals name="tokens_count">
+        <item quantity="one">%1$d token</item>
+        <item quantity="other">%1$d tokens</item>
+    </plurals>
+
+    <plurals name="new_game_body">
+        <item quantity="one">Se borrará el estado de la mesa: %1$d token en juego, con sus contadores y su mareo de invocación.</item>
+        <item quantity="other">Se borrará el estado de la mesa: %1$d tokens en juego, con sus contadores y su mareo de invocación.</item>
+    </plurals>
+
+    <plurals name="clear_body">
+        <item quantity="one">Se quitará de la mesa %1$d token de este tipo, con sus contadores.</item>
+        <item quantity="other">Se quitarán de la mesa %1$d tokens de este tipo, con sus contadores.</item>
+    </plurals>
+</resources>

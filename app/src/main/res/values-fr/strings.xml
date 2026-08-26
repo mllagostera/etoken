@@ -60,4 +60,8 @@
     <string name="error_unknown">Quelque chose s\'est mal passé.</string>
     <string name="copy_of_title">Que copie-t-il ?</string>
     <string name="copy_of_hint">Nom de la carte</string>
+
+    <string name="action_language">Langue</string>
+    <string name="language_title">Choisis une langue</string>
+    <string name="language_system">Langue de l\'appareil</string>
 </resources>

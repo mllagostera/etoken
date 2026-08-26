@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="username_prompt">Escribe tu nombre de usuario de Moxfield para cargar tus mazos públicos.</string>
+    <string name="public_decks_only">Los mazos privados y los no listados no aparecen: la app lee Moxfield sin iniciar sesión.</string>
+    <string name="username_label">Usuario de Moxfield</string>
+    <string name="action_load_decks">Cargar mazos</string>
+    <string name="action_retry">Reintentar</string>
+    <string name="action_back">Volver</string>
+
+    <string name="decks_search_hint">Buscar mazo o comandante</string>
+    <string name="decks_search_clear">Borrar la búsqueda</string>
+    <string name="decks_no_matches">Ningún mazo coincide con «%1$s».</string>
+    <string name="decks_filtered_count">%1$d de %2$d</string>
+    <string name="action_refresh">Actualizar</string>
+    <string name="refresh_failed">No se ha podido actualizar. Sigues viendo la última lista cargada.</string>
+    <string name="action_dismiss">Vale</string>
+
+    <string name="new_game">Nueva partida</string>
+    <string name="new_game_title">¿Empezar una partida nueva?</string>
+    <string name="new_game_warning">Se van también los de otros mazos, pero puedes deshacerlo.</string>
+    <string name="action_start">Vaciar y empezar</string>
+
+    <string name="decks_empty">Este usuario no tiene mazos públicos.</string>
+    <string name="deck_untitled">Mazo sin nombre</string>
+
+    <string name="tokens_title">Tokens</string>
+    <string name="tokens_empty">Ninguna carta de este mazo crea tokens.</string>
+    <string name="tokens_created_by">Lo crean: %1$s</string>
+    <string name="tokens_filter_in_play">Solo en juego</string>
+    <string name="tokens_filtered_count">%1$d de %2$d</string>
+    <string name="tokens_none_in_play">No tienes ningún token en juego.</string>
+
+    <string name="board_in_play">En juego</string>
+    <string name="board_sick">%1$d con mareo de invocación</string>
+    <string name="board_none_sick">Ninguno con mareo</string>
+    <string name="board_empty">Todavía no tienes ninguno en juego.</string>
+    <string name="board_add">Añadir</string>
+    <string name="board_add_other">Otra cantidad…</string>
+    <string name="board_begin_turn">Empieza mi turno</string>
+    <string name="board_counter_all">+1/+1 a todos</string>
+    <string name="board_pick_token">Elige un token para llevar la cuenta.</string>
+    <string name="board_clear">Vaciar</string>
+    <string name="clear_title">¿Vaciar este token?</string>
+    <string name="board_base">Base %1$s</string>
+    <string name="board_haste">Prisa</string>
+    <string name="board_haste_note">Entra sin mareo de invocación. Si la prisa se la da otra carta, márcalo tú en cada grupo.</string>
+
+    <string name="stack_quantity">Cantidad</string>
+    <string name="stack_counters">+1/+1</string>
+    <string name="stack_counters_chip">+1/+1 ×%1$d</string>
+    <string name="stack_sick">Mareo</string>
+    <string name="stack_ready">Puede atacar</string>
+    <string name="stack_counter_some">+1/+1 a solo algunos…</string>
+    <string name="stack_remove">Quitar uno</string>
+    <string name="stack_add">Poner uno más</string>
+    <string name="stack_counter_remove">Quitar un contador</string>
+    <string name="stack_counter_add">Poner un contador</string>
+
+    <string name="dialog_how_many">¿Cuántos tokens?</string>
+    <string name="dialog_how_many_of">¿A cuántos de los %1$d?</string>
+    <string name="action_undo">Deshacer</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_accept">Aceptar</string>
+
+    <string name="error_user_not_found">No hemos encontrado ese usuario en Moxfield. Revisa que esté bien escrito.</string>
+    <string name="error_blocked">Moxfield ha rechazado la petición. Prueba otra vez en unos minutos.</string>
+    <string name="error_network">No hay conexión. Comprueba tu red e inténtalo de nuevo.</string>
+    <string name="error_unknown">Algo ha salido mal.</string>
+    <string name="copy_of_title">¿Qué está copiando?</string>
+    <string name="copy_of_hint">Nombre de la carta</string>
+
+    <string name="action_language">Idioma</string>
+    <string name="language_title">Elige un idioma</string>
+    <string name="language_system">Idioma del dispositivo</string>
+</resources>

@@ -60,4 +60,8 @@
     <string name="error_unknown">Etwas ist schiefgelaufen.</string>
     <string name="copy_of_title">Was kopiert er?</string>
     <string name="copy_of_hint">Kartenname</string>
+
+    <string name="action_language">Sprache</string>
+    <string name="language_title">Sprache wählen</string>
+    <string name="language_system">Sprache des Geräts</string>
 </resources>

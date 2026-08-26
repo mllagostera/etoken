@@ -1,6 +1,7 @@
 package com.etoken
 
 import android.content.Context
+import com.etoken.data.AppLanguageStore
 import com.etoken.data.MoxfieldRepository
 import com.etoken.data.Network
 import com.etoken.data.TokenBoardStore
@@ -23,6 +24,9 @@ class AppContainer(context: Context) {
     }
 
     val userPreferences: UserPreferences by lazy { UserPreferences(context) }
+
+    /** The chosen UI language. Read by [MainActivity] before it has resources. */
+    val appLanguage: AppLanguageStore by lazy { AppLanguageStore(context) }
 
     /** Shared so the token grid and the board screen see the same battlefield. */
     val tokenBoards: TokenBoardStore by lazy { TokenBoardStore() }

@@ -60,4 +60,8 @@
     <string name="error_unknown">Qualcosa è andato storto.</string>
     <string name="copy_of_title">Che cosa sta copiando?</string>
     <string name="copy_of_hint">Nome della carta</string>
+
+    <string name="action_language">Lingua</string>
+    <string name="language_title">Scegli una lingua</string>
+    <string name="language_system">Lingua del dispositivo</string>
 </resources>
