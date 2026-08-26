@@ -1,7 +1,7 @@
 package com.etoken
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -63,7 +63,12 @@ class TwoPaneTest {
         )
         compose.setContent {
             EtokenTheme {
-                Box(Modifier.size(width, 800.dp)) {
+                // requiredSize, not size: size() coerces itself into the
+                // constraints the parent hands down, so on a phone-sized AVD a
+                // 1280dp box quietly came back 411dp wide and the layout kept
+                // choosing one pane. requiredSize ignores the parent, which is
+                // the whole point of asking for a width the screen has not got.
+                Box(Modifier.requiredSize(width, 800.dp)) {
                     TokensAndBoard(
                         publicId = Fakes.DECK_ID,
                         onOpenBoard = { token -> opened = token.id },
