@@ -55,6 +55,7 @@ import com.etoken.domain.PowerToughness
 import com.etoken.domain.model.TokenBoard
 import com.etoken.domain.model.TokenCard
 import com.etoken.domain.model.TokenStack
+import com.etoken.ui.common.ActionButton
 import com.etoken.ui.common.BackButton
 import com.etoken.ui.common.ErrorView
 import com.etoken.ui.common.LoadingView
@@ -80,6 +81,17 @@ fun TokenBoardScreen(
                     )
                 },
                 navigationIcon = { BackButton(onBack) },
+                actions = {
+                    // In the bar rather than among the quick actions: it undoes
+                    // the last change to any board, which is not one of this
+                    // board's edits.
+                    ActionButton(
+                        icon = R.drawable.ic_undo,
+                        description = stringResource(R.string.action_undo),
+                        onClick = viewModel::undo,
+                        enabled = (state as? TokenBoardUiState.Ready)?.canUndo == true,
+                    )
+                },
             )
         },
     ) { padding ->

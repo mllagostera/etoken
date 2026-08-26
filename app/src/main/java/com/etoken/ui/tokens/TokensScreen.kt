@@ -58,6 +58,7 @@ fun TokensScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val inPlay by viewModel.inPlay.collectAsStateWithLifecycle()
+    val canUndo by viewModel.canUndo.collectAsStateWithLifecycle()
     // Saveable, not remember: a rotation with the dialog open would otherwise
     // dismiss it, which on a destructive confirmation is the worst way to lose it.
     var confirmingNewGame by rememberSaveable { mutableStateOf(false) }
@@ -89,6 +90,15 @@ fun TokensScreen(
                 },
                 navigationIcon = { BackButton(onBack) },
                 actions = {
+                    // Offered whenever there is a change to take back, which
+                    // after a new game is the whole table.
+                    if (canUndo) {
+                        ActionButton(
+                            icon = R.drawable.ic_undo,
+                            description = stringResource(R.string.action_undo),
+                            onClick = viewModel::undo,
+                        )
+                    }
                     // Only offered when there is actually something on the table.
                     if (inPlay.isNotEmpty()) {
                         ActionButton(

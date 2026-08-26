@@ -76,6 +76,13 @@ token's board, and starting a new game, which clears every board because token
 ids are Scryfall ids and the same Goblin is the same entry whichever deck
 brought it.
 
+**Undo** covers both, and every other edit. The trail is kept over all the
+boards at once rather than one per token, which is what makes a new game
+undoable at all — it empties every board, and a per-token trail could not put
+that back. An edit that changed nothing is not a step, so undo never has to be
+pressed twice to see something happen, and the trail stops at twenty steps:
+this is a play aid for one game at one table, not a document editor.
+
 ## 2. Project structure
 
 ```
@@ -131,14 +138,17 @@ etoken/
     │   ├── values-night/             dark theme
     │   └── drawable/                 local vector icons; no material-icons artifacts
     │
-    └── test/java/com/etoken/         65 unit tests, all on the JVM
-        ├── TokenExtractorTest.kt         9
-        ├── TokenBoardRulesTest.kt        18
+    └── test/java/com/etoken/         88 unit tests, all on the JVM
+        ├── TokenBoardRulesTest.kt        24
+        ├── MoxfieldRepositoryTest.kt     11
         ├── DeckFilterTest.kt             10
-        ├── PowerToughnessTest.kt         4
+        ├── TokenExtractorTest.kt         9
         ├── MoxfieldParsingTest.kt        8
-        ├── MoxfieldRepositoryTest.kt     10
-        └── ScryfallParsingTest.kt        6
+        ├── TokenBoardStoreTest.kt        7
+        ├── UndoHistoryTest.kt            6
+        ├── ScryfallParsingTest.kt        6
+        ├── PowerToughnessTest.kt         4
+        └── CopyTokenTest.kt              3
 ```
 
 ### The rule that holds it together
@@ -207,7 +217,7 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: 66 unit tests and 11 UI tests pass,
+runs the instrumented suite against it: 88 unit tests and 16 UI tests pass,
 lint is clean, and the run produces an installable APK. The UI tests drive the
 real screens and view models with only the two APIs faked, so they fail when
 the app breaks rather than when a double does.

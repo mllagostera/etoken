@@ -14,7 +14,7 @@
     <string name="action_dismiss">D\'acord</string>
     <string name="new_game">Partida nova</string>
     <string name="new_game_title">Vols començar una partida nova?</string>
-    <string name="new_game_warning">També se\'n van els d\'altres decks, i no es pot desfer.</string>
+    <string name="new_game_warning">També se\'n van els d\'altres decks, però ho pots desfer.</string>
     <string name="action_start">Buida i comença</string>
     <string name="decks_empty">Aquest usuari no té decks públics.</string>
     <string name="deck_untitled">Deck sense nom</string>
@@ -44,6 +44,7 @@
     <string name="stack_counter_add">Posa un comptador</string>
     <string name="dialog_how_many">Quants tokens?</string>
     <string name="dialog_how_many_of">A quants dels %1$d?</string>
+    <string name="action_undo">Desfés</string>
     <string name="action_cancel">Cancel·la</string>
     <string name="action_accept">D\'acord</string>
     <string name="error_user_not_found">No hem trobat aquest usuari a Moxfield. Comprova que estigui ben escrit.</string>

@@ -14,7 +14,7 @@
     <string name="action_dismiss">OK</string>
     <string name="new_game">新しいゲーム</string>
     <string name="new_game_title">新しいゲームを始めますか？</string>
-    <string name="new_game_warning">他のデッキのトークンも消えます。元に戻せません。</string>
+    <string name="new_game_warning">他のデッキのトークンも消えます。元に戻すことができます。</string>
     <string name="action_start">空にして開始</string>
     <string name="decks_empty">このユーザーには公開デッキがありません。</string>
     <string name="deck_untitled">名前のないデッキ</string>
@@ -44,6 +44,7 @@
     <string name="stack_counter_add">カウンターを 1 つ置く</string>
     <string name="dialog_how_many">トークンをいくつ？</string>
     <string name="dialog_how_many_of">%1$d 体のうち何体に？</string>
+    <string name="action_undo">元に戻す</string>
     <string name="action_cancel">キャンセル</string>
     <string name="action_accept">OK</string>
     <string name="error_user_not_found">そのユーザーは Moxfield で見つかりませんでした。綴りを確認してください。</string>

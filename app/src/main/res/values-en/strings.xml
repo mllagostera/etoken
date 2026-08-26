@@ -14,7 +14,7 @@
     <string name="action_dismiss">OK</string>
     <string name="new_game">New game</string>
     <string name="new_game_title">Start a new game?</string>
-    <string name="new_game_warning">Other decks’ tokens go too, and this can’t be undone.</string>
+    <string name="new_game_warning">Other decks’ tokens go too, though you can undo it.</string>
     <string name="action_start">Clear and start</string>
     <string name="decks_empty">This user has no public decks.</string>
     <string name="deck_untitled">Untitled deck</string>
@@ -44,6 +44,7 @@
     <string name="stack_counter_add">Add a counter</string>
     <string name="dialog_how_many">How many tokens?</string>
     <string name="dialog_how_many_of">On how many of the %1$d?</string>
+    <string name="action_undo">Undo</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_accept">OK</string>
     <string name="error_user_not_found">We couldn’t find that user on Moxfield. Check the spelling.</string>

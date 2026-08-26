@@ -25,7 +25,11 @@ import kotlinx.coroutines.launch
 sealed interface TokenBoardUiState {
     data object Loading : TokenBoardUiState
     data class Failed(val error: LoadError) : TokenBoardUiState
-    data class Ready(val token: TokenCard, val board: TokenBoard) : TokenBoardUiState
+    data class Ready(
+        val token: TokenCard,
+        val board: TokenBoard,
+        val canUndo: Boolean,
+    ) : TokenBoardUiState
 }
 
 class TokenBoardViewModel(
@@ -39,10 +43,15 @@ class TokenBoardViewModel(
     private val failure = MutableStateFlow<LoadError?>(null)
 
     val state: StateFlow<TokenBoardUiState> =
-        combine(token, boards.board(tokenId), failure) { card, board, error ->
+        combine(
+            token,
+            boards.board(tokenId),
+            failure,
+            boards.canUndo,
+        ) { card, board, error, canUndo ->
             when {
                 error != null -> TokenBoardUiState.Failed(error)
-                card != null -> TokenBoardUiState.Ready(card, board)
+                card != null -> TokenBoardUiState.Ready(card, board, canUndo)
                 else -> TokenBoardUiState.Loading
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TokenBoardUiState.Loading)
@@ -83,6 +92,12 @@ class TokenBoardViewModel(
     fun beginTurn() = edit { TokenBoardRules.beginTurn(it) }
 
     fun clear() = edit { TokenBoardRules.clear(it) }
+
+    /**
+     * Undoes the last change to any board, not just this one. The trail is
+     * shared, so this puts back whatever the player last did, wherever.
+     */
+    fun undo() = boards.undo()
 
     private fun edit(transform: (TokenBoard) -> TokenBoard) = boards.update(tokenId, transform)
 

@@ -26,7 +26,7 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 75 unit and 15 instrumented tests, 0 failures, green on CI
+## 1. Verified — 88 unit and 16 instrumented tests, 0 failures, green on CI
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -37,6 +37,8 @@ the two APIs are ever faked.
 - [x] Token extraction from `all_parts`, dedupe, emblems, self-reference — `domain/TokenExtractor.kt`, 9 tests
 - [x] Repository: paging, caching, 75-id batching, by-name fallback — `data/MoxfieldRepository.kt`, 11 tests
 - [x] Battlefield rules: stacks, split, merge, ordering, clamping — `domain/TokenBoardRules.kt`, 24 tests
+- [x] Undo: bounded trail, no-op edits are not steps, a cleared board and a new game both come
+  back — `domain/UndoHistory.kt`, `data/TokenBoardStore.kt`, 13 tests
 - [x] Power/toughness with counters, including `*` and `1+*` — `domain/PowerToughness.kt`, 4 tests
 - [x] Deck search: accent-blind, commander, multi-word AND — `domain/DeckFilter.kt`, 10 tests
 - [x] The whole app compiles: `assembleDebug`, `testDebugUnitTest` and `lintDebug` all green — run #3
@@ -46,7 +48,7 @@ the two APIs are ever faked.
 - [x] The screens run: a remembered username returns, decks reach the grid and name their commanders,
   search narrows by name and by commander, tapping a deck reports the right one, tokens arrive
   summoning sick and the untap step clears them, a counter turns a 1/1 into a 2/2, and clearing asks
-  first — `app/src/androidTest/`, 15 tests on an AVD
+  first — `app/src/androidTest/`, 16 tests on an AVD
 - [x] A copy token asks what it is copying, keeps the answer on the stack, and two copies of
   different creatures stay two rows — `domain/`, `ui/board/`, 3 unit and 4 instrumented tests
 
@@ -94,7 +96,14 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 
 ### B. Product gaps
 
-- [ ] **B1** No undo — nothing brings a board back once it is cleared · M
+- [x] **B1** Undo, over every board at once — an action in both top bars
+  - **Decided 2026-08-26**, which is the design pass this was waiting on. One trail for the whole
+    store, not one per token: a new game empties every board, and a per-token trail could not put
+    that back. It also makes undo mean one thing wherever it is pressed.
+  - Covers every edit, not only the destructive ones — "I tapped -1 on the wrong row" is the mistake
+    that actually happens at a table.
+  - Bounded at 20 steps, and an edit that changed nothing is not a step. No redo: out of scope for a
+    play aid, and nothing in the app hints at one.
 - [ ] **B2** The deck's card list is not visible anywhere, only its tokens · M
 - [ ] **B3** Private and unlisted decks are invisible — needs Moxfield auth, if they allow it · L
 - [x] **B4** The search query survives process death — it lives in the `SavedStateHandle`
@@ -111,7 +120,7 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
-- [x] **C2** 15 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
+- [x] **C2** 16 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
 - [x] **C3** Seven locales: Spanish default plus `ca`, `en`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
@@ -164,12 +173,10 @@ this and a working app.
    through the screens with the phone's language changed.
 4. **B5**, the two-pane tablet layout. Decided, wanted, and the largest UI
    change on the list; it wanted a build that had stayed green, and now it has.
-5. **B1** (undo) needs a design pass — what it restores, and how far back —
-   before any code.
-6. The rest of C is housekeeping, in any order.
+5. The rest of C is housekeeping, in any order.
 
 Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 27 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 28 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI

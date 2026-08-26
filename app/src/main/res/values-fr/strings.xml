@@ -14,7 +14,7 @@
     <string name="action_dismiss">OK</string>
     <string name="new_game">Nouvelle partie</string>
     <string name="new_game_title">Commencer une nouvelle partie ?</string>
-    <string name="new_game_warning">Ceux des autres decks partent aussi, et c\'est irréversible.</string>
+    <string name="new_game_warning">Ceux des autres decks partent aussi, mais vous pouvez annuler.</string>
     <string name="action_start">Vider et commencer</string>
     <string name="decks_empty">Cet utilisateur n\'a aucun deck public.</string>
     <string name="deck_untitled">Deck sans nom</string>
@@ -44,6 +44,7 @@
     <string name="stack_counter_add">Ajouter un marqueur</string>
     <string name="dialog_how_many">Combien de jetons ?</string>
     <string name="dialog_how_many_of">Sur combien des %1$d ?</string>
+    <string name="action_undo">Annuler la dernière action</string>
     <string name="action_cancel">Annuler</string>
     <string name="action_accept">OK</string>
     <string name="error_user_not_found">Utilisateur introuvable sur Moxfield. Vérifie l\'orthographe.</string>

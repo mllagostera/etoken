@@ -43,6 +43,9 @@ class TokensViewModel(
         .map { all -> all.mapValues { (_, board) -> board.total }.filterValues { it > 0 } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
+    val canUndo: StateFlow<Boolean> = boards.canUndo
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     init {
         load()
     }
@@ -56,6 +59,11 @@ class TokensViewModel(
      */
     fun startNewGame() {
         boards.clearAll()
+    }
+
+    /** Puts back the last change, which right after a new game is the table. */
+    fun undo() {
+        boards.undo()
     }
 
     fun load() {

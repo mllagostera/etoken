@@ -18,7 +18,7 @@
 
     <string name="new_game">Nueva partida</string>
     <string name="new_game_title">¿Empezar una partida nueva?</string>
-    <string name="new_game_warning">Se van también los de otros mazos, y no se puede deshacer.</string>
+    <string name="new_game_warning">Se van también los de otros mazos, pero puedes deshacerlo.</string>
     <string name="action_start">Vaciar y empezar</string>
 
     <string name="decks_empty">Este usuario no tiene mazos públicos.</string>
@@ -53,6 +53,7 @@
 
     <string name="dialog_how_many">¿Cuántos tokens?</string>
     <string name="dialog_how_many_of">¿A cuántos de los %1$d?</string>
+    <string name="action_undo">Deshacer</string>
     <string name="action_cancel">Cancelar</string>
     <string name="action_accept">Aceptar</string>
 

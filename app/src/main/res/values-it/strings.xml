@@ -14,7 +14,7 @@
     <string name="action_dismiss">OK</string>
     <string name="new_game">Nuova partita</string>
     <string name="new_game_title">Iniziare una nuova partita?</string>
-    <string name="new_game_warning">Spariscono anche quelle degli altri mazzi, e non si può annullare.</string>
+    <string name="new_game_warning">Spariscono anche quelle degli altri mazzi, ma puoi annullare.</string>
     <string name="action_start">Svuota e inizia</string>
     <string name="decks_empty">Questo utente non ha mazzi pubblici.</string>
     <string name="deck_untitled">Mazzo senza nome</string>
@@ -44,6 +44,7 @@
     <string name="stack_counter_add">Aggiungi un segnalino</string>
     <string name="dialog_how_many">Quante pedine?</string>
     <string name="dialog_how_many_of">A quante delle %1$d?</string>
+    <string name="action_undo">Annulla l’ultima azione</string>
     <string name="action_cancel">Annulla</string>
     <string name="action_accept">OK</string>
     <string name="error_user_not_found">Non abbiamo trovato quell\'utente su Moxfield. Controlla come l\'hai scritto.</string>

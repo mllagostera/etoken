@@ -1,8 +1,14 @@
 package com.etoken
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.filterToOne
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -99,6 +105,46 @@ class TokenBoardScreenTest {
         // Still five on the table: the confirmation is doing its job.
         awaitText(str(R.string.board_sick, 5))
     }
+
+    @Test
+    fun undo_brings_back_a_board_that_was_cleared() {
+        showBoard()
+
+        // Nothing has happened yet, so there is nothing to take back.
+        undoButton().assertIsNotEnabled()
+
+        compose.onNodeWithText("+5").performClick()
+        awaitText(str(R.string.board_sick, 5))
+
+        compose.onNodeWithText(str(R.string.board_clear)).performClick()
+        awaitText(str(R.string.clear_title))
+        confirmClear()
+        awaitText(str(R.string.board_empty))
+
+        undoButton().assertIsEnabled()
+        undoButton().performClick()
+
+        // The five are back, still summoning sick, exactly as they were.
+        awaitText(str(R.string.board_sick, 5))
+        compose.onNodeWithText("5 ×").assertIsDisplayed()
+
+        // And one more step empties the trail: adding them was all that is left.
+        undoButton().performClick()
+        awaitText(str(R.string.board_empty))
+        undoButton().assertIsNotEnabled()
+    }
+
+    private fun undoButton() =
+        compose.onNodeWithContentDescription(str(R.string.action_undo))
+
+    /**
+     * The dialog's confirm button carries the same label as the button that
+     * opened it, and both are in the tree while the dialog is up.
+     */
+    private fun confirmClear() =
+        compose.onAllNodesWithText(str(R.string.board_clear))
+            .filterToOne(hasAnyAncestor(isDialog()))
+            .performClick()
 
     private fun awaitText(text: String) = compose.waitUntil(TIMEOUT) {
         compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty()
