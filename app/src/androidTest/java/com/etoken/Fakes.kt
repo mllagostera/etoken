@@ -28,7 +28,9 @@ object Fakes {
 
     const val DECK_ID = "abc123"
     const val DECK_NAME = "Krenko Goblins"
+    const val OTHER_DECK_ID = "def456"
     const val OTHER_DECK_NAME = "Atraxa Superfriends"
+    const val OTHER_COMMANDER = "Atraxa, Praetors' Voice"
     const val COMMANDER = "Krenko, Mob Boss"
     const val TOKEN_ID = "goblin-sid"
     const val TOKEN_NAME = "Goblin"
@@ -60,6 +62,22 @@ private val KRENKO = DeckResponse(
     ),
 )
 
+private val ATRAXA = DeckResponse(
+    publicId = Fakes.OTHER_DECK_ID,
+    name = Fakes.OTHER_DECK_NAME,
+    main = MoxfieldCard(id = "atX", name = Fakes.OTHER_COMMANDER),
+    boards = Boards(
+        commanders = Board(
+            count = 1,
+            cards = mapOf(
+                "c" to BoardEntry(
+                    card = MoxfieldCard(id = "atX", name = Fakes.OTHER_COMMANDER, scryfallId = "atraxa-sid"),
+                ),
+            ),
+        ),
+    ),
+)
+
 private class FakeMoxfield : MoxfieldApi {
 
     override suspend fun searchDecks(
@@ -82,15 +100,22 @@ private class FakeMoxfield : MoxfieldApi {
                     main = MoxfieldCard(id = "aB3xY", name = Fakes.COMMANDER),
                 ),
                 SearchDeckSummary(
-                    publicId = "def456",
+                    publicId = Fakes.OTHER_DECK_ID,
                     name = Fakes.OTHER_DECK_NAME,
-                    main = MoxfieldCard(id = "atX", name = "Atraxa, Praetors' Voice"),
+                    main = MoxfieldCard(id = "atX", name = Fakes.OTHER_COMMANDER),
                 ),
             ),
         )
     }
 
-    override suspend fun deck(publicId: String): DeckResponse = KRENKO
+    // Keyed by id rather than returning one deck for everything: hydration now
+    // fetches every deck, so a fake that answered KRENKO for all of them gave
+    // Atraxa Krenko's commander and made a search test fail for a reason that
+    // had nothing to do with the app.
+    override suspend fun deck(publicId: String): DeckResponse = when (publicId) {
+        Fakes.OTHER_DECK_ID -> ATRAXA
+        else -> KRENKO
+    }
 }
 
 private class FakeScryfall : ScryfallApi {

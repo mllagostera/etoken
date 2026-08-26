@@ -45,6 +45,18 @@ class DecksScreenTest {
     }
 
     @Test
+    fun each_deck_names_its_commander() {
+        showDecks()
+
+        // This is the line hydration exists to fill in, and the one that was
+        // silently blank until hydrate() stopped treating a name and a cover
+        // as good enough.
+        awaitText(Fakes.COMMANDER)
+        compose.onNodeWithText(Fakes.COMMANDER).assertIsDisplayed()
+        compose.onNodeWithText(Fakes.OTHER_COMMANDER).assertIsDisplayed()
+    }
+
+    @Test
     fun searching_narrows_the_grid_and_clearing_restores_it() {
         showDecks()
 
