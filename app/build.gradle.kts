@@ -64,7 +64,6 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     debugImplementation(libs.androidx.ui.tooling)
 
@@ -75,6 +74,7 @@ dependencies {
     implementation(libs.retrofit.serialization)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
+    // Debug builds only, wired from AppContainer: see Network.moxfieldApi(logRequests).
     implementation(libs.okhttp.logging.interceptor)
 
     // Coil 3: commander art in the deck grid, token art in the token grid.
@@ -83,4 +83,12 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+
+    // Instrumented Compose tests. They drive the real screens against fake
+    // APIs, which is the closest thing to watching the app work that does not
+    // need a person holding a phone.
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.test.manifest)
 }

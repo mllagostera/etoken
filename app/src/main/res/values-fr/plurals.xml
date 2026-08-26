@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="tokens_count">
+        <item quantity="one">%1$d jeton</item>
+        <item quantity="other">%1$d jetons</item>
+    </plurals>
+
+    <plurals name="new_game_body">
+        <item quantity="one">L\'état de la table sera effacé : %1$d jeton en jeu, avec ses marqueurs et son mal d\'invocation.</item>
+        <item quantity="other">L\'état de la table sera effacé : %1$d jetons en jeu, avec leurs marqueurs et leur mal d\'invocation.</item>
+    </plurals>
+
+    <plurals name="clear_body">
+        <item quantity="one">%1$d jeton de ce type quittera la table, avec ses marqueurs.</item>
+        <item quantity="other">%1$d jetons de ce type quitteront la table, avec leurs marqueurs.</item>
+    </plurals>
+</resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="tokens_count">
+        <item quantity="one">%1$d token</item>
+        <item quantity="other">%1$d tokens</item>
+    </plurals>
+
+    <plurals name="new_game_body">
+        <item quantity="one">S\'esborrarà l\'estat de la taula: %1$d token en joc, amb els seus comptadors i el seu mareig d\'invocació.</item>
+        <item quantity="other">S\'esborrarà l\'estat de la taula: %1$d tokens en joc, amb els seus comptadors i el seu mareig d\'invocació.</item>
+    </plurals>
+
+    <plurals name="clear_body">
+        <item quantity="one">Es traurà de la taula %1$d token d\'aquest tipus, amb els seus comptadors.</item>
+        <item quantity="other">Es trauran de la taula %1$d tokens d\'aquest tipus, amb els seus comptadors.</item>
+    </plurals>
+</resources>

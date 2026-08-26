@@ -9,6 +9,7 @@ import com.etoken.data.moxfield.MoxfieldApi
 import com.etoken.data.moxfield.MoxfieldCard
 import com.etoken.data.moxfield.SearchDeckSummary
 import com.etoken.data.moxfield.SearchResponse
+import com.etoken.domain.model.DeckSummary
 import com.etoken.data.scryfall.CollectionRequest
 import com.etoken.data.scryfall.CollectionResponse
 import com.etoken.data.scryfall.ImageUris
@@ -57,15 +58,35 @@ class MoxfieldRepositoryTest {
     }
 
     @Test
-    fun `hydrate costs no request when search already returned everything`() = runTest {
-        val moxfield = FakeMoxfield(pages = listOf(searchPage(1, listOf("a"), withCover = true)))
+    fun `hydrating an already complete summary costs no request`() = runTest {
+        val moxfield = FakeMoxfield(deck = krenkoDeck())
         val repository = MoxfieldRepository(moxfield, FakeScryfall())
 
-        val deck = repository.listDecks("someone").single()
-        val hydrated = repository.hydrate(deck)
+        val complete = DeckSummary(
+            publicId = "abc",
+            name = "Krenko Goblins",
+            imageUrl = "https://assets.moxfield.net/cards/card-aB3xY-art_crop.jpg",
+            commander = "Krenko, Mob Boss",
+        )
 
-        assertEquals(deck.name, hydrated.name)
+        assertEquals(complete, repository.hydrate(complete))
         assertEquals(0, moxfield.deckCalls)
+    }
+
+    @Test
+    fun `a summary with a name and a cover but no commander is still fetched`() = runTest {
+        // Search returns both of those and never a commander, so this is the
+        // ordinary case rather than an edge one.
+        val moxfield = FakeMoxfield(
+            pages = listOf(searchPage(1, listOf("abc"), withCover = true)),
+            deck = krenkoDeck(),
+        )
+        val repository = MoxfieldRepository(moxfield, FakeScryfall())
+
+        val hydrated = repository.hydrate(repository.listDecks("someone").single())
+
+        assertEquals("Krenko, Mob Boss", hydrated.commander)
+        assertEquals(1, moxfield.deckCalls)
     }
 
     @Test

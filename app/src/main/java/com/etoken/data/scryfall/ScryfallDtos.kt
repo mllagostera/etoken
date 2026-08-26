@@ -46,6 +46,9 @@ data class ScryfallCard(
     val layout: String? = null,
     @SerialName("type_line") val typeLine: String? = null,
     @SerialName("oracle_text") val oracleText: String? = null,
+    /** Strings, not numbers: Magic prints `*`, `1+*` and `X` as power/toughness. */
+    val power: String? = null,
+    val toughness: String? = null,
     @SerialName("image_uris") val imageUris: ImageUris? = null,
     /** Double-faced cards carry their art per face rather than at the top level. */
     @SerialName("card_faces") val cardFaces: List<CardFace> = emptyList(),

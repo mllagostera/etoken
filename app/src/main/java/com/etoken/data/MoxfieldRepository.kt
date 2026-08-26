@@ -22,6 +22,7 @@ class MoxfieldRepository(
 
     private val cacheMutex = Mutex()
     private val deckCache = mutableMapOf<String, DeckDetail>()
+    private val tokenCache = mutableMapOf<String, List<TokenCard>>()
 
     /**
      * Every public deck belonging to [username], newest update first.
@@ -67,7 +68,14 @@ class MoxfieldRepository(
      * costs no request at all.
      */
     suspend fun hydrate(summary: DeckSummary): DeckSummary {
-        if (summary.name.isNotBlank() && summary.imageUrl != null) return summary
+        // The commander is part of "complete", not an afterthought: the grid
+        // prints it under every deck and the search matches on it. Search never
+        // returns one, so leaving it out of this check meant that whenever
+        // search did supply a name and a cover, the commander stayed null and
+        // both of those features quietly did nothing.
+        if (summary.name.isNotBlank() && summary.imageUrl != null && summary.commander != null) {
+            return summary
+        }
 
         val detail = deckDetail(summary.publicId)
         return summary.copy(
@@ -75,6 +83,20 @@ class MoxfieldRepository(
             imageUrl = summary.imageUrl ?: detail.imageUrl,
             commander = detail.commander,
         )
+    }
+
+    /**
+     * Throws away everything cached, so the next load goes back to the network.
+     *
+     * Both caches go together on purpose: a deck whose contents changed on
+     * Moxfield also creates a different set of tokens, and keeping the old
+     * token list would be worse than refetching it.
+     */
+    suspend fun invalidate() {
+        cacheMutex.withLock {
+            deckCache.clear()
+            tokenCache.clear()
+        }
     }
 
     /** Cached: the deck grid and the token screen both need the same payload. */
@@ -95,7 +117,19 @@ class MoxfieldRepository(
      * tokens) and then the tokens themselves (which is where the artwork is).
      * Both are batched at Scryfall's 75-identifier limit.
      */
-    suspend fun tokensFor(publicId: String): List<TokenCard> = withContext(Dispatchers.IO) {
+    suspend fun tokensFor(publicId: String): List<TokenCard> {
+        cacheMutex.withLock { tokenCache[publicId] }?.let { return it }
+
+        val tokens = computeTokens(publicId)
+        cacheMutex.withLock { tokenCache[publicId] = tokens }
+        return tokens
+    }
+
+    /** The token the board screen is showing, out of the cached deck lookup. */
+    suspend fun token(publicId: String, tokenId: String): TokenCard? =
+        tokensFor(publicId).firstOrNull { it.id == tokenId }
+
+    private suspend fun computeTokens(publicId: String): List<TokenCard> = withContext(Dispatchers.IO) {
         val deck = deckDetail(publicId)
 
         val identifiers = deck.cards

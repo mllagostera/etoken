@@ -1,0 +1,128 @@
+name: Android CI
+
+# Runs on every branch, not just main. This repo has never been compiled
+# anywhere -- CI is the first machine with an Android SDK that will touch it --
+# so waiting for a pull request to find out would waste the whole point.
+#
+# On push only, deliberately. Adding `pull_request` as well ran everything
+# twice on a branch with a pull request open: the two events carry different
+# `github.ref` values (`refs/heads/<branch>` and `refs/pull/<n>/merge`), so the
+# concurrency group below cancels within each event but never across them. The
+# checks still show on the pull request either way, because they are attached
+# to the commit rather than to the pull request.
+#
+# What that gives up is the run against the merge commit, which is the one that
+# catches "green on the branch, broken once merged". Worth revisiting the day
+# this repo has more than one branch in flight; today main only moves when a
+# pull request lands, and that push is itself built.
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-test-build:
+    name: lint, unit tests y assembleDebug
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Dar permisos de ejecución a gradlew
+        run: chmod +x gradlew
+
+      # Compilation first, deliberately: it is the signal this project has
+      # never had. Lint and tests are worth little while the code may not build.
+      - name: Build (assembleDebug)
+        run: ./gradlew :app:assembleDebug
+
+      # Published straight after the build and on its own, so it survives a
+      # later step going red and so installing it is one click rather than
+      # unzipping it out of the reports. This is how the app reaches a real
+      # device: A3, A4 and A5 in docs/TASKS.md all need one.
+      - name: Publicar el APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: etoken-debug-apk-${{ github.run_number }}
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Tests unitarios
+        run: ./gradlew :app:testDebugUnitTest
+
+      - name: Android Lint
+        run: ./gradlew :app:lintDebug
+
+      # Compiled here rather than only inside the emulator job, so a typo in a
+      # test costs seconds instead of a ten-minute AVD boot.
+      - name: Compilar los tests instrumentados
+        run: ./gradlew :app:assembleDebugAndroidTest
+
+      - name: Publicar los informes
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-reports
+          path: |
+            app/build/reports/lint-results-debug.html
+            app/build/test-results/**/*.xml
+          retention-days: 14
+
+  instrumented:
+    name: Tests instrumentados en un emulador
+    needs: lint-test-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Dar permisos de ejecución a gradlew
+        run: chmod +x gradlew
+
+      # The runner has KVM but not the permissions to use it out of the box,
+      # and without hardware acceleration the emulator is too slow to finish.
+      - name: Habilitar KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Ejecutar en un AVD
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: default
+          disable-animations: true
+          script: ./gradlew :app:connectedDebugAndroidTest
+
+      - name: Publicar el informe
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: instrumented-reports
+          path: |
+            app/build/reports/androidTests/
+            app/build/outputs/androidTest-results/
+          retention-days: 14

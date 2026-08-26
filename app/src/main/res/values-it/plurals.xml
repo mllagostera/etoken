@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="tokens_count">
+        <item quantity="one">%1$d pedina</item>
+        <item quantity="other">%1$d pedine</item>
+    </plurals>
+
+    <plurals name="new_game_body">
+        <item quantity="one">Lo stato del tavolo verrà cancellato: %1$d pedina in gioco, con i suoi segnalini e la sua svogliatezza da evocazione.</item>
+        <item quantity="other">Lo stato del tavolo verrà cancellato: %1$d pedine in gioco, con i loro segnalini e la loro svogliatezza da evocazione.</item>
+    </plurals>
+
+    <plurals name="clear_body">
+        <item quantity="one">%1$d pedina di questo tipo lascerà il tavolo, con i suoi segnalini.</item>
+        <item quantity="other">%1$d pedine di questo tipo lasceranno il tavolo, con i loro segnalini.</item>
+    </plurals>
+</resources>

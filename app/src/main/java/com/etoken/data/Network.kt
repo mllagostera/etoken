@@ -10,6 +10,7 @@ import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Response
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 
 object Network {
@@ -39,7 +40,12 @@ object Network {
         explicitNulls = false
     }
 
-    fun moxfieldApi(): MoxfieldApi = retrofit(
+    /**
+     * [logRequests] is passed in rather than read from `BuildConfig` so this
+     * file stays free of anything generated for the app module, which is what
+     * lets the whole data layer compile and be tested on a plain JVM.
+     */
+    fun moxfieldApi(logRequests: Boolean = false): MoxfieldApi = retrofit(
         baseUrl = MoxfieldApi.BASE_URL,
         client = baseClient()
             .addInterceptor(
@@ -50,10 +56,11 @@ object Network {
                 ),
             )
             .addInterceptor(RetryInterceptor())
+            .apply { if (logRequests) addInterceptor(loggingInterceptor()) }
             .build(),
     ).create(MoxfieldApi::class.java)
 
-    fun scryfallApi(): ScryfallApi = retrofit(
+    fun scryfallApi(logRequests: Boolean = false): ScryfallApi = retrofit(
         baseUrl = ScryfallApi.BASE_URL,
         client = baseClient()
             .addInterceptor(
@@ -64,8 +71,13 @@ object Network {
             )
             .addInterceptor(RateLimitInterceptor(SCRYFALL_MIN_INTERVAL_MS))
             .addInterceptor(RetryInterceptor())
+            .apply { if (logRequests) addInterceptor(loggingInterceptor()) }
             .build(),
     ).create(ScryfallApi::class.java)
+
+    /** Headers and status lines, never bodies: card JSON is enormous. */
+    private fun loggingInterceptor() =
+        HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC }
 
     private fun baseClient(): OkHttpClient.Builder = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)

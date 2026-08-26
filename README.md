@@ -1,140 +1,248 @@
 # etoken
 
-An Android app that answers one question: **which tokens can this deck make?**
+An Android app that answers one question during a game of Magic: The Gathering —
+**which tokens can this deck make, and how many of them are on the table right
+now?**
 
-Type a Moxfield username, get that user's public decks in a grid of commander
-art, tap one, and see every token its cards are able to create — each with its
-own artwork and the list of cards that create it.
+Type a Moxfield username, pick a deck from a grid of commander art, and see
+every token its cards are able to create. Tap one and it becomes a tracker for
+the game in progress: how many are in play, which ones are still summoning
+sick, and what +1/+1 counters they carry.
 
 ---
 
-## 1. How it works
+## 1. What it does
 
-Three screens, and two APIs behind them.
+### Loading decks
+
+You enter a Moxfield username once; the app remembers it. It then lists that
+user's public decks as a grid of commander artwork.
+
+The grid streams rather than blocks. Deck names appear as soon as the search
+endpoint answers, and the cover art fills in afterwards four decks at a time,
+so the grid is usable immediately instead of waiting on a request per deck. One
+deck failing to load its cover leaves the rest of the grid alone.
+
+You can filter the loaded list by typing. The filter is accent-blind — `canon`
+finds *Cañón* — and it searches the commander as well as the deck name, because
+people remember the general they play rather than what they called the deck
+three years ago. A multi-word query has to match every word, in any order.
+
+Refreshing drops both caches, decks and tokens together: a deck whose contents
+changed on Moxfield also creates a different set of tokens, so keeping the old
+token list would be worse than fetching it again. A refresh that fails keeps
+the list already on screen and says so, rather than replacing something
+perfectly usable with an error page.
+
+### Finding the tokens
+
+Opening a deck shows every token its cards can create, each with its artwork,
+its type line, and the list of cards that create it.
+
+These come from Scryfall's `all_parts`, which names the tokens related to a
+card. **The app never parses rules text to work out what a card creates.**
+Scryfall already knows, and a text parser would be a permanent source of bugs.
+
+Tokens are collapsed by name, type, rules text and printed power/toughness
+rather than by id. `all_parts` points at one specific *printing*, so a deck
+drawing on several sets would otherwise show the same 1/1 Soldier four times
+over. The creator lists are merged; the first printing that has artwork wins
+the image.
+
+### Tracking them in play
+
+Tapping a token opens its board — local state only, with no request leaving the
+device.
+
+The board holds **stacks**: groups of copies that are genuinely identical.
+Magic tracks counters and summoning sickness per permanent, so seven Goblins of
+which three carry a +1/+1 counter are not interchangeable, and a single count
+with counters bolted onto it would be a lie. So:
+
+- Tokens arrive **summoning sick**, which is what actually happens.
+- **"My turn begins"** clears sickness across every stack at once.
+- Putting a counter on **only some** of a stack splits it; taking that counter
+  off merges it straight back.
+- Stacks sort ready-before-sick and larger-first, so the row you are most
+  likely to touch is at the top, and a merge keeps the older stack id so the
+  list does not re-animate under your finger.
+
+`TokenBoardRules` enforces two invariants after every operation — merge what
+has become identical, drop what has emptied — so no action can leave a board
+showing two rows that look the same but are not.
+
+Both destructive actions ask first and say what is at stake: clearing one
+token's board, and starting a new game, which clears every board because token
+ids are Scryfall ids and the same Goblin is the same entry whichever deck
+brought it.
+
+On a screen at least 840dp wide — a tablet in landscape — the board stops
+being a screen of its own and becomes a pane beside the grid, with the open
+token marked in the list. Below that it is a destination like any other. The
+width decides, not the navigation graph, and both arrangements run on the same
+view models and the same board store.
+
+**Undo** covers both, and every other edit. The trail is kept over all the
+boards at once rather than one per token, which is what makes a new game
+undoable at all — it empties every board, and a per-token trail could not put
+that back. An edit that changed nothing is not a step, so undo never has to be
+pressed twice to see something happen, and the trail stops at twenty steps:
+this is a play aid for one game at one table, not a document editor.
+
+## 2. Project structure
 
 ```
-username  ──▶  deck grid  ──▶  token grid
-              (Moxfield)      (Moxfield + Scryfall)
+etoken/
+├── .github/workflows/
+│   ├── android-ci.yml        build, unit tests, lint and an APK, on every push
+│   └── api-smoke.yml         manual: walks the real APIs with the app's own headers
+├── docs/
+│   └── TASKS.md              what works, what is merely written, what is pending
+├── gradle/libs.versions.toml the version catalog
+├── CLAUDE.md                 conventions for anyone, human or agent, working here
+└── app/src/
+    ├── main/java/com/etoken/
+    │   ├── MainActivity.kt           the single activity; hosts the nav graph
+    │   ├── EtokenApplication.kt      Coil's ImageLoader, with the CDN-safe User-Agent
+    │   ├── AppContainer.kt           hand-rolled dependency container
+    │   │
+    │   ├── data/
+    │   │   ├── moxfield/
+    │   │   │   ├── MoxfieldApi.kt        Retrofit: deck search and deck detail
+    │   │   │   ├── MoxfieldDtos.kt       wire types, every field defaulted
+    │   │   │   └── MoxfieldImages.kt     art-crop URLs, incl. the two-faced case
+    │   │   ├── scryfall/
+    │   │   │   ├── ScryfallApi.kt        Retrofit: POST /cards/collection
+    │   │   │   └── ScryfallDtos.kt       wire types, incl. all_parts
+    │   │   ├── Network.kt                OkHttp: headers, rate limiting, retries
+    │   │   ├── DeckMapper.kt             Moxfield's board-keyed JSON → domain model
+    │   │   ├── MoxfieldRepository.kt     paging, caching, batching, name fallback
+    │   │   ├── TokenBoardStore.kt        in-memory battlefield state, and undo
+    │   │   └── UserPreferences.kt        DataStore: the remembered username
+    │   │
+    │   ├── domain/                   pure Kotlin — no Android imports at all
+    │   │   ├── TokenExtractor.kt         which tokens a deck can make
+    │   │   ├── TokenBoardRules.kt        what is on the battlefield
+    │   │   ├── DeckFilter.kt             accent-blind search over name and commander
+    │   │   ├── PowerToughness.kt         printed size plus counters, `*` included
+    │   │   ├── UndoHistory.kt            a bounded trail, and what counts as a step
+    │   │   └── model/
+    │   │       ├── Models.kt             DeckSummary, DeckDetail, TokenCard
+    │   │       └── Board.kt              TokenStack, TokenBoard
+    │   │
+    │   └── ui/                       Compose, Material 3, one ViewModel per screen
+    │       ├── EtokenNavHost.kt          the four routes
+    │       ├── TokensAndBoard.kt         one pane or two, decided by the width
+    │       ├── username/                 screen 1 — who are you on Moxfield
+    │       ├── decks/                    screen 2 — the deck grid, search, refresh
+    │       ├── tokens/                   screen 3 — what this deck can create
+    │       ├── board/                    screen 4 — what is on the table
+    │       ├── common/                   error states, icon buttons, LoadError
+    │       └── theme/                    colours, dynamic colour on Android 12+
+    │
+    ├── main/res/
+    │   ├── values/                   Spanish — the default locale
+    │   ├── values-ca|en|fr|de|it|ja/  Catalan, English, French, German, Italian, Japanese
+    │   ├── values-night/             dark theme
+    │   └── drawable/                 local vector icons; no material-icons artifacts
+    │
+    └── test/java/com/etoken/         88 unit tests, all on the JVM
+        ├── TokenBoardRulesTest.kt        24
+        ├── MoxfieldRepositoryTest.kt     11
+        ├── DeckFilterTest.kt             10
+        ├── TokenExtractorTest.kt         9
+        ├── MoxfieldParsingTest.kt        8
+        ├── TokenBoardStoreTest.kt        7
+        ├── UndoHistoryTest.kt            6
+        ├── ScryfallParsingTest.kt        6
+        ├── PowerToughnessTest.kt         4
+        └── CopyTokenTest.kt              3
 ```
 
-**Listing a user's decks.** Moxfield has no "decks of user X" endpoint. The
-deck-search endpoint filtered to a single author is how the site itself does
-it, and it paginates:
+### The rule that holds it together
 
+**`domain/` contains no Android imports, and `data/` contains them only where a
+platform API is unavoidable** — `UserPreferences` needs a `Context`; nothing
+else does.
+
+This is not architectural purity for its own sake. It is what lets every rule
+worth arguing about be unit-tested on a plain JVM: the token extraction, the
+battlefield invariants, the search matching, the power/toughness arithmetic,
+and the repository's paging and batching against fake APIs. Reaching for a
+Compose or Android type inside `domain/` means the logic is in the wrong place.
+
+Dependencies are wired by hand in `AppContainer` rather than with Hilt. The
+sibling project uses Hilt and earns it across many feature modules; this app
+has one repository and two stores, and staying free of KSP keeps the build
+fast.
+
+## 3. Building
+
+```bash
+./gradlew :app:assembleDebug        # build
+./gradlew :app:testDebugUnitTest    # unit tests
+./gradlew :app:lintDebug            # Android Lint
 ```
-GET https://api2.moxfield.com/v2/decks/search-sfw
-      ?authorUserNames={user}&pageNumber=1&pageSize=100
-      &sortType=Updated&sortDirection=Descending
-      &includePinned=true&showIllegal=true
-```
 
-**Deck contents and commander art.**
+Requires an Android SDK — `compileSdk 37`, `minSdk 26`, JDK 21. Opening the
+project in Android Studio will offer to install whatever is missing.
 
-```
-GET https://api2.moxfield.com/v3/decks/all/{publicId}
-```
+CI runs all three on every push and publishes the debug APK as its own
+artifact, so a green run produces something installable rather than just a
+green tick.
 
-The response's `main` field is the card Moxfield uses as the deck's cover —
-the commander, for a Commander deck — and its id addresses the art crop on
-Moxfield's CDN.
+**Installing it on a device.** Open the run under the repository's *Actions*
+tab, and download `etoken-debug-apk-<run number>` from the artifacts at the
+bottom of the summary. GitHub serves artifacts as a zip, so unzip it to get
+`app-debug.apk`. It is signed with the standard debug key, which is enough to
+install but means Android will ask you to allow installs from whichever app is
+delivering it. It coexists with nothing — the application id is `com.etoken` —
+and it needs Android 8.0 or newer. Artifacts are kept for 90 days.
 
-**Tokens.** Every card in the deck carries a `scryfall_id`, and Scryfall's card
-objects list related tokens under `all_parts`. So the token screen is two
-batched Scryfall calls: resolve the deck's cards, read their `all_parts`, then
-resolve the token ids that came back — the second call is where the artwork
-is. Both are chunked at Scryfall's 75-identifier limit.
+## 4. Languages
 
-This means the app never parses rules text to work out what makes tokens.
-Scryfall already knows.
+The default locale is **Spanish**, matching the sibling project, with Catalan,
+English, French, German, Italian and Japanese as overrides.
 
-## 2. Prior art this is built on
+Translations use Magic's own terminology in each language rather than a literal
+rendering — *Spielstein* and *Einsatzverzögerung* in German, *pedina* and
+*svogliatezza da evocazione* in Italian, *jeton* and *mal d'invocation* in
+French, *召喚酔い* in Japanese. Japanese declares only the `other` plural, which
+is the only form that language has.
+
+## 5. Prior art
 
 The Moxfield half is **ported from
 [mllagostera/commander-companion](https://github.com/mllagostera/commander-companion)**
-(`backend/internal/moxfield/client.go`), rather than rediscovered. Moxfield
-publishes no API documentation, so that client is the only specification that
-exists. Carried over from it:
-
-- the endpoint set and query parameters above;
-- the browser-shaped `User-Agent` and the `Referer` header, without which
-  Cloudflare turns the request away;
-- the art-crop URL templates — including the trap that a **two-faced card's**
-  crop only exists under `card-face-{faceId}`, because requesting
-  `card-{faceId}` also answers `200` but silently serves a different card;
-- the retry policy: network errors, 5xx and 429 are retried with exponential
-  backoff and honour `Retry-After`; a 404 never is.
-
-One more thing came from that repo's Android client: Scryfall's image CDN
-rejects OkHttp's default `User-Agent` as bot traffic with an HTTP 400, so
-Coil's `ImageLoader` sets a descriptive one. The failure mode is silent —
-images simply never appear.
+(`backend/internal/moxfield/client.go`) rather than rediscovered. Moxfield
+publishes no API documentation, so that client — which runs in production — is
+the only specification that exists. The endpoints, the Cloudflare headers, the
+retry policy and the two-faced art-crop trap all come from it, as does the
+descriptive image `User-Agent` that its Android client carries for the same
+reason.
 
 The version catalog is deliberately kept in lockstep with that project's
-`android/` module, which already builds green against this toolchain.
+`android/` module, and so is the `gradle.properties` set of AGP 9 flags that
+makes it work.
 
-## 3. Architecture
+etoken is nonetheless **standalone**: no shared code, no backend, and no
+dependency on that project at runtime.
 
-Single Gradle module, Kotlin + Jetpack Compose, Material 3.
+## 6. State of verification
 
-```
-com.etoken
-├── data/
-│   ├── moxfield/          wire types, Retrofit API, CDN art-crop URLs
-│   ├── scryfall/          wire types, Retrofit API
-│   ├── Network.kt         OkHttp: headers, rate limiting, retries
-│   ├── DeckMapper.kt      Moxfield's board-keyed JSON ──▶ domain model
-│   ├── MoxfieldRepository.kt
-│   └── UserPreferences.kt DataStore: remembers the last username
-├── domain/
-│   ├── TokenExtractor.kt  the token rules — pure, no I/O, no Android
-│   └── model/
-└── ui/                    three screens, one ViewModel each
-```
+Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
-Dependencies are wired by hand in `AppContainer` rather than with Hilt: this
-app has one repository and one preferences store, so a container built in
-`EtokenApplication` keeps the build free of KSP.
+**Verified.** The app builds and the screens work. CI runs `assembleDebug`,
+`testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
+runs the instrumented suite against it: 88 unit tests and 18 UI tests pass,
+lint is clean, and the run produces an installable APK. The UI tests drive the
+real screens and view models with only the two APIs faked, so they fail when
+the app breaks rather than when a double does.
 
-Two decisions worth knowing about:
-
-- **The deck grid streams.** Deck names appear as soon as search returns;
-  covers fill in afterwards, four decks at a time, and one deck failing to
-  hydrate leaves the rest of the grid alone. Search is undocumented and its
-  payload has changed before, so the grid never assumes it carried a name or
-  a cover — anything missing is fetched per deck, and when search does return
-  everything that costs no request at all.
-- **Tokens are collapsed by name + type + rules text**, not by id. `all_parts`
-  points at one specific *printing*, so a deck drawing from several sets would
-  otherwise show the same 1/1 Soldier four times over. Creator lists are
-  merged; the first printing with art wins the image.
-
-## 4. Build
-
-```bash
-./gradlew :app:assembleDebug     # APK
-./gradlew :app:testDebugUnitTest # unit tests
-```
-
-Needs an Android SDK — `compileSdk 37`, `minSdk 26`. Open the project in
-Android Studio and it will offer to install what's missing.
-
-## 5. State of verification
-
-Honest accounting of what has and has not been run.
-
-**Verified.** The 33 unit tests in `app/src/test/` all pass, covering the
-token rules, the Moxfield and Scryfall wire formats, and the repository's
-paging, caching, batching and by-name fallback (with fake APIs). The whole
-data layer — Retrofit interfaces, OkHttp interceptors, repository — compiles
-against the exact library versions pinned in the catalog.
-
-**Not verified.** The UI layer, the Gradle Android build, and any live API
-call. The environment this was written in has no Android SDK available and
-blocks `api2.moxfield.com`, `api.scryfall.com` and `dl.google.com` at the
-network policy, so `:app` has never been assembled and no request has ever
-been made against the real APIs. The endpoint contract is inherited from a
-client that ran in production, not confirmed here.
-
-The first run on a real device is therefore the real smoke test. If decks
-fail to load, `Network.kt`'s Moxfield headers are the first place to look:
-Cloudflare's posture is the part most likely to have moved.
+**Not verified.** Anything that needs eyes or a live network. The screens are
+exercised, not inspected — nothing has checked that a layout is legible, well
+spaced, or that a German compound noun fits the badge it lands in. The `api-smoke` workflow walks the real APIs with
+the app's own headers, and its first run got **HTTP 403 from Moxfield** — from
+a GitHub runner, which is a datacenter IP that Cloudflare treats far more
+harshly than a phone on mobile data, so that result is a warning rather than a
+verdict. Installing the APK is still the real test.
