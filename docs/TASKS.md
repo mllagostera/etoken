@@ -26,7 +26,7 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 104 unit and 28 instrumented tests, 0 failures, green on CI
+## 1. Verified — 109 unit and 30 instrumented tests, 0 failures, green on CI
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -183,23 +183,23 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     nothing new needed a translation.
   - The screen now reads the boards themselves rather than a map of totals, which is also what
     `TokenFilter` takes — one source for the filter and the badges, as B8 intended.
-  - **CI never ran it**: #54 sat queued without a runner and was cancelled before executing a step,
-    and #57 came back `startup_failure` before creating a job — neither produced a log. Both of the
-    other branches in flight that afternoon were stuck queued too, so this is the account's runners,
-    not the diff.
-  - The **five unit tests** have been run by hand instead: `domain/model/Board.kt`,
-    `TokenBoardRules`, `TokenFilter` and their two test classes compiled with Kotlin 2.4.10 from the
-    command line — no Gradle, no Android — and all 35 tests in the two classes pass. That covers
-    `uniformPlusOneCounters` and the filter's move to reading boards.
-  - The **two instrumented tests** and `TokensScreen.kt` itself are still uncompiled: they need the
-    Android SDK and Google's Maven, which the proxy here answers 403 to. A green run settles those.
+  - **Run first, green second.** #54 and #57 never produced a log — a runner that never arrived and
+    a `startup_failure` — so the first run to execute this was #64, on main, after the merge. It
+    failed, and so did the Hellion assertion B9 had added: three of the thirty instrumented tests.
+    None of them for a reason in the app. CI's emulator is the default AVD, 320x640dp, where
+    `GridCells.Adaptive(150.dp)` gives a single column of cells ~480dp tall: only two rows are
+    composed, and the filter chip's 48dp is enough to push the second out. The tests now scroll to a
+    cell before asserting on it. #65 runs all thirty green, `TokensScreen.kt` included.
 
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
-- [x] **C2** 28 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
-  - B10 adds 2 more, which no run has executed yet: see its note above. With them the suite is
-    30, and the unit suite 109.
+- [x] **C2** 30 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
+  - The AVD is `avdmanager create avd` with no `--device`: a 320x640dp screen, which is a narrower
+    phone than any the app will meet. That is worth keeping — it caught three assertions that only
+    held on a taller screen — but it means an assertion about a lazy list has to scroll to its item
+    first. A cell below the fold is not off screen, it is never composed, and absent from the
+    semantics tree: `assertExists` fails on it as surely as `assertIsDisplayed` would.
 - [x] **C3** Seven locales: Spanish default plus `ca`, `en`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
@@ -259,4 +259,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 47 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 48 commits · CI green including the emulator, all 30 instrumented tests · Scryfall verified live, Moxfield 403 from CI
