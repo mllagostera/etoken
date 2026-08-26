@@ -1,6 +1,7 @@
 package com.etoken.ui.username
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.etoken.R
+import com.etoken.ui.common.LanguageButton
 
 @Composable
 fun UsernameScreen(
@@ -34,6 +36,7 @@ fun UsernameScreen(
     viewModel: UsernameViewModel = viewModel(factory = UsernameViewModel.Factory),
 ) {
     val username by viewModel.username.collectAsStateWithLifecycle()
+    val language by viewModel.language.collectAsStateWithLifecycle()
     val trimmed = username.trim()
 
     fun submit() {
@@ -42,59 +45,74 @@ fun UsernameScreen(
         onSubmit(trimmed)
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            // This screen has no Scaffold, so nothing else consumes the insets
-            // that enableEdgeToEdge() opened up: without this the field sits
-            // under the status bar, and the button under the gesture bar.
-            .systemBarsPadding()
-            .imePadding()
-            // Landscape leaves barely any height once the keyboard is up, and
-            // the submit button is the last thing in the column — it has to be
-            // reachable by scrolling rather than clipped off the bottom.
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = stringResource(R.string.app_name),
-            style = MaterialTheme.typography.headlineMedium,
-        )
-        Text(
-            text = stringResource(R.string.username_prompt),
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-        )
-
-        OutlinedTextField(
-            value = username,
-            onValueChange = viewModel::onUsernameChange,
-            label = { Text(stringResource(R.string.username_label)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
-            keyboardActions = KeyboardActions(onGo = { submit() }),
-        )
-
-        Button(
-            onClick = { submit() },
-            enabled = trimmed.isNotEmpty(),
-            modifier = Modifier.fillMaxWidth(),
+    Box(modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                // This screen has no Scaffold, so nothing else consumes the insets
+                // that enableEdgeToEdge() opened up: without this the field sits
+                // under the status bar, and the button under the gesture bar.
+                .systemBarsPadding()
+                .imePadding()
+                // Landscape leaves barely any height once the keyboard is up, and
+                // the submit button is the last thing in the column — it has to be
+                // reachable by scrolling rather than clipped off the bottom.
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(stringResource(R.string.action_load_decks))
+            Text(
+                text = stringResource(R.string.app_name),
+                style = MaterialTheme.typography.headlineMedium,
+            )
+            Text(
+                text = stringResource(R.string.username_prompt),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+            )
+
+            OutlinedTextField(
+                value = username,
+                onValueChange = viewModel::onUsernameChange,
+                label = { Text(stringResource(R.string.username_label)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+                keyboardActions = KeyboardActions(onGo = { submit() }),
+            )
+
+            Button(
+                onClick = { submit() },
+                enabled = trimmed.isNotEmpty(),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.action_load_decks))
+            }
+
+            // Under the button rather than above it: the prompt already says
+            // "public decks", and this is the small print that explains what that
+            // leaves out. Said here so a missing deck later reads as a limit of
+            // the app rather than as a bug.
+            Text(
+                text = stringResource(R.string.public_decks_only),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
         }
 
-        // Under the button rather than above it: the prompt already says
-        // "public decks", and this is the small print that explains what that
-        // leaves out. Said here so a missing deck later reads as a limit of
-        // the app rather than as a bug.
-        Text(
-            text = stringResource(R.string.public_decks_only),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
+        // Over the column rather than in it: this screen has no top bar, and
+        // the corner is where a screen-level action is looked for. It is also
+        // the one screen every launch passes through, which is what makes it
+        // the place to change a language you cannot read.
+        LanguageButton(
+            current = language,
+            onSelect = viewModel::onLanguageChange,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .systemBarsPadding()
+                .padding(4.dp),
         )
     }
 }

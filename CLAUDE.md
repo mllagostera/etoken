@@ -20,13 +20,28 @@ This trips people up because the repo is deliberately bilingual.
 | Code comments, KDoc, file names | **English** |
 | README, CLAUDE.md, ADRs, any `docs/` | **English** |
 | Commit messages, PR titles and bodies | **English** |
-| UI strings — `res/values/strings.xml` | **Spanish** (this is the default locale) |
-| UI strings — `res/values-ca/`, `res/values-en/` | Catalan, English |
+| UI strings — `res/values/strings.xml` | **English** (this is the default locale) |
+| UI strings — `res/values-es/`, `-ca/`, `-fr/`, `-de/`, `-it/`, `-ja/` | Spanish, Catalan, French, German, Italian, Japanese |
 | Conversation with the repo owner | **Spanish** |
 
-`values/` being Spanish is not an oversight: commander-companion does the same,
-with `values-ca` and `values-en` as the overrides. etoken currently ships
-**only** `values/` — the other two locales are a known gap, not a decision.
+`values/` is English and **there is no `values-en/`** — English *is* the
+default, so a `values-en/` would be a copy that can only drift. Spanish is a
+locale like any other, in `values-es/`.
+
+This is where etoken parts from commander-companion, which defaults to Spanish,
+and it was a deliberate change: `values/` is not "the app's language", it is
+what every locale the app does *not* ship falls back to. A phone set to
+Portuguese used to get Spanish; it now gets English. A phone set to Spanish is
+unaffected — `values-es/` answers first.
+
+The user can also override the device entirely, from the picker in the corner
+of the username screen (`ui/common/LanguagePicker.kt`). Adding a locale means
+three things: a `values-<tag>/` folder, an `AppLanguage` entry, and a
+`language_<tag>` string naming the language **in itself** (`Français`, not
+`French`) — a picker is only useful to someone who cannot read the language
+they are stuck in. `AppLanguageTest` fails if the first two come apart, which
+is the pair that fails silently: an entry with no folder is a switch that
+changes nothing.
 
 ## 2. Branching, commits, PRs
 
@@ -73,7 +88,8 @@ com.etoken
 ```
 
 **Keep `domain/` free of Android imports, and keep `data/` free of them except
-where a platform API is unavoidable** (`UserPreferences` needs `Context`;
+where a platform API is unavoidable** (`UserPreferences` and `AppLanguageStore`
+need `Context`, and the latter also needs `Configuration` to apply a locale;
 nothing else should). This is not architectural purity for its own sake — it is
 what lets the interesting logic be unit-tested on the JVM. Every rule worth
 arguing about lives in `domain/` behind a pure function, and
@@ -112,6 +128,13 @@ a comment at the call site saying so. Don't "clean them up".
   instrumented test has to scroll to a cell before asserting on it — below the
   fold, the cell is not in the semantics tree at all and even `assertExists`
   fails. See `TokensScreenTest.scrollToCell`.
+- **The chosen language is in `SharedPreferences`, not in the DataStore that
+  holds the username.** A locale has to be applied in `attachBaseContext`,
+  before `onCreate` and with nothing to suspend in; DataStore can only be read
+  from a coroutine, so putting it there means `runBlocking` on the main thread
+  at every cold start. See `data/AppLanguageStore.kt`. Changing the language
+  recreates the activity for the same reason — `Resources` are built once, from
+  that context, and no recomposition can reach them.
 - **The token board stores *stacks*, not a count plus counters.** Magic tracks
   counters and summoning sickness per permanent, so "7 tokens, 3 sick, +1/+1 on
   all" cannot represent reality. `TokenBoardRules` also enforces two invariants

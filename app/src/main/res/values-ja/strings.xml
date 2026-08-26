@@ -60,4 +60,8 @@
     <string name="error_unknown">問題が発生しました。</string>
     <string name="copy_of_title">何のコピー？</string>
     <string name="copy_of_hint">カード名</string>
+
+    <string name="action_language">言語</string>
+    <string name="language_title">言語を選ぶ</string>
+    <string name="language_system">端末の言語</string>
 </resources>

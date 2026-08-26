@@ -2,72 +2,87 @@
     <!-- Brand name: deliberately identical in every language. -->
     <string name="app_name" tools:ignore="MissingTranslation">etoken</string>
 
-    <string name="username_prompt">Escribe tu nombre de usuario de Moxfield para cargar tus mazos públicos.</string>
-    <string name="public_decks_only">Los mazos privados y los no listados no aparecen: la app lee Moxfield sin iniciar sesión.</string>
-    <string name="username_label">Usuario de Moxfield</string>
-    <string name="action_load_decks">Cargar mazos</string>
-    <string name="action_retry">Reintentar</string>
-    <string name="action_back">Volver</string>
+    <string name="username_prompt">Type your Moxfield username to load your public decks.</string>
+    <string name="public_decks_only">Private and unlisted decks don’t show up: the app reads Moxfield without signing in.</string>
+    <string name="username_label">Moxfield username</string>
+    <string name="action_load_decks">Load decks</string>
+    <string name="action_retry">Try again</string>
+    <string name="action_back">Back</string>
 
-    <string name="decks_search_hint">Buscar mazo o comandante</string>
-    <string name="decks_search_clear">Borrar la búsqueda</string>
-    <string name="decks_no_matches">Ningún mazo coincide con «%1$s».</string>
-    <string name="decks_filtered_count">%1$d de %2$d</string>
-    <string name="action_refresh">Actualizar</string>
-    <string name="refresh_failed">No se ha podido actualizar. Sigues viendo la última lista cargada.</string>
-    <string name="action_dismiss">Vale</string>
+    <string name="decks_search_hint">Search deck or commander</string>
+    <string name="decks_search_clear">Clear the search</string>
+    <string name="decks_no_matches">No deck matches “%1$s”.</string>
+    <string name="decks_filtered_count">%1$d of %2$d</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="refresh_failed">Couldn’t refresh. You’re still seeing the last list that loaded.</string>
+    <string name="action_dismiss">OK</string>
 
-    <string name="new_game">Nueva partida</string>
-    <string name="new_game_title">¿Empezar una partida nueva?</string>
-    <string name="new_game_warning">Se van también los de otros mazos, pero puedes deshacerlo.</string>
-    <string name="action_start">Vaciar y empezar</string>
+    <string name="new_game">New game</string>
+    <string name="new_game_title">Start a new game?</string>
+    <string name="new_game_warning">Other decks’ tokens go too, though you can undo it.</string>
+    <string name="action_start">Clear and start</string>
 
-    <string name="decks_empty">Este usuario no tiene mazos públicos.</string>
-    <string name="deck_untitled">Mazo sin nombre</string>
+    <string name="decks_empty">This user has no public decks.</string>
+    <string name="deck_untitled">Untitled deck</string>
 
     <string name="tokens_title">Tokens</string>
-    <string name="tokens_empty">Ninguna carta de este mazo crea tokens.</string>
-    <string name="tokens_created_by">Lo crean: %1$s</string>
-    <string name="tokens_filter_in_play">Solo en juego</string>
-    <string name="tokens_filtered_count">%1$d de %2$d</string>
-    <string name="tokens_none_in_play">No tienes ningún token en juego.</string>
+    <string name="tokens_empty">No card in this deck creates tokens.</string>
+    <string name="tokens_created_by">Created by: %1$s</string>
+    <string name="tokens_filter_in_play">In play only</string>
+    <string name="tokens_filtered_count">%1$d of %2$d</string>
+    <string name="tokens_none_in_play">You have no tokens in play.</string>
 
-    <string name="board_in_play">En juego</string>
-    <string name="board_sick">%1$d con mareo de invocación</string>
-    <string name="board_none_sick">Ninguno con mareo</string>
-    <string name="board_empty">Todavía no tienes ninguno en juego.</string>
-    <string name="board_add">Añadir</string>
-    <string name="board_add_other">Otra cantidad…</string>
-    <string name="board_begin_turn">Empieza mi turno</string>
-    <string name="board_counter_all">+1/+1 a todos</string>
-    <string name="board_pick_token">Elige un token para llevar la cuenta.</string>
-    <string name="board_clear">Vaciar</string>
-    <string name="clear_title">¿Vaciar este token?</string>
+    <string name="board_in_play">In play</string>
+    <string name="board_sick">%1$d with summoning sickness</string>
+    <string name="board_none_sick">None summoning sick</string>
+    <string name="board_empty">You haven’t put any into play yet.</string>
+    <string name="board_add">Add</string>
+    <string name="board_add_other">Another amount…</string>
+    <string name="board_begin_turn">My turn begins</string>
+    <string name="board_counter_all">+1/+1 on all</string>
+    <string name="board_pick_token">Pick a token to keep count of.</string>
+    <string name="board_clear">Clear</string>
+    <string name="clear_title">Clear this token?</string>
     <string name="board_base">Base %1$s</string>
-    <string name="board_haste">Prisa</string>
-    <string name="board_haste_note">Entra sin mareo de invocación. Si la prisa se la da otra carta, márcalo tú en cada grupo.</string>
+    <string name="board_haste">Haste</string>
+    <string name="board_haste_note">Enters ready to attack. Haste given by another card is yours to mark on each stack.</string>
 
-    <string name="stack_quantity">Cantidad</string>
+    <string name="stack_quantity">Quantity</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>
-    <string name="stack_sick">Mareo</string>
-    <string name="stack_ready">Puede atacar</string>
-    <string name="stack_counter_some">+1/+1 a solo algunos…</string>
-    <string name="stack_remove">Quitar uno</string>
-    <string name="stack_add">Poner uno más</string>
-    <string name="stack_counter_remove">Quitar un contador</string>
-    <string name="stack_counter_add">Poner un contador</string>
+    <string name="stack_sick">Sick</string>
+    <string name="stack_ready">Can attack</string>
+    <string name="stack_counter_some">+1/+1 on just some…</string>
+    <string name="stack_remove">Remove one</string>
+    <string name="stack_add">Add one more</string>
+    <string name="stack_counter_remove">Remove a counter</string>
+    <string name="stack_counter_add">Add a counter</string>
 
-    <string name="dialog_how_many">¿Cuántos tokens?</string>
-    <string name="dialog_how_many_of">¿A cuántos de los %1$d?</string>
-    <string name="action_undo">Deshacer</string>
-    <string name="action_cancel">Cancelar</string>
-    <string name="action_accept">Aceptar</string>
+    <string name="dialog_how_many">How many tokens?</string>
+    <string name="dialog_how_many_of">On how many of the %1$d?</string>
+    <string name="action_undo">Undo</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_accept">OK</string>
 
-    <string name="error_user_not_found">No hemos encontrado ese usuario en Moxfield. Revisa que esté bien escrito.</string>
-    <string name="error_blocked">Moxfield ha rechazado la petición. Prueba otra vez en unos minutos.</string>
-    <string name="error_network">No hay conexión. Comprueba tu red e inténtalo de nuevo.</string>
-    <string name="error_unknown">Algo ha salido mal.</string>
-    <string name="copy_of_title">¿Qué está copiando?</string>
-    <string name="copy_of_hint">Nombre de la carta</string>
+    <string name="error_user_not_found">We couldn’t find that user on Moxfield. Check the spelling.</string>
+    <string name="error_blocked">Moxfield turned the request away. Try again in a few minutes.</string>
+    <string name="error_network">No connection. Check your network and try again.</string>
+    <string name="error_unknown">Something went wrong.</string>
+    <string name="copy_of_title">What is it copying?</string>
+    <string name="copy_of_hint">Card name</string>
+
+    <!-- The language picker, on the username screen. -->
+    <string name="action_language">Language</string>
+    <string name="language_title">Choose a language</string>
+    <string name="language_system">Device language</string>
+    <!-- Each language names itself, and is deliberately not translated: a
+         picker is only useful to someone who cannot read the current language
+         if every entry is written in the language it offers. -->
+    <string name="language_en" tools:ignore="MissingTranslation">English</string>
+    <string name="language_es" tools:ignore="MissingTranslation">Español</string>
+    <string name="language_ca" tools:ignore="MissingTranslation">Català</string>
+    <string name="language_fr" tools:ignore="MissingTranslation">Français</string>
+    <string name="language_de" tools:ignore="MissingTranslation">Deutsch</string>
+    <string name="language_it" tools:ignore="MissingTranslation">Italiano</string>
+    <string name="language_ja" tools:ignore="MissingTranslation">日本語</string>
 </resources>

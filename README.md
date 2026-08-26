@@ -166,12 +166,12 @@ etoken/
     │       └── theme/                    colours, dynamic colour on Android 12+
     │
     ├── main/res/
-    │   ├── values/                   Spanish — the default locale
-    │   ├── values-ca|en|fr|de|it|ja/  Catalan, English, French, German, Italian, Japanese
+    │   ├── values/                   English — the default locale, and the fallback for the rest
+    │   ├── values-es|ca|fr|de|it|ja/  Spanish, Catalan, French, German, Italian, Japanese
     │   ├── values-night/             dark theme
     │   └── drawable/                 local vector icons; no material-icons artifacts
     │
-    └── test/java/com/etoken/         109 unit tests, all on the JVM
+    └── test/java/com/etoken/         115 unit tests, all on the JVM
         ├── TokenBoardRulesTest.kt        29
         ├── MoxfieldRepositoryTest.kt     11
         ├── DeckFilterTest.kt             10
@@ -182,6 +182,7 @@ etoken/
         ├── HasteTokenTest.kt             8
         ├── TokenBoardStoreTest.kt        7
         ├── UndoHistoryTest.kt            6
+        ├── AppLanguageTest.kt            6
         ├── PowerToughnessTest.kt         4
         └── CopyTokenTest.kt              3
 ```
@@ -189,8 +190,8 @@ etoken/
 ### The rule that holds it together
 
 **`domain/` contains no Android imports, and `data/` contains them only where a
-platform API is unavoidable** — `UserPreferences` needs a `Context`; nothing
-else does.
+platform API is unavoidable** — `UserPreferences` and `AppLanguageStore` need a
+`Context`, and applying a locale needs a `Configuration`; nothing else does.
 
 This is not architectural purity for its own sake. It is what lets every rule
 worth arguing about be unit-tested on a plain JVM: the token extraction, the
@@ -228,8 +229,23 @@ and it needs Android 8.0 or newer. Artifacts are kept for 90 days.
 
 ## 4. Languages
 
-The default locale is **Spanish**, matching the sibling project, with Catalan,
-English, French, German, Italian and Japanese as overrides.
+The default locale is **English**, with Spanish, Catalan, French, German,
+Italian and Japanese as overrides. There is no `values-en/`: English *is*
+`values/`, and a second copy of it could only drift.
+
+That is a change from the sibling project, which defaults to Spanish, and it is
+about fallback rather than about preference — `values/` is what a phone set to
+a language the app does not ship resolves to. A phone in Portuguese used to get
+Spanish and now gets English; a phone in Spanish still gets Spanish.
+
+A phone's language is not the last word, either. The corner of the username
+screen — the one screen every launch passes through — has a picker offering all
+seven, each written in itself, plus *device language* for anyone who never
+wants to think about it. The choice is stored on the device and applied when
+the activity is built, so it survives restarts and outlives the game it was
+made in. The app does this itself rather than leaning on Android 13's per-app
+language setting, which does not exist on the Android 8 through 12 this app
+still supports.
 
 Translations use Magic's own terminology in each language rather than a literal
 rendering — *Spielstein* and *Einsatzverzögerung* in German, *pedina* and
@@ -261,7 +277,7 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: 109 unit tests and 30 UI tests pass,
+runs the instrumented suite against it: 115 unit tests and 32 UI tests pass,
 lint is clean, and the run produces an installable APK. The UI tests drive the
 real screens and view models with only the two APIs faked, so they fail when
 the app breaks rather than when a double does.
@@ -274,6 +290,11 @@ does not compose what is far from the viewport, so a cell below the fold is
 absent from the semantics tree rather than merely off screen. The tests scroll
 to a cell before asserting on it, and #65 is green across all thirty.
 
+**Written, not yet run.** The language picker landed after the last green run:
+six unit tests and two UI tests come with it, and the counts above include them
+on the assumption that they pass. Until a run says otherwise, treat them as
+claims. One part of that feature has no test at all and is called out below.
+
 **Not verified.** Anything that needs eyes or a live network. The screens are
 exercised, not inspected — nothing has checked that a layout is legible, well
 spaced, or that a German compound noun fits the badge it lands in. The `api-smoke` workflow walks the real APIs with
@@ -281,6 +302,14 @@ the app's own headers, and its first run got **HTTP 403 from Moxfield** — from
 a GitHub runner, which is a datacenter IP that Cloudflare treats far more
 harshly than a phone on mobile data, so that result is a warning rather than a
 verdict. Installing the APK is still the real test.
+
+The language switch has a hole in the middle of it that no test reaches.
+Choosing a language is covered — the dialog lists all seven, and the choice is
+written where a freshly built store reads it back — but *applying* it happens in
+`MainActivity.attachBaseContext`, and the UI tests drive composables in a test
+activity that never runs it. That nothing in CI can fail there is precisely why
+it is written down: what is untested is whether picking Japanese redraws the app
+in Japanese, which is the entire point of the feature.
 
 One live question is neither of those and needs nothing but a button press:
 whether Scryfall puts `keywords` on **token** card objects, which is what the
