@@ -70,7 +70,7 @@ push; no person has looked at any of it.
 - [~] Deck grid with commander art and streaming hydration — `ui/decks/`
 - [~] Deck search field with result counter — `ui/decks/DecksScreen.kt`
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
-- [~] Token grid with in-play badges — `ui/tokens/`
+- [~] Token grid with in-play badges, +1/+1 counters included while there is one stack — `ui/tokens/`
 - [~] Quick filter chip: only the tokens with copies on the table — `ui/tokens/TokensScreen.kt`
 - [~] Token board: quantity, summoning sickness, +1/+1 counters — `ui/board/`
 - [~] A "Prisa" badge and one line saying why a hasty token shows no "Mareo" — `ui/board/`
@@ -150,8 +150,8 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     the question is "what have I got out?", and the answer was spread across a grid of mostly empty
     cells.
   - One chip rather than a search field: the grid is short, and the only cut worth making quickly is
-    the one the badges already draw. It reads the same map those badges do, so what the filter keeps
-    and what carries a badge cannot disagree.
+    the one the badges already draw. It reads the same boards those badges do, so what the filter
+    keeps and what carries a badge cannot disagree.
   - The chip only appears once something is in play — and stays while it is on, so emptying the table
     cannot strand a grid filtered down to nothing. In that case the grid says the table is empty
     rather than going blank.
@@ -172,11 +172,34 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - The assumption underneath — that Scryfall populates `keywords` on token card objects — is now
     **A6**: `api-smoke.yml` §6 asks it and fails if the answer is no. It could not be asked from
     here, where the proxy blocks Scryfall with 403.
+- [x] **B10** The grid's badge names the +1/+1 counters when the board has a single stack
+  - Mid-turn the question a badge should answer is "what have I got out, and how big is it?" The
+    count was there; the counters meant opening the board to find out.
+  - Only with **one stack**, and that is the whole rule — `TokenBoard.uniformPlusOneCounters`, null
+    when the board cannot answer with one number. Seven Goblins of which three grew is two answers,
+    and a badge that showed either would be lying about the other half of the table.
+  - Zero counters draws nothing: it is what an untouched token already looks like.
+  - It reuses `stack_counters_chip` (`+1/+1 ×%1$d`), already translated in all seven locales, so
+    nothing new needed a translation.
+  - The screen now reads the boards themselves rather than a map of totals, which is also what
+    `TokenFilter` takes — one source for the filter and the badges, as B8 intended.
+  - **CI never ran it**: #54 sat queued without a runner and was cancelled before executing a step,
+    and #57 came back `startup_failure` before creating a job — neither produced a log. Both of the
+    other branches in flight that afternoon were stuck queued too, so this is the account's runners,
+    not the diff.
+  - The **five unit tests** have been run by hand instead: `domain/model/Board.kt`,
+    `TokenBoardRules`, `TokenFilter` and their two test classes compiled with Kotlin 2.4.10 from the
+    command line — no Gradle, no Android — and all 35 tests in the two classes pass. That covers
+    `uniformPlusOneCounters` and the filter's move to reading boards.
+  - The **two instrumented tests** and `TokensScreen.kt` itself are still uncompiled: they need the
+    Android SDK and Google's Maven, which the proxy here answers 403 to. A green run settles those.
 
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
-- [x] **C2** 18 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
+- [x] **C2** 28 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
+  - B10 adds 2 more, which no run has executed yet: see its note above. With them the suite is
+    30, and the unit suite 109.
 - [x] **C3** Seven locales: Spanish default plus `ca`, `en`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S

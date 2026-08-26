@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.etoken.R
+import com.etoken.domain.model.TokenBoard
 import com.etoken.domain.model.TokenCard
 import com.etoken.ui.common.ActionButton
 import com.etoken.ui.common.BackButton
@@ -74,7 +75,7 @@ fun TokensScreen(
     // Saveable, not remember: a rotation with the dialog open would otherwise
     // dismiss it, which on a destructive confirmation is the worst way to lose it.
     var confirmingNewGame by rememberSaveable { mutableStateOf(false) }
-    val tokensInPlay = inPlay.values.sum()
+    val tokensInPlay = inPlay.values.sumOf { it.total }
 
     Scaffold(
         modifier = modifier,
@@ -196,7 +197,7 @@ fun TokensScreen(
 @Composable
 private fun TokensReady(
     state: TokensUiState.Ready,
-    inPlay: Map<String, Int>,
+    inPlay: Map<String, TokenBoard>,
     selectedTokenId: String?,
     onToggleFilter: () -> Unit,
     onTokenClick: (TokenCard) -> Unit,
@@ -252,7 +253,7 @@ private fun InPlayFilter(selected: Boolean, onToggle: () -> Unit) {
 @Composable
 private fun TokenGrid(
     tokens: List<TokenCard>,
-    inPlay: Map<String, Int>,
+    inPlay: Map<String, TokenBoard>,
     selectedTokenId: String?,
     onTokenClick: (TokenCard) -> Unit,
 ) {
@@ -266,7 +267,7 @@ private fun TokenGrid(
         items(tokens, key = { it.id }) { token ->
             TokenCell(
                 token = token,
-                inPlay = inPlay[token.id] ?: 0,
+                board = inPlay[token.id] ?: TokenBoard(),
                 selected = token.id == selectedTokenId,
                 onClick = { onTokenClick(token) },
             )
@@ -277,10 +278,17 @@ private fun TokenGrid(
 @Composable
 private fun TokenCell(
     token: TokenCard,
-    inPlay: Int,
+    board: TokenBoard,
     selected: Boolean,
     onClick: () -> Unit,
 ) {
+    val inPlay = board.total
+    // Only a board with a single stack can name the counters its copies carry;
+    // with two the grid says nothing and leaves the answer to the board screen,
+    // which has room to show a stack at a time. Zero counters is not worth a
+    // badge either -- it is what an untouched token already looks like.
+    val counters = board.uniformPlusOneCounters?.takeIf { it > 0 }
+
     Column(
         modifier = Modifier.clickable(onClick = onClick),
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -332,6 +340,25 @@ private fun TokenCell(
                     Text(
                         text = "×$inPlay",
                         style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                    )
+                }
+            }
+
+            if (counters != null) {
+                // Opposite corner from the count, not under it: the art's own
+                // power/toughness box sits bottom-right, which is where a Magic
+                // player already looks for a creature's size.
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    shape = RoundedCornerShape(topStart = 10.dp),
+                    modifier = Modifier.align(Alignment.BottomEnd),
+                ) {
+                    Text(
+                        text = stringResource(R.string.stack_counters_chip, counters),
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                     )

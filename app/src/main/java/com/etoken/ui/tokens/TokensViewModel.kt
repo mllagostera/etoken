@@ -11,6 +11,7 @@ import com.etoken.EtokenApplication
 import com.etoken.data.MoxfieldRepository
 import com.etoken.data.TokenBoardStore
 import com.etoken.domain.TokenFilter
+import com.etoken.domain.model.TokenBoard
 import com.etoken.domain.model.TokenCard
 import com.etoken.ui.common.LoadError
 import kotlinx.coroutines.CancellationException
@@ -51,9 +52,15 @@ class TokensViewModel(
 
     private var loadJob: Job? = null
 
-    /** Token id -> how many are on the battlefield, for the grid's badges. */
-    val inPlay: StateFlow<Map<String, Int>> = boards.all
-        .map { all -> all.mapValues { (_, board) -> board.total }.filterValues { it > 0 } }
+    /**
+     * Token id -> what it has on the battlefield, for the grid's badges.
+     *
+     * The whole board rather than just its total: a badge also says how many
+     * +1/+1 counters the copies carry when there is a single stack to ask, and
+     * [com.etoken.domain.model.TokenBoard] is what knows whether there is.
+     */
+    val inPlay: StateFlow<Map<String, TokenBoard>> = boards.all
+        .map { all -> all.filterValues { board -> board.total > 0 } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     val canUndo: StateFlow<Boolean> = boards.canUndo

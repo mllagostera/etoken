@@ -42,5 +42,15 @@ data class TokenBoard(
     val summoningSickCount: Int get() =
         stacks.filter { it.summoningSick }.sumOf { it.quantity }
 
+    /**
+     * The +1/+1 counters every copy in play is carrying, or null when the board
+     * cannot answer with one number.
+     *
+     * Only a single stack can: two stacks mean two answers, and a badge that
+     * picked one of them would be lying about the other. Zero is a real answer
+     * — one stack with no counters — and is not the same as null.
+     */
+    val uniformPlusOneCounters: Int? get() = stacks.singleOrNull()?.plusOneCounters
+
     val isEmpty: Boolean get() = stacks.isEmpty()
 }

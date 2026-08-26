@@ -256,4 +256,55 @@ class TokenBoardRulesTest {
         assertEquals(7, board.total)
         assertEquals(5, board.summoningSickCount)
     }
+
+    @Test
+    fun `one stack can name the counters its copies carry`() {
+        // What the token grid's badge is drawn from: four Goblins in one state,
+        // so "+1/+1 ×2" is true of every copy in play.
+        val board = TokenBoardRules.addCounters(
+            TokenBoardRules.add(empty, 4),
+            stackId = 1,
+            delta = 2,
+        )
+
+        assertEquals(2, board.uniformPlusOneCounters)
+    }
+
+    @Test
+    fun `no counters on the only stack is an answer, not a missing one`() {
+        // Zero and "cannot say" are different: the grid draws no badge for
+        // either, but the board is not being asked to guess here.
+        assertEquals(0, TokenBoardRules.add(empty, 4).uniformPlusOneCounters)
+    }
+
+    @Test
+    fun `two stacks cannot name one number of counters`() {
+        // 3 of the 7 got a counter, so no single figure is true of the table.
+        val board = TokenBoardRules.addCounters(
+            TokenBoardRules.add(empty, 7),
+            stackId = 1,
+            delta = 1,
+            appliesTo = 3,
+        )
+
+        assertEquals(2, board.stacks.size)
+        assertNull(board.uniformPlusOneCounters)
+    }
+
+    @Test
+    fun `an empty battlefield has no counters to name`() {
+        assertNull(empty.uniformPlusOneCounters)
+    }
+
+    @Test
+    fun `stacks that merge back together can name their counters again`() {
+        // The split above, undone: the counter comes off the three, normalize
+        // merges them back, and the board has one answer once more.
+        var board = TokenBoardRules.addCounters(TokenBoardRules.add(empty, 7), 1, 1, appliesTo = 3)
+        val counted = board.stacks.single { it.plusOneCounters == 1 }
+        board = TokenBoardRules.addCounters(board, counted.id, -1)
+
+        assertEquals(1, board.stacks.size)
+        assertEquals(0, board.uniformPlusOneCounters)
+    }
 }
