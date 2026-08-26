@@ -1,11 +1,14 @@
 package com.etoken
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -49,7 +52,10 @@ class CopyTokenBoardTest {
         awaitText(str(R.string.copy_of_title))
         compose.onNode(hasSetTextAction()).performTextInput(name)
         compose.onNodeWithText(str(R.string.action_accept)).performClick()
-        awaitText(name)
+        // Wait for the dialog to leave, not for the name to appear. The name
+        // is in the dialog's own text field as well, so waiting for it can be
+        // satisfied by the very field that is about to be dismissed.
+        awaitGone(str(R.string.copy_of_title))
     }
 
     @Test
@@ -79,17 +85,21 @@ class CopyTokenBoardTest {
         addCopy("+2", "Krenko, Mob Boss")
         addCopy("+1", "Atraxa")
 
-        // Three tokens across two rows, not one row of three. The rows are
-        // asserted to exist rather than to be visible: two stack cards do not
-        // both fit above the fold on a phone, and this test is about how the
-        // board is divided, not about what fits on screen.
-        compose.onNodeWithText("Krenko, Mob Boss").assertExists()
-        compose.onNodeWithText("Atraxa").assertExists()
-        compose.onNodeWithText("2 ×").assertExists()
-        compose.onNodeWithText("1 ×").assertExists()
-
-        // The running total is at the top, so it really is displayed.
+        // Three tokens across two rows, not one row of three.
         compose.onNodeWithText("3").assertIsDisplayed()
+
+        // The whole screen is one LazyColumn, which does not compose what is
+        // below the fold, and two stack cards do not both fit on a phone. So
+        // the second row has to be scrolled to before it exists at all --
+        // asserting that it merely exists is no weaker than asserting that it
+        // is displayed, and both fail without the scroll.
+        scrollToRow("Krenko, Mob Boss")
+        compose.onNodeWithText("Krenko, Mob Boss").assertIsDisplayed()
+        compose.onNodeWithText("2 ×").assertIsDisplayed()
+
+        scrollToRow("Atraxa")
+        compose.onNodeWithText("Atraxa").assertIsDisplayed()
+        compose.onNodeWithText("1 ×").assertIsDisplayed()
     }
 
     @Test
@@ -105,9 +115,19 @@ class CopyTokenBoardTest {
         compose.onNodeWithText("3 ×").assertIsDisplayed()
     }
 
+    private fun nodesWithText(text: String) =
+        compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes()
+
     private fun awaitText(text: String) = compose.waitUntil(TIMEOUT) {
-        compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty()
+        nodesWithText(text).isNotEmpty()
     }
+
+    private fun awaitGone(text: String) = compose.waitUntil(TIMEOUT) {
+        nodesWithText(text).isEmpty()
+    }
+
+    private fun scrollToRow(text: String) =
+        compose.onNode(hasScrollAction()).performScrollToNode(hasText(text))
 
     private companion object {
         const val TIMEOUT = 5_000L
