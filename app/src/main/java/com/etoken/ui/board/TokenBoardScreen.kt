@@ -103,7 +103,14 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
     var askingHowMany by rememberSaveable { mutableStateOf(false) }
     var confirmingClear by rememberSaveable { mutableStateOf(false) }
     var countersForStackId by rememberSaveable { mutableStateOf<Long?>(null) }
+    // A copy token means nothing without saying what it copies, so the amount
+    // waits here until the name arrives.
+    var pendingCopyQuantity by rememberSaveable { mutableStateOf<Int?>(null) }
     val countersTarget = countersForStackId?.let { id -> board.stacks.firstOrNull { it.id == id } }
+
+    val addTokens: (Int) -> Unit = { amount ->
+        if (token.isCopy) pendingCopyQuantity = amount else viewModel.add(amount)
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -116,6 +123,7 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
             QuickActions(
                 board = board,
                 viewModel = viewModel,
+                onAdd = addTokens,
                 onAskHowMany = { askingHowMany = true },
                 onAskClear = { confirmingClear = true },
             )
@@ -151,8 +159,8 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
             max = 999,
             onDismiss = { askingHowMany = false },
             onConfirm = { amount ->
-                viewModel.add(amount)
                 askingHowMany = false
+                addTokens(amount)
             },
         )
     }
@@ -178,6 +186,18 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
                 TextButton(onClick = { confirmingClear = false }) {
                     Text(stringResource(R.string.action_cancel))
                 }
+            },
+        )
+    }
+
+    pendingCopyQuantity?.let { amount ->
+        NameDialog(
+            title = stringResource(R.string.copy_of_title),
+            label = stringResource(R.string.copy_of_hint),
+            onDismiss = { pendingCopyQuantity = null },
+            onConfirm = { name ->
+                viewModel.add(amount, copying = name)
+                pendingCopyQuantity = null
             },
         )
     }
@@ -276,6 +296,7 @@ private fun BoardSummary(board: TokenBoard) {
 private fun QuickActions(
     board: TokenBoard,
     viewModel: TokenBoardViewModel,
+    onAdd: (Int) -> Unit,
     onAskHowMany: () -> Unit,
     onAskClear: () -> Unit,
 ) {
@@ -285,7 +306,7 @@ private fun QuickActions(
             // where the count is whatever is on the battlefield right now.
             listOf(1, 2, 5).forEach { amount ->
                 FilledTonalButton(
-                    onClick = { viewModel.add(amount) },
+                    onClick = { onAdd(amount) },
                     modifier = Modifier.weight(1f),
                 ) {
                     Text("+$amount")
@@ -342,6 +363,15 @@ private fun StackCard(
                     ?.let { size ->
                         Text(size, style = MaterialTheme.typography.titleMedium)
                     }
+            }
+
+            stack.copying?.let { copied ->
+                Text(
+                    text = copied,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
 
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -454,6 +484,38 @@ private fun StateBadge(
     ) {
         body()
     }
+}
+
+@Composable
+private fun NameDialog(
+    title: String,
+    label: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var text by rememberSaveable { mutableStateOf("") }
+    val trimmed = text.trim()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text(label) },
+                singleLine = true,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(trimmed) }, enabled = trimmed.isNotEmpty()) {
+                Text(stringResource(R.string.action_accept))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
 }
 
 @Composable

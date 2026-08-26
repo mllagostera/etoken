@@ -50,4 +50,6 @@
     <string name="error_blocked">Moxfield a refusé la requête. Réessaie dans quelques minutes.</string>
     <string name="error_network">Pas de connexion. Vérifie ton réseau et réessaie.</string>
     <string name="error_unknown">Quelque chose s\'est mal passé.</string>
+    <string name="copy_of_title">Que copie-t-il ?</string>
+    <string name="copy_of_hint">Nom de la carte</string>
 </resources>

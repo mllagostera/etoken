@@ -34,6 +34,8 @@ object Fakes {
     const val COMMANDER = "Krenko, Mob Boss"
     const val TOKEN_ID = "goblin-sid"
     const val TOKEN_NAME = "Goblin"
+    const val COPY_TOKEN_ID = "copy-sid"
+    const val COPY_TOKEN_NAME = "Copy"
 
     fun repository(): MoxfieldRepository = MoxfieldRepository(FakeMoxfield(), FakeScryfall())
 }
@@ -134,6 +136,25 @@ private class FakeScryfall : ScryfallApi {
             ),
         ),
         "chieftain-sid" to ScryfallCard(id = "chieftain-sid", name = "Goblin Chieftain"),
+        // Atraxa's deck makes a copy token; Krenko's does not. Keeping them in
+        // separate decks lets the copy tests have a board to themselves.
+        "atraxa-sid" to ScryfallCard(
+            id = "atraxa-sid",
+            name = Fakes.OTHER_COMMANDER,
+            allParts = listOf(
+                RelatedCard(
+                    id = Fakes.COPY_TOKEN_ID,
+                    component = "token",
+                    name = Fakes.COPY_TOKEN_NAME,
+                    typeLine = "Token",
+                ),
+            ),
+        ),
+        Fakes.COPY_TOKEN_ID to ScryfallCard(
+            id = Fakes.COPY_TOKEN_ID,
+            name = Fakes.COPY_TOKEN_NAME,
+            typeLine = "Token",
+        ),
         Fakes.TOKEN_ID to ScryfallCard(
             id = Fakes.TOKEN_ID,
             name = Fakes.TOKEN_NAME,

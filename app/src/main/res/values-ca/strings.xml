@@ -50,4 +50,6 @@
     <string name="error_blocked">Moxfield ha rebutjat la petició. Torna-ho a provar d\'aquí a uns minuts.</string>
     <string name="error_network">No hi ha connexió. Comprova la xarxa i torna-ho a provar.</string>
     <string name="error_unknown">Alguna cosa ha anat malament.</string>
+    <string name="copy_of_title">Què està copiant?</string>
+    <string name="copy_of_hint">Nom de la carta</string>
 </resources>

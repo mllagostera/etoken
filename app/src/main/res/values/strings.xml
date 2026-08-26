@@ -60,4 +60,6 @@
     <string name="error_blocked">Moxfield ha rechazado la petición. Prueba otra vez en unos minutos.</string>
     <string name="error_network">No hay conexión. Comprueba tu red e inténtalo de nuevo.</string>
     <string name="error_unknown">Algo ha salido mal.</string>
+    <string name="copy_of_title">¿Qué está copiando?</string>
+    <string name="copy_of_hint">Nombre de la carta</string>
 </resources>

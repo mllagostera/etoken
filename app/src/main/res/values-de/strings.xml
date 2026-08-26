@@ -50,4 +50,6 @@
     <string name="error_blocked">Moxfield hat die Anfrage abgewiesen. Versuche es in ein paar Minuten erneut.</string>
     <string name="error_network">Keine Verbindung. Prüfe dein Netzwerk und versuche es erneut.</string>
     <string name="error_unknown">Etwas ist schiefgelaufen.</string>
+    <string name="copy_of_title">Was kopiert er?</string>
+    <string name="copy_of_hint">Kartenname</string>
 </resources>

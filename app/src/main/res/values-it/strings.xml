@@ -50,4 +50,6 @@
     <string name="error_blocked">Moxfield ha rifiutato la richiesta. Riprova tra qualche minuto.</string>
     <string name="error_network">Nessuna connessione. Controlla la rete e riprova.</string>
     <string name="error_unknown">Qualcosa è andato storto.</string>
+    <string name="copy_of_title">Che cosa sta copiando?</string>
+    <string name="copy_of_hint">Nome della carta</string>
 </resources>

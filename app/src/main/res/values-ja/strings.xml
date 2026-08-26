@@ -50,4 +50,6 @@
     <string name="error_blocked">Moxfield がリクエストを拒否しました。数分後にもう一度お試しください。</string>
     <string name="error_network">接続がありません。ネットワークを確認してもう一度お試しください。</string>
     <string name="error_unknown">問題が発生しました。</string>
+    <string name="copy_of_title">何のコピー？</string>
+    <string name="copy_of_hint">カード名</string>
 </resources>

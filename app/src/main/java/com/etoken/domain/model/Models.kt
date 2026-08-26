@@ -38,4 +38,18 @@ data class TokenCard(
     /** Printed power/toughness. Strings because Magic uses `*` and `1+*`. */
     val power: String? = null,
     val toughness: String? = null,
-)
+) {
+    /**
+     * Whether this is a token that copies something else.
+     *
+     * Scryfall names these exactly "Copy", which is the whole rule — and it is
+     * a card name, so it stays English however the app is localised. It lives
+     * here rather than as a literal at the call sites so there is one place to
+     * change if Scryfall ever names them differently.
+     */
+    val isCopy: Boolean get() = name.trim().equals(COPY_TOKEN_NAME, ignoreCase = true)
+
+    companion object {
+        const val COPY_TOKEN_NAME = "Copy"
+    }
+}

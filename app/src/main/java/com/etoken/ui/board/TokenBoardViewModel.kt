@@ -66,7 +66,8 @@ class TokenBoardViewModel(
         }
     }
 
-    fun add(quantity: Int) = edit { TokenBoardRules.add(it, quantity) }
+    fun add(quantity: Int, copying: String? = null) =
+        edit { TokenBoardRules.add(it, quantity, copying) }
 
     fun changeQuantity(stackId: Long, delta: Int) =
         edit { TokenBoardRules.changeQuantity(it, stackId, delta) }

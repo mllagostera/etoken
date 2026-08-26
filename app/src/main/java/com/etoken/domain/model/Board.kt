@@ -15,6 +15,15 @@ data class TokenStack(
     val quantity: Int,
     val plusOneCounters: Int,
     val summoningSick: Boolean,
+    /**
+     * What this copy is a copy of, for tokens named "Copy"; null for every
+     * other token.
+     *
+     * On the stack rather than on the token because two copies of different
+     * creatures are two different things on the battlefield, however identical
+     * their token card is.
+     */
+    val copying: String? = null,
 )
 
 /**

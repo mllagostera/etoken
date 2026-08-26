@@ -4,6 +4,7 @@ import com.etoken.domain.TokenBoardRules
 import com.etoken.domain.model.TokenBoard
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -169,6 +170,63 @@ class TokenBoardRulesTest {
 
         assertEquals(1, board.stacks.size)
         assertEquals(4, board.stacks.single().quantity)
+    }
+
+    @Test
+    fun `a copy remembers what it copies`() {
+        val board = TokenBoardRules.add(empty, 2, copying = "Krenko, Mob Boss")
+
+        assertEquals("Krenko, Mob Boss", board.stacks.single().copying)
+    }
+
+    @Test
+    fun `copies of different creatures never merge`() {
+        // The whole point of putting it in the signature: these are two things
+        // on the battlefield, however identical their token card is.
+        var board = TokenBoardRules.add(empty, 2, copying = "Krenko, Mob Boss")
+        board = TokenBoardRules.add(board, 1, copying = "Atraxa, Praetors' Voice")
+
+        assertEquals(2, board.stacks.size)
+        assertEquals(3, board.total)
+        assertEquals(
+            setOf("Krenko, Mob Boss", "Atraxa, Praetors' Voice"),
+            board.stacks.mapNotNull { it.copying }.toSet(),
+        )
+    }
+
+    @Test
+    fun `copies of the same creature do merge`() {
+        var board = TokenBoardRules.add(empty, 2, copying = "Krenko, Mob Boss")
+        board = TokenBoardRules.add(board, 3, copying = "Krenko, Mob Boss")
+
+        assertEquals(1, board.stacks.size)
+        assertEquals(5, board.total)
+    }
+
+    @Test
+    fun `a copy and a plain token are never the same stack`() {
+        var board = TokenBoardRules.add(empty, 1, copying = "Krenko, Mob Boss")
+        board = TokenBoardRules.add(board, 1)
+
+        assertEquals(2, board.stacks.size)
+    }
+
+    @Test
+    fun `a blank copy name is stored as none at all`() {
+        assertNull(TokenBoardRules.add(empty, 1, copying = "   ").stacks.single().copying)
+    }
+
+    @Test
+    fun `counters still split a copy stack without losing what it copies`() {
+        val board = TokenBoardRules.addCounters(
+            TokenBoardRules.add(empty, 4, copying = "Krenko, Mob Boss"),
+            stackId = 1,
+            delta = 1,
+            appliesTo = 1,
+        )
+
+        assertEquals(2, board.stacks.size)
+        assertTrue(board.stacks.all { it.copying == "Krenko, Mob Boss" })
     }
 
     @Test

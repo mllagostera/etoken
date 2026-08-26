@@ -21,7 +21,7 @@ object TokenBoardRules {
      * actually happens: a token that entered this turn can't attack or tap.
      * Correcting a miscount is what the per-stack controls are for.
      */
-    fun add(board: TokenBoard, quantity: Int): TokenBoard {
+    fun add(board: TokenBoard, quantity: Int, copying: String? = null): TokenBoard {
         if (quantity <= 0) return board
 
         val entering = TokenStack(
@@ -29,6 +29,7 @@ object TokenBoardRules {
             quantity = quantity,
             plusOneCounters = 0,
             summoningSick = true,
+            copying = copying?.trim()?.takeIf { it.isNotEmpty() },
         )
         return normalize(
             board.copy(stacks = board.stacks + entering, nextStackId = board.nextStackId + 1),
@@ -139,12 +140,15 @@ object TokenBoardRules {
      * first, so the row you most likely want to touch is at the top.
      */
     private fun normalize(board: TokenBoard): TokenBoard {
-        val merged = LinkedHashMap<Pair<Int, Boolean>, TokenStack>()
+        val merged = LinkedHashMap<Triple<Int, Boolean, String?>, TokenStack>()
 
         for (stack in board.stacks) {
             if (stack.quantity <= 0) continue
 
-            val signature = stack.plusOneCounters to stack.summoningSick
+            // What this copy copies is part of the signature: without it a copy
+            // of Krenko and a copy of Atraxa would merge into one row, which is
+            // the exact confusion stacks exist to prevent.
+            val signature = Triple(stack.plusOneCounters, stack.summoningSick, stack.copying)
             val existing = merged[signature]
 
             merged[signature] = if (existing == null) {
