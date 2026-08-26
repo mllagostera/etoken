@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="username_prompt">Gib deinen Moxfield-Benutzernamen ein, um deine öffentlichen Decks zu laden.</string>
+    <string name="public_decks_only">Private und nicht gelistete Decks tauchen nicht auf: Die App liest Moxfield, ohne sich anzumelden.</string>
     <string name="username_label">Moxfield-Benutzername</string>
     <string name="action_load_decks">Decks laden</string>
     <string name="action_retry">Erneut versuchen</string>

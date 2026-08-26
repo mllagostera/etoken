@@ -99,7 +99,13 @@ fun DecksScreen(
         Box(Modifier.padding(padding)) {
             when (val current = state) {
                 DecksUiState.Loading -> LoadingView()
-                DecksUiState.Empty -> MessageView(stringResource(R.string.decks_empty))
+                // An empty list is nearly always a private or unlisted deck
+                // rather than an account with nothing in it, and that is not
+                // something the user can tell from "no public decks" alone.
+                DecksUiState.Empty -> MessageView(
+                    message = stringResource(R.string.decks_empty),
+                    detail = stringResource(R.string.public_decks_only),
+                )
                 is DecksUiState.Failed -> ErrorView(current.error, onRetry = viewModel::load)
                 is DecksUiState.Ready -> DecksReady(current, viewModel, onDeckClick)
             }

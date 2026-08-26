@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="username_prompt">Saisis ton nom d\'utilisateur Moxfield pour charger tes decks publics.</string>
+    <string name="public_decks_only">Les decks privés et non répertoriés n\'apparaissent pas : l\'app lit Moxfield sans se connecter.</string>
     <string name="username_label">Nom d\'utilisateur Moxfield</string>
     <string name="action_load_decks">Charger les decks</string>
     <string name="action_retry">Réessayer</string>
