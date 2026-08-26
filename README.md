@@ -261,21 +261,18 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: 104 unit tests and 28 UI tests pass,
+runs the instrumented suite against it: 109 unit tests and 30 UI tests pass,
 lint is clean, and the run produces an installable APK. The UI tests drive the
 real screens and view models with only the two APIs faked, so they fail when
 the app breaks rather than when a double does.
 
-The tree above counts 109 unit and 30 UI tests. The seven added for the grid's
-counter badge are not in the figures above: CI never ran them — one run was
-cancelled while queued, the next failed at startup, neither producing a log.
-The five **unit** tests among them were run by hand instead, compiling
-`domain/` and its tests with Kotlin 2.4.10 straight from the command line, no
-Gradle and no Android: `TokenBoardRulesTest` and `TokenFilterTest` pass whole,
-which is what the rule behind the badge rests on. The **two instrumented**
-tests, and the change to `TokensScreen` itself, have been compiled nowhere —
-that needs the Android SDK, which this environment cannot reach. Treat those
-two as written, not as passing.
+The seven tests behind the grid's counter badge are in those figures now. The
+first run to execute them, #64, failed three — and none of the three for a
+reason in the app. The emulator is the default AVD, 320x640dp, which the token
+grid answers with a single column of cells most of the screen tall; a lazy grid
+does not compose what is far from the viewport, so a cell below the fold is
+absent from the semantics tree rather than merely off screen. The tests scroll
+to a cell before asserting on it, and #65 is green across all thirty.
 
 **Not verified.** Anything that needs eyes or a live network. The screens are
 exercised, not inspected — nothing has checked that a layout is legible, well

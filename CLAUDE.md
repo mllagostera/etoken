@@ -107,6 +107,11 @@ a comment at the call site saying so. Don't "clean them up".
   is silent: images simply never appear.
 - **Tokens come from Scryfall's `all_parts`.** The app never parses a card's
   rules text to work out what it creates, and it should stay that way.
+- **CI's emulator is a 320x640dp screen**, and the token grid is one column
+  wide there. A lazy grid composes only what is near the viewport, so an
+  instrumented test has to scroll to a cell before asserting on it — below the
+  fold, the cell is not in the semantics tree at all and even `assertExists`
+  fails. See `TokensScreenTest.scrollToCell`.
 - **The token board stores *stacks*, not a count plus counters.** Magic tracks
   counters and summoning sickness per permanent, so "7 tokens, 3 sick, +1/+1 on
   all" cannot represent reality. `TokenBoardRules` also enforces two invariants
