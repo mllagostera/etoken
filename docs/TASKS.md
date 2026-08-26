@@ -166,9 +166,16 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     nothing new needed a translation.
   - The screen now reads the boards themselves rather than a map of totals, which is also what
     `TokenFilter` takes — one source for the filter and the badges, as B8 intended.
-  - **Not yet run anywhere**: the environment this was written in has no Android SDK, and the first
-    CI run for it (#54) sat in the queue without a runner and was cancelled before executing a step.
-    Five unit tests and two instrumented ones cover it on paper. A green run is what settles it.
+  - **CI never ran it**: #54 sat queued without a runner and was cancelled before executing a step,
+    and #57 came back `startup_failure` before creating a job — neither produced a log. Both of the
+    other branches in flight that afternoon were stuck queued too, so this is the account's runners,
+    not the diff.
+  - The **five unit tests** have been run by hand instead: `domain/model/Board.kt`,
+    `TokenBoardRules`, `TokenFilter` and their two test classes compiled with Kotlin 2.4.10 from the
+    command line — no Gradle, no Android — and all 35 tests in the two classes pass. That covers
+    `uniformPlusOneCounters` and the filter's move to reading boards.
+  - The **two instrumented tests** and `TokensScreen.kt` itself are still uncompiled: they need the
+    Android SDK and Google's Maven, which the proxy here answers 403 to. A green run settles those.
 
 ### C. Quality and infrastructure
 

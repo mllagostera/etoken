@@ -253,11 +253,16 @@ tests and 22 UI tests, lint was clean, and it produced an installable APK. The
 UI tests drive the real screens and view models with only the two APIs faked,
 so they fail when the app breaks rather than when a double does.
 
-The tree above counts 99 unit and 24 UI tests: the five unit and two
-instrumented tests added for the grid's counter badge have **not run yet** —
-their run sat in the queue without a runner and was cancelled before executing
-a step. Until a green run says otherwise, treat those seven as written, not
-as passing.
+The tree above counts 99 unit and 24 UI tests, and the seven of those added
+for the grid's counter badge have not been through CI: its runs for that branch
+never started — one was cancelled while queued, the next failed at startup.
+The five **unit** tests among them have been run by hand since, compiling
+`domain/` and its tests with Kotlin 2.4.10 straight from the command line, no
+Gradle and no Android: 35 tests over `TokenBoardRules` and `TokenFilter` pass,
+which is what the rule behind the badge rests on. The **two instrumented**
+tests, and the change to `TokensScreen` itself, have been compiled nowhere —
+that needs the Android SDK, which this environment cannot reach. Treat those
+two as written, not as passing.
 
 **Not verified.** Anything that needs eyes or a live network. The screens are
 exercised, not inspected — nothing has checked that a layout is legible, well
