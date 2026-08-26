@@ -204,6 +204,16 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
 - [x] **C6** `ui-tooling-preview` dropped; the logging interceptor is now wired, debug builds only
+- [x] **C10** One debug key for every build, so an APK from CI installs over the last one
+  - CI signed with AGP's auto-generated `~/.android/debug.keystore`, which a GitHub runner does not
+    have and therefore creates fresh — a different key on each run. Android refuses an update whose
+    signature has changed, so each APK could only be installed by uninstalling the previous one.
+  - `app/debug.keystore` is committed and wired as `signingConfigs.debug`. It is not a secret and is
+    not treated as one: the credentials are Android's own published debug ones. C4's release signing
+    is a separate question and deliberately untouched.
+  - `versionCode` is now `GITHUB_RUN_NUMBER`, 1 outside CI. It costs a Kotlin recompile per run —
+    `BuildConfig` carries the version, so its task stops hitting the build cache — and buys an APK
+    the phone can order against the one already on it.
 - [ ] **C7** Accessibility never tested. Content descriptions exist; TalkBack has not seen them · S
 - [ ] **C8** The six new locales have never been rendered · S
   - Lint is satisfied and the keys line up, which says nothing about layout. `Einsatzverzögerung`

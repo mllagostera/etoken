@@ -7,6 +7,15 @@ plugins {
     alias(libs.plugins.kotlinCompose)
 }
 
+/**
+ * CI's run number, so every APK Actions publishes is newer than the one before
+ * it and a phone treats installing it as an update rather than a reinstall. It
+ * is also the only way to tell, from the phone, which build is on it.
+ *
+ * 1 everywhere else: outside CI nothing is being updated over the air.
+ */
+val buildNumber = providers.environmentVariable("GITHUB_RUN_NUMBER").orNull?.toIntOrNull() ?: 1
+
 android {
     namespace = "com.etoken"
     compileSdk = 37
@@ -15,14 +24,40 @@ android {
         applicationId = "com.etoken"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
+        versionCode = buildNumber
         versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
     }
 
+    // A debug keystore of the project's own, committed alongside the code.
+    //
+    // Without this, `debug` is signed with AGP's auto-generated
+    // ~/.android/debug.keystore -- and a GitHub runner has no such file, so the
+    // build creates a fresh one with a new key on every single run. Android
+    // refuses to update an installed app whose signature does not match, so
+    // each APK from CI could only be installed by uninstalling the last one.
+    // That is what "conflicto con el paquete" on the phone means.
+    //
+    // A debug keystore is not a secret and is not treated as one: these are the
+    // credentials Android itself ships for debug builds, publicly documented.
+    // What it buys is that every machine -- CI, and anyone's checkout -- signs
+    // with the same key. The release build has no signing config and is not
+    // meant to inherit this one (C4).
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+            storeType = "pkcs12"
+        }
+    }
+
     buildTypes {
+        // `debug` picks up signingConfigs["debug"] on its own; the block above
+        // is the whole of it.
         release {
             isMinifyEnabled = false
             proguardFiles(
