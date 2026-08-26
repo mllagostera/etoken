@@ -3,9 +3,20 @@ name: Android CI
 # Runs on every branch, not just main. This repo has never been compiled
 # anywhere -- CI is the first machine with an Android SDK that will touch it --
 # so waiting for a pull request to find out would waste the whole point.
+#
+# On push only, deliberately. Adding `pull_request` as well ran everything
+# twice on a branch with a pull request open: the two events carry different
+# `github.ref` values (`refs/heads/<branch>` and `refs/pull/<n>/merge`), so the
+# concurrency group below cancels within each event but never across them. The
+# checks still show on the pull request either way, because they are attached
+# to the commit rather than to the pull request.
+#
+# What that gives up is the run against the merge commit, which is the one that
+# catches "green on the branch, broken once merged". Worth revisiting the day
+# this repo has more than one branch in flight; today main only moves when a
+# pull request lands, and that push is itself built.
 on:
   push:
-  pull_request:
   workflow_dispatch:
 
 concurrency:
