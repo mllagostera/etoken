@@ -107,8 +107,9 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     stacks. So it joins `TokenStack` *and* the merge signature in `TokenBoardRules`, which is
     currently `plusOneCounters to summoningSick`. Leaving it out would silently merge a copy of
     Krenko with a copy of Atraxa — the exact failure the stack model exists to prevent.
-  - Open: how to recognise one. Name of "Copy", an empty subtype, or oracle text about copying — that
-    wants settling against real Scryfall data rather than guesswork, so it waits on A3/A4.
+  - Recognised by name: Scryfall calls them `Copy`. Settled 2026-08-26, so this no longer waits on
+    A3/A4. Worth a named predicate in `domain/` rather than a string literal at the call site —
+    it is one rule, it wants one test, and card names are English regardless of the app's locale.
   - In memory like the rest of the board, and cleared by "Nueva partida".
 
 ### C. Quality and infrastructure
