@@ -54,12 +54,18 @@ has been seen on a screen.
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
 - [~] Token grid with in-play badges — `ui/tokens/`
 - [~] Token board: quantity, summoning sickness, +1/+1 counters — `ui/board/`
+- [~] Both destructive actions confirm and name what is lost — `ui/board/`, `ui/tokens/`
+- [~] Every dialog survives rotation, and the counters one holds a stack id rather than a stack
 - [~] New game, behind a confirmation that names what is lost — `ui/tokens/TokensScreen.kt`
+
+### Text
+- [~] Seven locales: Spanish default, plus `ca`, `en`, `fr`, `de`, `it`, `ja` — key parity and XML verified
 
 ### Build
 - [~] Gradle setup, catalog aligned with commander-companion's `android/`
 - [~] Manual DI in `AppContainer`, no Hilt
 - [~] Coil `ImageLoader` with the User-Agent Scryfall's CDN demands
+- [x] `api-smoke.yml`: walks the real APIs with the app's own headers, on demand
 
 ## 3. Pending
 
@@ -97,6 +103,9 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
 - [x] **C6** `ui-tooling-preview` dropped; the logging interceptor is now wired, debug builds only
 - [ ] **C7** Accessibility never tested. Content descriptions exist; TalkBack has not seen them · S
+- [ ] **C8** The six new locales have never been rendered · S
+  - Lint is satisfied and the keys line up, which says nothing about layout. `Einsatzverzögerung`
+    is 19 characters in a badge sized for `Mareo`, and Japanese breaks lines by rules Latin text does not.
 
 ## 4. Deliberate decisions — not gaps
 
@@ -110,39 +119,28 @@ Don't turn these into tasks without asking. The reasoning is in `CLAUDE.md` §6.
 
 ## 5. Order of work
 
-Priority follows one rule: **nothing here is trustworthy until the build is
-green.** Every `[~]` in §2 is a claim, and claims cost nothing to make and
-everything to rely on. So anything that moves compilation forward outranks
-anything that doesn't, however tempting the feature.
+The rule has moved on. It used to be "nothing is trustworthy until the build is
+green"; the build is green, so the floor is raised — the code is valid, lint is
+clean, the tests pass. But every `[~]` in §2 is still a claim about behaviour
+**nobody has watched happen**, and that is now the only thing standing between
+this and a working app.
 
-CI changed what that means. Until 2026-08-25 the first compile needed a human
-with an Android SDK; now a runner does it on every push, and its log can be
-read and acted on without one.
+1. **A4 and A5, and they need you.** Install the APK from the latest green run.
+   Everything below is guesswork ranked against an app no one has used.
+2. **A3 resolves itself from that.** If Moxfield answers on a phone, the 403
+   was the runner's datacenter IP and there is nothing to fix. If it does not,
+   `Network.kt`'s headers are the work, and they are the part of the inherited
+   contract most likely to have moved.
+3. **C8** — look at the six locales while you are there. It costs one pass
+   through the screens with the phone's language changed.
+4. **B5**, the two-pane tablet layout. Decided, wanted, and the largest UI
+   change on the list; it wanted a build that had stayed green, and now it has.
+5. **B1** (undo) needs a design pass — what it restores, and how far back —
+   before any code.
+6. The rest of C is housekeeping, in any order.
 
-### Tonight, autonomously
-
-1. **A1 — get the build green.** A loop: read the run, fix what it names, push,
-   repeat. This is the night's actual work; everything below is what to do
-   between runs.
-2. **A2 — clear lint**, once the build stops failing ahead of it.
-3. **A3 through CI** — a `workflow_dispatch` job that curls Moxfield and
-   Scryfall with the exact headers `Network.kt` sends. Answers the Cloudflare
-   question without waiting for a device.
-4. **C6 — drop the two unused dependencies.** Independent of everything else.
-5. **B6 — confirm before "Vaciar"**, reusing the "Nueva partida" pattern.
-6. **B4 — keep the search query across process death.**
-
-### Deliberately not tonight
-
-- **B5** is decided and wanted, but it is the largest UI change on the list.
-  Building a two-pane layout on code that has never compiled is laying bricks
-  on wet concrete. It goes first once the build is green and *stays* green.
-- **B1** (undo) needs a design pass — what it restores, and how far back —
-  not just code.
-- **C3** (Catalan and English strings) is translation work. A bad translation
-  is worse than an honest gap.
-- **A4, A5** need a real device. They stay with you.
+Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-25 · 15 commits · CI green · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-25 · 18 commits · CI green · PR #1 open · Scryfall verified live, Moxfield 403 from CI
