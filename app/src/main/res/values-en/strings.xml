@@ -29,6 +29,7 @@
     <string name="board_add_other">Another amount…</string>
     <string name="board_begin_turn">My turn begins</string>
     <string name="board_counter_all">+1/+1 on all</string>
+    <string name="board_pick_token">Pick a token to keep count of.</string>
     <string name="board_clear">Clear</string>
     <string name="clear_title">Clear this token?</string>
     <string name="board_base">Base %1$s</string>

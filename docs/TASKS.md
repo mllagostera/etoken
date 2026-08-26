@@ -26,7 +26,7 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 88 unit and 16 instrumented tests, 0 failures, green on CI
+## 1. Verified — 88 unit and 18 instrumented tests, 0 failures, green on CI
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -48,7 +48,7 @@ the two APIs are ever faked.
 - [x] The screens run: a remembered username returns, decks reach the grid and name their commanders,
   search narrows by name and by commander, tapping a deck reports the right one, tokens arrive
   summoning sick and the untap step clears them, a counter turns a 1/1 into a 2/2, and clearing asks
-  first — `app/src/androidTest/`, 16 tests on an AVD
+  first — `app/src/androidTest/`, 18 tests on an AVD
 - [x] A copy token asks what it is copying, keeps the answer on the stack, and two copies of
   different creatures stay two rows — `domain/`, `ui/board/`, 3 unit and 4 instrumented tests
 
@@ -93,6 +93,8 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 - [ ] **A4** Confirm Moxfield's image CDN loads on a device · S — Scryfall's is confirmed, see §1
 - [ ] **A5** Look at the board screen on a small phone — it is the longest layout · S
   - The emulator proves it *works*; it says nothing about whether it fits.
+  - The same goes for the two-pane layout: it is driven by tests at 1280dp, but 1280dp is wider than
+    the AVD's screen, so nobody has seen the two panes side by side.
 
 ### B. Product gaps
 
@@ -107,10 +109,13 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 - [ ] **B2** The deck's card list is not visible anywhere, only its tokens · M
 - [ ] **B3** Private and unlisted decks are invisible — needs Moxfield auth, if they allow it · L
 - [x] **B4** The search query survives process death — it lives in the `SavedStateHandle`
-- [ ] **B5** Two panes on large screens: the token list beside the open board · L
-  - **Decided 2026-08-25:** tablets are a realistic target, so option B. Capping the width was the cheap
-    alternative and is explicitly not what we are doing.
-  - Needs a `WindowSizeClass` split, and the board becoming a pane rather than its own route.
+- [x] **B5** Two panes past 840dp: the token grid beside the open board — `ui/TokensAndBoard.kt`
+  - The split reads the layout's own constraints instead of pulling in `material3-window-size-class`:
+    same 840dp threshold, one place in the app asks the question, one fewer artifact in the build.
+  - 840 and not 600: a tablet in portrait is around 800dp, and half of that is narrower than the phone
+    the board was laid out for. Portrait stays on one pane on purpose.
+  - The board is still its own route on a phone. Which arrangement is used is decided from the width,
+    not from the navigation graph, so both drive the same view models and the same board store.
 - [x] **B6** "Vaciar" asks first and names how many tokens leave the table
 - [x] **B7** A copy token asks what it is copying — recognised by name, since Scryfall calls them `Copy`
   - The name lives on the **stack**, not the token, and joined the merge signature in
@@ -120,7 +125,7 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
-- [x] **C2** 16 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
+- [x] **C2** 18 instrumented tests drive the real screens on an emulator in CI — `.github/workflows/android-ci.yml`
 - [x] **C3** Seven locales: Spanish default plus `ca`, `en`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
@@ -171,12 +176,10 @@ this and a working app.
    contract most likely to have moved.
 3. **C8** — look at the six locales while you are there. It costs one pass
    through the screens with the phone's language changed.
-4. **B5**, the two-pane tablet layout. Decided, wanted, and the largest UI
-   change on the list; it wanted a build that had stayed green, and now it has.
-5. The rest of C is housekeeping, in any order.
+4. The rest of C is housekeeping, in any order.
 
 Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 28 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 29 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI

@@ -105,6 +105,24 @@ class TokenBoardViewModel(
         const val ARG_PUBLIC_ID = "publicId"
         const val ARG_TOKEN_ID = "tokenId"
 
+        /**
+         * For the tablet layout, where the board is a pane rather than a route
+         * and so has no navigation arguments of its own to read.
+         */
+        fun factoryFor(publicId: String, tokenId: String): ViewModelProvider.Factory =
+            viewModelFactory {
+                initializer {
+                    val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
+                        as EtokenApplication
+                    TokenBoardViewModel(
+                        repository = app.container.repository,
+                        boards = app.container.tokenBoards,
+                        publicId = publicId,
+                        tokenId = tokenId,
+                    )
+                }
+            }
+
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]

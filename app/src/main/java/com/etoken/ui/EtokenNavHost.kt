@@ -11,7 +11,6 @@ import com.etoken.ui.board.TokenBoardScreen
 import com.etoken.ui.board.TokenBoardViewModel
 import com.etoken.ui.decks.DecksScreen
 import com.etoken.ui.decks.DecksViewModel
-import com.etoken.ui.tokens.TokensScreen
 import com.etoken.ui.tokens.TokensViewModel
 import com.etoken.ui.username.UsernameScreen
 
@@ -69,8 +68,12 @@ fun EtokenNavHost() {
             // The board route needs the deck too, and the entry already carries it.
             val publicId = entry.arguments?.getString(TokensViewModel.ARG_PUBLIC_ID).orEmpty()
 
-            TokensScreen(
-                onTokenClick = { token ->
+            // Wide enough, and the board is the pane on the right instead of
+            // the destination this navigates to. Which one it is is decided
+            // inside, from the width actually available.
+            TokensAndBoard(
+                publicId = publicId,
+                onOpenBoard = { token ->
                     navController.navigate(Routes.board(publicId, token.id))
                 },
                 onBack = { navController.popBackStack() },

@@ -29,6 +29,7 @@
     <string name="board_add_other">その他の数…</string>
     <string name="board_begin_turn">自分のターン開始</string>
     <string name="board_counter_all">全体に +1/+1</string>
+    <string name="board_pick_token">カウントするトークンを選んでください。</string>
     <string name="board_clear">空にする</string>
     <string name="clear_title">このトークンを空にしますか？</string>
     <string name="board_base">基本 %1$s</string>

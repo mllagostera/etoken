@@ -29,6 +29,7 @@
     <string name="board_add_other">Una altra quantitat…</string>
     <string name="board_begin_turn">Comença el meu torn</string>
     <string name="board_counter_all">+1/+1 a tots</string>
+    <string name="board_pick_token">Tria un token per portar-ne el compte.</string>
     <string name="board_clear">Buida</string>
     <string name="clear_title">Vols buidar aquest token?</string>
     <string name="board_base">Base %1$s</string>

@@ -29,6 +29,7 @@
     <string name="board_add_other">Andere Anzahl…</string>
     <string name="board_begin_turn">Mein Zug beginnt</string>
     <string name="board_counter_all">+1/+1 auf alle</string>
+    <string name="board_pick_token">Wähle einen Token, den du mitzählen willst.</string>
     <string name="board_clear">Leeren</string>
     <string name="clear_title">Diesen Spielstein leeren?</string>
     <string name="board_base">Basis %1$s</string>

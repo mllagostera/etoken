@@ -1,6 +1,7 @@
 package com.etoken.ui.tokens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,6 +55,12 @@ fun TokensScreen(
     onTokenClick: (TokenCard) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    /**
+     * Marked in the grid, so that beside an open board pane it is visible which
+     * token the board belongs to. Always null on a phone, where the board is a
+     * screen of its own and the grid is not on show at the same time.
+     */
+    selectedTokenId: String? = null,
     viewModel: TokensViewModel = viewModel(factory = TokensViewModel.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -116,7 +123,8 @@ fun TokensScreen(
                 TokensUiState.Loading -> LoadingView()
                 TokensUiState.Empty -> MessageView(stringResource(R.string.tokens_empty))
                 is TokensUiState.Failed -> ErrorView(current.error, onRetry = viewModel::load)
-                is TokensUiState.Ready -> TokenGrid(current.tokens, inPlay, onTokenClick)
+                is TokensUiState.Ready ->
+                    TokenGrid(current.tokens, inPlay, selectedTokenId, onTokenClick)
             }
         }
     }
@@ -167,6 +175,7 @@ fun TokensScreen(
 private fun TokenGrid(
     tokens: List<TokenCard>,
     inPlay: Map<String, Int>,
+    selectedTokenId: String?,
     onTokenClick: (TokenCard) -> Unit,
 ) {
     LazyVerticalGrid(
@@ -180,6 +189,7 @@ private fun TokenGrid(
             TokenCell(
                 token = token,
                 inPlay = inPlay[token.id] ?: 0,
+                selected = token.id == selectedTokenId,
                 onClick = { onTokenClick(token) },
             )
         }
@@ -187,7 +197,12 @@ private fun TokenGrid(
 }
 
 @Composable
-private fun TokenCell(token: TokenCard, inPlay: Int, onClick: () -> Unit) {
+private fun TokenCell(
+    token: TokenCard,
+    inPlay: Int,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
     Column(
         modifier = Modifier.clickable(onClick = onClick),
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -198,7 +213,18 @@ private fun TokenCell(token: TokenCard, inPlay: Int, onClick: () -> Unit) {
                 // Magic card proportions, as Scryfall serves them.
                 .aspectRatio(488f / 680f)
                 .clip(RoundedCornerShape(10.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .then(
+                    if (selected) {
+                        Modifier.border(
+                            width = 3.dp,
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(10.dp),
+                        )
+                    } else {
+                        Modifier
+                    },
+                ),
             contentAlignment = Alignment.Center,
         ) {
             if (token.imageUrl != null) {

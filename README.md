@@ -76,6 +76,12 @@ token's board, and starting a new game, which clears every board because token
 ids are Scryfall ids and the same Goblin is the same entry whichever deck
 brought it.
 
+On a screen at least 840dp wide — a tablet in landscape — the board stops
+being a screen of its own and becomes a pane beside the grid, with the open
+token marked in the list. Below that it is a destination like any other. The
+width decides, not the navigation graph, and both arrangements run on the same
+view models and the same board store.
+
 **Undo** covers both, and every other edit. The trail is kept over all the
 boards at once rather than one per token, which is what makes a new game
 undoable at all — it empties every board, and a per-token trail could not put
@@ -111,7 +117,7 @@ etoken/
     │   │   ├── Network.kt                OkHttp: headers, rate limiting, retries
     │   │   ├── DeckMapper.kt             Moxfield's board-keyed JSON → domain model
     │   │   ├── MoxfieldRepository.kt     paging, caching, batching, name fallback
-    │   │   ├── TokenBoardStore.kt        in-memory battlefield state, shared
+    │   │   ├── TokenBoardStore.kt        in-memory battlefield state, and undo
     │   │   └── UserPreferences.kt        DataStore: the remembered username
     │   │
     │   ├── domain/                   pure Kotlin — no Android imports at all
@@ -119,12 +125,14 @@ etoken/
     │   │   ├── TokenBoardRules.kt        what is on the battlefield
     │   │   ├── DeckFilter.kt             accent-blind search over name and commander
     │   │   ├── PowerToughness.kt         printed size plus counters, `*` included
+    │   │   ├── UndoHistory.kt            a bounded trail, and what counts as a step
     │   │   └── model/
     │   │       ├── Models.kt             DeckSummary, DeckDetail, TokenCard
     │   │       └── Board.kt              TokenStack, TokenBoard
     │   │
     │   └── ui/                       Compose, Material 3, one ViewModel per screen
     │       ├── EtokenNavHost.kt          the four routes
+    │       ├── TokensAndBoard.kt         one pane or two, decided by the width
     │       ├── username/                 screen 1 — who are you on Moxfield
     │       ├── decks/                    screen 2 — the deck grid, search, refresh
     │       ├── tokens/                   screen 3 — what this deck can create
@@ -217,7 +225,7 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: 88 unit tests and 16 UI tests pass,
+runs the instrumented suite against it: 88 unit tests and 18 UI tests pass,
 lint is clean, and the run produces an installable APK. The UI tests drive the
 real screens and view models with only the two APIs faked, so they fail when
 the app breaks rather than when a double does.

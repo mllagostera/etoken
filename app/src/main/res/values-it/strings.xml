@@ -29,6 +29,7 @@
     <string name="board_add_other">Un\'altra quantità…</string>
     <string name="board_begin_turn">Inizia il mio turno</string>
     <string name="board_counter_all">+1/+1 a tutte</string>
+    <string name="board_pick_token">Scegli una pedina di cui tenere il conto.</string>
     <string name="board_clear">Svuota</string>
     <string name="clear_title">Svuotare questa pedina?</string>
     <string name="board_base">Base %1$s</string>

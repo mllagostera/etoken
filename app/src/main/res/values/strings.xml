@@ -36,6 +36,7 @@
     <string name="board_add_other">Otra cantidad…</string>
     <string name="board_begin_turn">Empieza mi turno</string>
     <string name="board_counter_all">+1/+1 a todos</string>
+    <string name="board_pick_token">Elige un token para llevar la cuenta.</string>
     <string name="board_clear">Vaciar</string>
     <string name="clear_title">¿Vaciar este token?</string>
     <string name="board_base">Base %1$s</string>

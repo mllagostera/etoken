@@ -29,6 +29,7 @@
     <string name="board_add_other">Autre quantité…</string>
     <string name="board_begin_turn">Mon tour commence</string>
     <string name="board_counter_all">+1/+1 sur tous</string>
+    <string name="board_pick_token">Choisissez un jeton à suivre.</string>
     <string name="board_clear">Vider</string>
     <string name="clear_title">Vider ce jeton ?</string>
     <string name="board_base">Base %1$s</string>
