@@ -140,6 +140,21 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - Left alone by "Nueva partida" and by undo on purpose: the filter is the user's, not the board's.
   - In the `SavedStateHandle` like the deck search, for the same reason: coming back from a killed
     process to a grid that had quietly un-filtered itself reads as having lost your place.
+- [ ] **B9** Tokens printed with haste still arrive summoning sick · S
+  - `TokenBoardRules.add` sets `summoningSick = true` unconditionally, so a Dragon with haste has
+    to be corrected by hand with the per-stack chip every single time it enters. The word "haste"
+    appears nowhere in the code: this is missing, not half-done.
+  - The fix that fits the repo: ask Scryfall for **`keywords`** -- the structured list, which
+    `ScryfallCard` does not request today -- expose it as `TokenCard.hasHaste`, and let `add` take
+    whether the copies enter sick instead of assuming it. **No rules-text parsing**, per CLAUDE.md
+    §5; `oracleText` is kept for dedupe and display and should stay that way.
+  - The manual chip stays whatever happens. Haste handed out by another permanent -- Goblin
+    Chieftain, Anger -- is table state the app cannot know, so printed haste is the only half of
+    this that can ever be automatic. Worth saying on the board screen so an absent "Mareo" does
+    not read as a bug.
+  - **Unverified assumption**: that Scryfall populates `keywords` on token card objects. It could
+    not be checked from the environment this was written in, which the proxy blocks with 403.
+    `api-smoke.yml` is where to settle it before the rule is trusted.
 
 ### C. Quality and infrastructure
 
@@ -202,4 +217,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 29 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 41 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
