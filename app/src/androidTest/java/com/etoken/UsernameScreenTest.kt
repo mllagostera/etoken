@@ -1,5 +1,6 @@
 package com.etoken
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -64,6 +65,16 @@ class UsernameScreenTest {
 
         compose.waitUntil(TIMEOUT) { submitted != null }
         assertEquals("krenko", submitted)
+    }
+
+    @Test
+    fun the_screen_says_up_front_that_only_public_decks_are_read() {
+        val viewModel = UsernameViewModel(UserPreferences(context))
+        compose.setContent {
+            EtokenTheme { UsernameScreen(onSubmit = {}, viewModel = viewModel) }
+        }
+
+        compose.onNodeWithText(str(R.string.public_decks_only)).assertIsDisplayed()
     }
 
     private fun awaitText(text: String) = compose.waitUntil(TIMEOUT) {

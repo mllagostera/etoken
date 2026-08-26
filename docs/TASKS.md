@@ -26,7 +26,7 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 94 unit and 22 instrumented tests, 0 failures, green on CI
+## 1. Verified — 94 unit and 24 instrumented tests, 0 failures, green on CI
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -55,6 +55,8 @@ the two APIs are ever faked.
   different creatures stay two rows — `domain/`, `ui/board/`, 3 unit and 4 instrumented tests
 - [x] The quick filter appears with the first token on the table, hides the rest of the grid, and
   says so instead of going blank when the table empties — `ui/tokens/`, 4 instrumented tests
+- [x] The public-decks limit is on screen before the username is typed, and again on an empty deck
+  list — `ui/username/`, `ui/decks/`, 2 instrumented tests
 
 ## 2. Works, never looked at
 
@@ -75,6 +77,7 @@ push; no person has looked at any of it.
 
 ### Text
 - [~] Seven locales: Spanish default, plus `ca`, `en`, `fr`, `de`, `it`, `ja` — key parity and XML verified
+- [~] The note saying private and unlisted decks are not read — `ui/username/`, `ui/decks/`
 
 ### Build
 - [~] Gradle setup, catalog aligned with commander-companion's `android/`
@@ -114,6 +117,12 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     play aid, and nothing in the app hints at one.
 - [ ] **B2** The deck's card list is not visible anywhere, only its tokens · M
 - [ ] **B3** Private and unlisted decks are invisible — needs Moxfield auth, if they allow it · L
+  - **Said out loud since 2026-08-26**, which is not the same as fixed: the username screen and the
+    empty deck list both name the limit. Until auth exists, the failure mode worth avoiding is a user
+    reading a missing deck as a broken app.
+  - The search endpoint never mentions the decks it is not allowed to show, so an account with only
+    private decks is indistinguishable from an empty one. That is why the note lives on the empty
+    state rather than being computed from anything.
 - [x] **B4** The search query survives process death — it lives in the `SavedStateHandle`
 - [x] **B5** Two panes past 840dp: the token grid beside the open board — `ui/TokensAndBoard.kt`
   - The split reads the layout's own constraints instead of pulling in `material3-window-size-class`:
@@ -217,4 +226,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 41 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
+**Last reviewed:** 2026-08-26 · 42 commits · CI green including the emulator · Scryfall verified live, Moxfield 403 from CI
