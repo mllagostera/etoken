@@ -35,6 +35,7 @@ class TokensScreenTest {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private fun str(id: Int, vararg args: Any) = context.getString(id, *args)
+    private fun plural(id: Int, count: Int) = context.resources.getQuantityString(id, count, count)
 
     private val boards = TokenBoardStore()
 
@@ -89,8 +90,17 @@ class TokensScreenTest {
 
         compose.onNodeWithText(str(R.string.tokens_filter_in_play)).performClick()
 
+        // assertExists rather than assertIsDisplayed, and the emulator is why:
+        // the grid is lazy, so an item that comes back is in the semantics tree
+        // a frame before it is placed, and asserting it is on screen right here
+        // is a race. What this test is about is what the grid holds. That the
+        // cell is genuinely visible is covered above, on a grid nothing has
+        // filtered.
         awaitText(Fakes.TREASURE_TOKEN_NAME)
-        compose.onNodeWithText(Fakes.TREASURE_TOKEN_NAME).assertIsDisplayed()
+        compose.onNodeWithText(Fakes.TREASURE_TOKEN_NAME).assertExists()
+        // The top bar is not lazy: it going back to counting the deck's tokens
+        // is the filter being off, not merely the grid being wider.
+        compose.onNodeWithText(plural(R.plurals.tokens_count, 2)).assertIsDisplayed()
     }
 
     @Test
@@ -110,8 +120,11 @@ class TokensScreenTest {
 
         compose.onNodeWithText(str(R.string.tokens_filter_in_play)).performClick()
 
+        // Existence again, for the reason given above: both cells are being
+        // re-added to a lazy grid at this instant.
         awaitText(Fakes.TREASURE_TOKEN_NAME)
-        compose.onNodeWithText(Fakes.TOKEN_NAME).assertIsDisplayed()
+        compose.onNodeWithText(Fakes.TOKEN_NAME).assertExists()
+        compose.onNodeWithText(plural(R.plurals.tokens_count, 2)).assertIsDisplayed()
     }
 
     private fun awaitText(text: String) = compose.waitUntil(TIMEOUT) {
