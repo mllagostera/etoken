@@ -123,6 +123,11 @@ a comment at the call site saying so. Don't "clean them up".
   is silent: images simply never appear.
 - **Tokens come from Scryfall's `all_parts`.** The app never parses a card's
   rules text to work out what it creates, and it should stay that way.
+- **`app/debug.keystore` is committed on purpose.** Without it, every CI run
+  signs with a debug key it generated seconds earlier, and each APK refuses to
+  install over the last one. It holds Android's own published debug
+  credentials, so there is nothing in it to leak. Release signing is separate
+  and still unsolved (C4).
 - **CI's emulator is a 320x640dp screen**, and the token grid is one column
   wide there. A lazy grid composes only what is near the viewport, so an
   instrumented test has to scroll to a cell before asserting on it — below the

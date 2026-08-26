@@ -222,10 +222,18 @@ green tick.
 **Installing it on a device.** Open the run under the repository's *Actions*
 tab, and download `etoken-debug-apk-<run number>` from the artifacts at the
 bottom of the summary. GitHub serves artifacts as a zip, so unzip it to get
-`app-debug.apk`. It is signed with the standard debug key, which is enough to
-install but means Android will ask you to allow installs from whichever app is
+`app-debug.apk`. Android will ask you to allow installs from whichever app is
 delivering it. It coexists with nothing — the application id is `com.etoken` —
 and it needs Android 8.0 or newer. Artifacts are kept for 90 days.
+
+Each build installs **over** the last one: `app/debug.keystore` is committed,
+so CI and every checkout sign with the same key, and `versionCode` is the run
+number, so the phone can see which of two builds is newer. That is worth
+saying because it was not always true: every APK CI published before this
+change was signed with a key the runner had generated seconds earlier, so it
+conflicted with whatever was already installed. If you are updating from one
+of those, uninstall first — you lose the saved Moxfield username and nothing
+else.
 
 ## 4. Languages
 
