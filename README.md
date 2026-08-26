@@ -76,51 +76,7 @@ token's board, and starting a new game, which clears every board because token
 ids are Scryfall ids and the same Goblin is the same entry whichever deck
 brought it.
 
-## 2. How it talks to the world
-
-Two APIs, no backend of our own.
-
-**Listing a user's decks.** Moxfield has no "decks by user" endpoint. The
-deck-*search* endpoint filtered to a single author is how the site itself does
-it, and it paginates:
-
-```
-GET https://api2.moxfield.com/v2/decks/search-sfw
-      ?authorUserNames={user}&pageNumber=1&pageSize=100
-      &sortType=Updated&sortDirection=Descending
-      &includePinned=true&showIllegal=true
-```
-
-**Deck contents and commander art.**
-
-```
-GET https://api2.moxfield.com/v3/decks/all/{publicId}
-```
-
-The response's `main` field is the card Moxfield uses as the deck's cover — the
-commander, for a Commander deck — and its id addresses the art crop on
-Moxfield's CDN.
-
-**Tokens.** Every card in a deck carries a `scryfall_id`. Two batched calls to
-`POST https://api.scryfall.com/cards/collection` do the rest: resolve the
-deck's cards, read the tokens their `all_parts` reference, then resolve those
-ids, which is where the artwork lives. Both are chunked at Scryfall's
-75-identifier limit, and a card Moxfield reports without a `scryfall_id` falls
-back to being resolved by name.
-
-### Four things that look wrong and are not
-
-Each cost real debugging, in this repo or in its sibling. Each has a comment at
-the call site saying so.
-
-| | |
-|---|---|
-| Moxfield needs a browser-shaped `User-Agent` **and** a `Referer` | It sits behind Cloudflare and turns away anything that looks like a client |
-| A two-faced card's art crop only exists under `card-face-{faceId}` | `card-{faceId}` also answers `200`, but the two id namespaces are separate, so it serves a different card entirely |
-| Scryfall's image CDN answers `400` to OkHttp's default `User-Agent` | Coil's `ImageLoader` sets a descriptive one. The failure is silent: images simply never appear |
-| Requests are retried on 5xx and 429, never on 404 | A deck that does not exist will not start existing |
-
-## 3. Project structure
+## 2. Project structure
 
 ```
 etoken/
@@ -202,7 +158,7 @@ sibling project uses Hilt and earns it across many feature modules; this app
 has one repository and two stores, and staying free of KSP keeps the build
 fast.
 
-## 4. Building
+## 3. Building
 
 ```bash
 ./gradlew :app:assembleDebug        # build
@@ -216,7 +172,7 @@ project in Android Studio will offer to install whatever is missing.
 CI runs all three on every push and uploads the debug APK as an artifact, so a
 green run produces something installable rather than just a green tick.
 
-## 5. Languages
+## 4. Languages
 
 The default locale is **Spanish**, matching the sibling project, with Catalan,
 English, French, German, Italian and Japanese as overrides.
@@ -227,7 +183,7 @@ rendering — *Spielstein* and *Einsatzverzögerung* in German, *pedina* and
 French, *召喚酔い* in Japanese. Japanese declares only the `other` plural, which
 is the only form that language has.
 
-## 6. Prior art
+## 5. Prior art
 
 The Moxfield half is **ported from
 [mllagostera/commander-companion](https://github.com/mllagostera/commander-companion)**
@@ -245,7 +201,7 @@ makes it work.
 etoken is nonetheless **standalone**: no shared code, no backend, and no
 dependency on that project at runtime.
 
-## 7. State of verification
+## 6. State of verification
 
 Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
