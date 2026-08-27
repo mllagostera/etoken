@@ -6,6 +6,7 @@ import com.etoken.data.scryfall.CollectionRequest
 import com.etoken.data.scryfall.Identifier
 import com.etoken.data.scryfall.ScryfallApi
 import com.etoken.data.scryfall.ScryfallCard
+import com.etoken.domain.DeckSource
 import com.etoken.domain.TokenExtractor
 import com.etoken.domain.model.DeckDetail
 import com.etoken.domain.model.DeckSummary
@@ -25,21 +26,24 @@ class MoxfieldRepository(
     private val tokenCache = mutableMapOf<String, List<TokenCard>>()
 
     /**
-     * Every public deck belonging to [username], newest update first.
+     * Every public deck the [source] names, newest update first.
      *
      * Moxfield exposes no "decks of user X" endpoint, so this pages through
      * the deck-search endpoint filtered to one author — the same approach
-     * commander-companion's backend uses.
+     * commander-companion's backend uses. The preconstructed decks are that
+     * same search with a format filter on top, so they share this path rather
+     * than getting one of their own.
      */
-    suspend fun listDecks(username: String): List<DeckSummary> = withContext(Dispatchers.IO) {
+    suspend fun listDecks(source: DeckSource): List<DeckSummary> = withContext(Dispatchers.IO) {
         val summaries = mutableListOf<DeckSummary>()
 
         var page = 1
         while (page <= MAX_PAGES) {
             val response = moxfield.searchDecks(
-                username = username.trim(),
+                username = source.username.trim(),
                 pageNumber = page,
                 pageSize = MoxfieldApi.PAGE_SIZE,
+                format = source.format,
             )
 
             response.data

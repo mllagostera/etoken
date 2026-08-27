@@ -66,7 +66,14 @@ fun DecksScreen(
                 title = {
                     Column {
                         Text(
-                            text = viewModel.username,
+                            // "WizardsOfTheCoast" is where precons happen to
+                            // live, not something the user asked for, so the
+                            // listing is titled by what it is instead.
+                            text = if (viewModel.source.isPrecons) {
+                                stringResource(R.string.precons_title)
+                            } else {
+                                viewModel.source.username
+                            },
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -102,10 +109,16 @@ fun DecksScreen(
                 // An empty list is nearly always a private or unlisted deck
                 // rather than an account with nothing in it, and that is not
                 // something the user can tell from "no public decks" alone.
-                DecksUiState.Empty -> MessageView(
-                    message = stringResource(R.string.decks_empty),
-                    detail = stringResource(R.string.public_decks_only),
-                )
+                // None of which applies to the precons: nothing there is
+                // private, so an empty answer means Moxfield's filter moved.
+                DecksUiState.Empty -> if (viewModel.source.isPrecons) {
+                    MessageView(message = stringResource(R.string.precons_empty))
+                } else {
+                    MessageView(
+                        message = stringResource(R.string.decks_empty),
+                        detail = stringResource(R.string.public_decks_only),
+                    )
+                }
                 is DecksUiState.Failed -> ErrorView(current.error, onRetry = viewModel::load)
                 is DecksUiState.Ready -> DecksReady(current, viewModel, onDeckClick)
             }

@@ -77,6 +77,8 @@ push; no person has looked at any of it.
 
 ### Screens
 - [~] Username entry, remembered in DataStore; insets- and keyboard-aware — `ui/username/`
+- [ ] A second button on that screen loading Wizards' Commander precons, no username needed —
+  `ui/username/`, `domain/DeckSource.kt` (B13: written, never compiled or run)
 - [~] Deck grid with commander art and streaming hydration — `ui/decks/`
 - [~] Deck search field with result counter — `ui/decks/DecksScreen.kt`
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
@@ -265,6 +267,23 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     fail on a splash that hangs: the condition holds *drawing*, and an undrawn composable still
     reports itself displayed to the semantics tree. That half is A7.
 
+- [ ] **B13** A way in for someone with no Moxfield account: Wizards' Commander precons
+  - One button on the username screen, and no new screen behind it. The precons are the same
+    `v2/decks/search-sfw` call the app already makes, filtered to `authorUserNames=WizardsOfTheCoast`
+    **and** `fmt=commanderPrecons` — Wizards publishes far more than precons under that account, so
+    the author alone would list a few thousand decks of every format.
+  - `DeckSource` in `domain/` is what carries the pair, so the route, the repository call and the
+    screen title all read one answer instead of each spelling the filter out again.
+    `MoxfieldRepository.listDecks` takes it in place of a bare username.
+  - The deck screen titles that listing by what it is, not by who published it: "WizardsOfTheCoast"
+    is where precons live, not something a user typed. Its empty state differs too — nothing there
+    is private, so an empty answer means the filter moved rather than that decks are being withheld.
+  - **Written, not verified.** Eight unit tests and two instrumented tests come with it; none has
+    run, and nothing has compiled it — this environment has no Android SDK. The unverifiable half is
+    `fmt=commanderPrecons` itself: Moxfield documents nothing, and only a live request can say
+    whether that is still the format's name. If it has moved, the symptom is an empty grid with the
+    precon empty state, and `DeckSource.PRECON_FORMAT` is the one line to change.
+
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
@@ -352,4 +371,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-27 · 51 commits · run #73 green including the emulator, all 33 instrumented tests · Scryfall verified live, Moxfield 403 from CI · nothing written is now unrun; what is left needs a device
+**Last reviewed:** 2026-08-27 · 51 commits · run #73 green including the emulator, all 33 instrumented tests · Scryfall verified live, Moxfield 403 from CI · everything up to run #73 has run; B13's ten tests are written and unrun, and no compiler has read that change yet

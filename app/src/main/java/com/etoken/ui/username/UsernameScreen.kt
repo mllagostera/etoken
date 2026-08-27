@@ -14,6 +14,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +34,7 @@ import com.etoken.ui.common.LanguageButton
 @Composable
 fun UsernameScreen(
     onSubmit: (String) -> Unit,
+    onPrecons: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: UsernameViewModel = viewModel(factory = UsernameViewModel.Factory),
 ) {
@@ -96,6 +99,28 @@ fun UsernameScreen(
             // the app rather than as a bug.
             Text(
                 text = stringResource(R.string.public_decks_only),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+
+            // Everything above needs a username; this needs none. The rule
+            // makes that break visible instead of leaving a second button
+            // looking like a variant of the first one.
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+
+            // Outlined rather than filled: it is a way in for someone who has
+            // no Moxfield account, not the thing the screen is asking for.
+            // Always enabled — the author and the format are fixed.
+            OutlinedButton(
+                onClick = onPrecons,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.action_load_precons))
+            }
+
+            Text(
+                text = stringResource(R.string.precons_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

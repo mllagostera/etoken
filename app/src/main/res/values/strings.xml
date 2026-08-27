@@ -6,6 +6,12 @@
     <string name="public_decks_only">Private and unlisted decks don’t show up: the app reads Moxfield without signing in.</string>
     <string name="username_label">Moxfield username</string>
     <string name="action_load_decks">Load decks</string>
+    <!-- The precon shortcut on the username screen: Moxfield keeps Wizards’
+         preconstructed decks under one account, so no username is needed. -->
+    <string name="action_load_precons">Browse preconstructed decks</string>
+    <string name="precons_hint">Wizards’ Commander precons. No username needed.</string>
+    <string name="precons_title">Preconstructed decks</string>
+    <string name="precons_empty">Moxfield returned no preconstructed decks.</string>
     <string name="action_retry">Try again</string>
     <string name="action_back">Back</string>
 

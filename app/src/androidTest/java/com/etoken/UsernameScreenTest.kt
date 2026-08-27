@@ -21,6 +21,7 @@ import com.etoken.ui.username.UsernameViewModel
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -50,7 +51,7 @@ class UsernameScreenTest {
         // would be rebuilt on every recomposition, which lint rightly rejects.
         val viewModel = UsernameViewModel(preferences, languages)
         compose.setContent {
-            EtokenTheme { UsernameScreen(onSubmit = {}, viewModel = viewModel) }
+            EtokenTheme { UsernameScreen(onSubmit = {}, onPrecons = {}, viewModel = viewModel) }
         }
 
         awaitText("seeded-user")
@@ -64,7 +65,9 @@ class UsernameScreenTest {
         var submitted: String? = null
         val viewModel = UsernameViewModel(preferences, languages)
         compose.setContent {
-            EtokenTheme { UsernameScreen(onSubmit = { submitted = it }, viewModel = viewModel) }
+            EtokenTheme {
+                UsernameScreen(onSubmit = { submitted = it }, onPrecons = {}, viewModel = viewModel)
+            }
         }
 
         // Waiting for the remembered value first is what stops this racing the
@@ -83,7 +86,7 @@ class UsernameScreenTest {
     fun the_screen_says_up_front_that_only_public_decks_are_read() {
         val viewModel = UsernameViewModel(UserPreferences(context), languages)
         compose.setContent {
-            EtokenTheme { UsernameScreen(onSubmit = {}, viewModel = viewModel) }
+            EtokenTheme { UsernameScreen(onSubmit = {}, onPrecons = {}, viewModel = viewModel) }
         }
 
         compose.onNodeWithText(str(R.string.public_decks_only)).assertIsDisplayed()
@@ -93,7 +96,7 @@ class UsernameScreenTest {
     fun the_picker_offers_every_language_in_its_own_words() {
         val viewModel = UsernameViewModel(UserPreferences(context), languages)
         compose.setContent {
-            EtokenTheme { UsernameScreen(onSubmit = {}, viewModel = viewModel) }
+            EtokenTheme { UsernameScreen(onSubmit = {}, onPrecons = {}, viewModel = viewModel) }
         }
 
         compose.onNodeWithContentDescription(str(R.string.action_language)).performClick()
@@ -115,7 +118,7 @@ class UsernameScreenTest {
 
         val viewModel = UsernameViewModel(UserPreferences(context), languages)
         compose.setContent {
-            EtokenTheme { UsernameScreen(onSubmit = {}, viewModel = viewModel) }
+            EtokenTheme { UsernameScreen(onSubmit = {}, onPrecons = {}, viewModel = viewModel) }
         }
 
         compose.onNodeWithContentDescription(str(R.string.action_language)).performClick()
@@ -128,6 +131,35 @@ class UsernameScreenTest {
         // A store built fresh reads the same answer, which is the half that
         // matters: the choice has to survive the process it was made in.
         assertEquals(AppLanguage.CATALAN, AppLanguageStore(context).language.value)
+    }
+
+    @Test
+    fun the_precons_button_needs_no_username_and_says_so() {
+        // Cleared before the view model reads it: the other tests in this class
+        // seed a username, and the point here is a screen with none.
+        val preferences = UserPreferences(context)
+        runBlocking { preferences.setUsername("") }
+
+        var precons = 0
+        var submitted: String? = null
+        val viewModel = UsernameViewModel(preferences, languages)
+        compose.setContent {
+            EtokenTheme {
+                UsernameScreen(
+                    onSubmit = { submitted = it },
+                    onPrecons = { precons++ },
+                    viewModel = viewModel,
+                )
+            }
+        }
+
+        // Scrolled to first: on CI's 320x640dp screen this is the last thing
+        // in the column and sits below the fold.
+        compose.onNodeWithText(str(R.string.action_load_precons)).performScrollTo().performClick()
+
+        compose.waitUntil(TIMEOUT) { precons == 1 }
+        // The empty username field is the point: this way in does not use one.
+        assertNull(submitted)
     }
 
     private fun awaitText(text: String) = compose.waitUntil(TIMEOUT) {

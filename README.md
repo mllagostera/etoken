@@ -34,6 +34,13 @@ private decks looks exactly like an empty one — so the app says so where the
 question comes up, under the username field and again on an empty list, rather
 than leaving a missing deck to read as a bug.
 
+You do not need an account of your own to try the app. A second button on that
+first screen loads **Wizards' preconstructed Commander decks**, which is the
+same deck search filtered to `WizardsOfTheCoast` with `fmt=commanderPrecons`
+— that account publishes far more than precons, so the format filter is what
+makes it a listing rather than a dump. From there everything behaves as it does
+for your own decks: the grid, the search, the tokens, the board.
+
 The grid streams rather than blocks. Deck names appear as soon as the search
 endpoint answers, and the cover art fills in afterwards four decks at a time,
 so the grid is usable immediately instead of waiting on a request per deck. One
@@ -319,6 +326,13 @@ had ever run `MainActivity.onCreate`. It cannot fail on the thing worth
 watching: the splash holds the *drawing* of the first frame, and a composable
 that is never drawn still reports itself displayed, so a splash that hung would
 pass. That one needs eyes, and joins the list below.
+
+**Written, not yet run.** The precon button landed after run #73, and its eight
+unit tests and two UI tests are on top of the figures above rather than in them:
+none has executed, and no compiler has read the change — the environment it was
+written in has no Android SDK. What nothing in CI can check either way is
+whether `fmt=commanderPrecons` is still what Moxfield's search endpoint calls
+that format; it is undocumented, and the only proof is a live request.
 
 **Not verified.** Anything that needs eyes or a live network. Nobody has
 watched a cold start, so nothing has confirmed that the splash hands over to
