@@ -349,4 +349,58 @@ class TokenBoardRulesTest {
 
         assertEquals(SummoningSickness.None, board.summoningSickness)
     }
+
+    @Test
+    fun `tokens arrive untapped unless told otherwise`() {
+        assertFalse(TokenBoardRules.add(empty, 3).stacks.single().tapped)
+    }
+
+    @Test
+    fun `a token can be told to enter tapped`() {
+        val board = TokenBoardRules.add(empty, 3, entersTapped = true)
+
+        assertTrue(board.stacks.single().tapped)
+    }
+
+    @Test
+    fun `tapped and untapped copies of the same token stay two stacks`() {
+        var board = TokenBoardRules.add(empty, 2, entersTapped = true)
+        board = TokenBoardRules.add(board, 3)
+
+        assertEquals(2, board.stacks.size)
+        assertEquals(5, board.total)
+    }
+
+    @Test
+    fun `a stack can be tapped and untapped by hand`() {
+        val untapped = TokenBoardRules.add(empty, 2)
+
+        val tapped = TokenBoardRules.setTapped(untapped, stackId = 1, tapped = true)
+        assertTrue(tapped.stacks.single().tapped)
+
+        val backUntapped = TokenBoardRules.setTapped(tapped, stackId = tapped.stacks.single().id, tapped = false)
+        assertFalse(backUntapped.stacks.single().tapped)
+    }
+
+    @Test
+    fun `tapping part of a stack splits it, same as sickness and counters`() {
+        val board = TokenBoardRules.setTapped(
+            TokenBoardRules.add(empty, 5),
+            stackId = 1,
+            tapped = true,
+            appliesTo = 2,
+        )
+
+        assertEquals(2, board.stacks.size)
+        assertEquals(5, board.total)
+        assertEquals(2, board.stacks.count { it.tapped })
+    }
+
+    @Test
+    fun `the untap step also untaps everything, not only sickness`() {
+        val board = TokenBoardRules.beginTurn(TokenBoardRules.add(empty, 4, entersTapped = true))
+
+        assertTrue(board.stacks.none { it.tapped })
+        assertFalse(board.stacks.single().summoningSick)
+    }
 }

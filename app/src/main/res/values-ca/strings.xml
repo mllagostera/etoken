@@ -44,11 +44,14 @@
     <string name="board_base">Base %1$s</string>
     <string name="board_haste">Pressa</string>
     <string name="board_haste_note">Entra sense mareig d\'invocació. Si la pressa l\'hi dona una altra carta, marca-ho tu a cada grup.</string>
+    <string name="board_enter_tapped">Entra girat</string>
     <string name="stack_quantity">Quantitat</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>
     <string name="stack_sick">Mareig</string>
     <string name="stack_ready">Pot atacar</string>
+    <string name="stack_tapped">Girat</string>
+    <string name="stack_untapped">Redreçat</string>
     <string name="stack_counter_some">+1/+1 només a alguns…</string>
     <string name="stack_remove">Treu-ne un</string>
     <string name="stack_add">Posa\'n un més</string>

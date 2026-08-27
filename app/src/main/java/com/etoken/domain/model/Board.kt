@@ -16,6 +16,14 @@ data class TokenStack(
     val plusOneCounters: Int,
     val summoningSick: Boolean,
     /**
+     * Some tokens are made tapped — Krenko's Goblins with an added "tap" clause,
+     * a Treasure fetched by a spell that says so. Independent of
+     * [summoningSick]: a tapped token can still swing once it is no longer
+     * sick, and a non-creature token can be tapped despite never being sick at
+     * all.
+     */
+    val tapped: Boolean = false,
+    /**
      * What this copy is a copy of, for tokens named "Copy"; null for every
      * other token.
      *

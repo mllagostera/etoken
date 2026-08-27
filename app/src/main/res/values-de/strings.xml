@@ -44,11 +44,14 @@
     <string name="board_base">Basis %1$s</string>
     <string name="board_haste">Eile</string>
     <string name="board_haste_note">Kommt ohne Einsatzverzögerung ins Spiel. Eile von einer anderen Karte markierst du selbst an jedem Stapel.</string>
+    <string name="board_enter_tapped">Kommt getappt ins Spiel</string>
     <string name="stack_quantity">Anzahl</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>
     <string name="stack_sick">Einsatzverzögerung</string>
     <string name="stack_ready">Kann angreifen</string>
+    <string name="stack_tapped">Getappt</string>
+    <string name="stack_untapped">Ungetappt</string>
     <string name="stack_counter_some">+1/+1 nur auf einige…</string>
     <string name="stack_remove">Einen entfernen</string>
     <string name="stack_add">Einen hinzufügen</string>

@@ -58,6 +58,16 @@ data class TokenCard(
      */
     val isCopy: Boolean get() = name.trim().equals(COPY_TOKEN_NAME, ignoreCase = true)
 
+    /**
+     * Whether this token is a creature at all.
+     *
+     * Only creatures get summoning sickness — a Treasure or a Clue can never be
+     * "sick" no matter when it entered. Read off the type line rather than a
+     * separate flag because Scryfall already states it there for every token,
+     * printed or emblem alike.
+     */
+    val isCreature: Boolean get() = typeLine.contains("Creature", ignoreCase = true)
+
     companion object {
         const val COPY_TOKEN_NAME = "Copy"
     }
