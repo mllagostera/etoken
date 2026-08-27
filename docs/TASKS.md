@@ -26,12 +26,12 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 115 unit and 33 instrumented tests, 0 failures, green on CI
+## 1. Verified — 128 unit and 36 instrumented tests, 0 failures, green on CI
 
-> Run **#73** is where those figures come from, and it is the first to execute
-> the language picker's 8 tests (B11) and the splash screen's 1 (B12). Both
-> landed after the last green run and were claims until it finished; they are
-> not any more.
+> Run **#81** is where those figures come from. It is the first to execute the
+> precons button's 10 tests (B13) and the summoning-sickness badge's 6 (B14)
+> together — #73 had measured neither, #76 only the second — so every test in
+> the tree has now run at least once on the tree it ships in.
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -69,6 +69,8 @@ the two APIs are ever faked.
     `postSplashScreenTheme` pointing at nothing, takes the activity down there and nowhere else.
 - [x] Printed haste: `keywords` off the wire, `TokenCard.hasHaste`, copies that enter able to
   attack, and a chip that still overrides it — `domain/`, `ui/board/`, 10 unit and 4 instrumented tests
+- [x] The grid says how much of a token is still summoning sick: nothing, all of it, or a count —
+  `domain/model/Board.kt`, `ui/tokens/`, 5 unit and 1 instrumented test — B14
 
 ## 2. Works, never looked at
 
@@ -82,7 +84,8 @@ push; no person has looked at any of it.
 - [~] Deck grid with commander art and streaming hydration — `ui/decks/`
 - [~] Deck search field with result counter — `ui/decks/DecksScreen.kt`
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
-- [~] Token grid with in-play badges, +1/+1 counters included while there is one stack — `ui/tokens/`
+- [~] Token grid with in-play badges: the count, the +1/+1 counters while there is one stack,
+  and how much of the table is still summoning sick — `ui/tokens/`
 - [~] Quick filter chip: only the tokens with copies on the table — `ui/tokens/TokensScreen.kt`
 - [~] Token board: quantity, summoning sickness, +1/+1 counters — `ui/board/`
 - [~] A "Prisa" badge and one line saying why a hasty token shows no "Mareo" — `ui/board/`
@@ -267,7 +270,7 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     fail on a splash that hangs: the condition holds *drawing*, and an undrawn composable still
     reports itself displayed to the semantics tree. That half is A7.
 
-- [ ] **B13** A way in for someone with no Moxfield account: Wizards' Commander precons
+- [~] **B13** A way in for someone with no Moxfield account: Wizards' Commander precons
   - One button on the username screen, and no new screen behind it. The precons are the same
     `v2/decks/search-sfw` call the app already makes, filtered to `authorUserNames=WizardsOfTheCoast`
     **and** `fmt=commanderPrecons` — Wizards publishes far more than precons under that account, so
@@ -278,11 +281,32 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - The deck screen titles that listing by what it is, not by who published it: "WizardsOfTheCoast"
     is where precons live, not something a user typed. Its empty state differs too — nothing there
     is private, so an empty answer means the filter moved rather than that decks are being withheld.
-  - **Written, not verified.** Eight unit tests and two instrumented tests come with it; none has
-    run, and nothing has compiled it — this environment has no Android SDK. The unverifiable half is
-    `fmt=commanderPrecons` itself: Moxfield documents nothing, and only a live request can say
-    whether that is still the format's name. If it has moved, the symptom is an empty grid with the
-    precon empty state, and `DeckSource.PRECON_FORMAT` is the one line to change.
+  - **Green on run #81**, the first to compile or execute any of it: eight unit tests and two
+    instrumented. The unverifiable half is untouched by that — `fmt=commanderPrecons` itself.
+    Moxfield documents nothing, and only a live request can say whether that is still the format's
+    name. If it has moved, the symptom is an empty grid with the precon empty state, and
+    `DeckSource.PRECON_FORMAT` is the one line to change.
+
+- [~] **B14** The grid's badge says how much of a token is still summoning sick
+  - Same question as B10, asked about the other half of a stack's state: mid-turn what a player
+    needs is "what have I got out, and can it attack?" The count and the counters were on the cell;
+    whether the copies were still waiting meant opening the board.
+  - Three cases, not a number — `TokenBoard.summoningSickness`. Nothing waiting draws no badge at
+    all, which is what an untouched cell already looks like; a table where every copy is waiting is
+    named without a count, since the number would only repeat the ×N in the opposite corner; and a
+    part-waiting table is the one case where the figure earns its room.
+  - Zero of zero is `None`, not `All`: a sickness badge on a token with nothing in play would be the
+    worst of the three answers, so the empty case is decided before the "all of them" one.
+  - The word is `stack_sick`, the board screen's own, so one state cannot end up with two names. The
+    only new string is `tokens_sick_some` (`%1$s ×%2$d`), which is the same pattern in all seven
+    locales.
+  - The two bottom badges sit in halves of the cell rather than at their own corners: at ~150dp wide
+    and with a label that is a full word in every language — `Einsatzverzögerung` is 19 characters —
+    corner alignment lets them meet in the middle. A half each truncates instead of overlapping. That
+    is a layout claim nobody has looked at, and it belongs to C8.
+  - **Green on runs #76 and #81**, the emulator suite included: the badge appears when copies
+    arrive, names a count once part of the table can attack, and goes when the untap step clears
+    the rest.
 
 ### C. Quality and infrastructure
 

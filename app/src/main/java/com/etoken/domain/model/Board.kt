@@ -52,5 +52,37 @@ data class TokenBoard(
      */
     val uniformPlusOneCounters: Int? get() = stacks.singleOrNull()?.plusOneCounters
 
+    /**
+     * The same figure as [summoningSickCount], told in the three cases a badge
+     * can draw. Derived here rather than in the grid so both screens read one
+     * answer, and so the rule is unit-tested off the JVM like every other.
+     */
+    val summoningSickness: SummoningSickness get() = when (val sick = summoningSickCount) {
+        // First, so an empty board answers None rather than All.
+        0 -> SummoningSickness.None
+        total -> SummoningSickness.All
+        else -> SummoningSickness.Some(sick)
+    }
+
     val isEmpty: Boolean get() = stacks.isEmpty()
+}
+
+/**
+ * How much of what is in play is still summoning sick, in the shape a badge
+ * can draw without opening the board.
+ *
+ * A single number would not do it: "2" says nothing about whether the other
+ * five can attack, and on a board where every copy is waiting the number is
+ * only the total said twice. The three cases are what a player actually asks
+ * mid-turn — nothing is waiting, everything is, or these many of them are.
+ */
+sealed interface SummoningSickness {
+    /** Everything in play can attack. An empty battlefield answers this too. */
+    data object None : SummoningSickness
+
+    /** Every copy is waiting, so the count is the one already on the cell. */
+    data object All : SummoningSickness
+
+    /** Part of the table is waiting, and only a number can say how much. */
+    data class Some(val count: Int) : SummoningSickness
 }

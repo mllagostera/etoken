@@ -29,6 +29,7 @@
     <string name="tokens_filter_in_play">戦場のみ</string>
     <string name="tokens_filtered_count">%2$d 件中 %1$d 件</string>
     <string name="tokens_none_in_play">戦場に出ているトークンはありません。</string>
+    <string name="tokens_sick_some">%1$s ×%2$d</string>
     <string name="board_in_play">戦場</string>
     <string name="board_sick">召喚酔い %1$d 体</string>
     <string name="board_none_sick">召喚酔いなし</string>

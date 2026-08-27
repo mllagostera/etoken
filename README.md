@@ -78,6 +78,14 @@ single stack. Two stacks mean two answers, and one badge that picked either
 would be lying about the other; there the grid says nothing and the board
 screen, which has room for a stack at a time, is where to look.
 
+Beside them, in the other bottom corner, the cell says how much of that token
+is still **summoning sick**. Three answers, not a number: nothing waiting draws
+no badge, since that is what an untouched cell already looks like; a table where
+every copy is waiting is named without a count, because the count is the one
+already in the corner above; and only a part-waiting table spends the room on a
+figure. It uses the board screen's own word for the state, so one thing cannot
+end up with two names.
+
 Tokens are collapsed by name, type, rules text and printed power/toughness
 rather than by id. `all_parts` points at one specific *printing*, so a deck
 drawing on several sets would otherwise show the same 1/1 Soldier four times
@@ -301,7 +309,7 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: as of run #73, 115 unit tests and 33 UI
+runs the instrumented suite against it: as of run #81, 128 unit tests and 36 UI
 tests pass, lint is clean, and the run produces an installable APK. The UI tests
 drive the real screens and view models with only the two APIs faked, so they
 fail when the app breaks rather than when a double does.
@@ -318,6 +326,11 @@ Run #73 is the first to execute the language picker's eight tests and the
 splash screen's one, both of which landed after the previous green run and were
 claims until it finished. They pass. One part of the picker still has no test at
 all and is called out below.
+
+Run #81 did the same for the two that landed after it: the precons button's ten
+tests, which nothing had executed or even compiled, and the grid's
+summoning-sickness badge's six. Every test in the tree has now run at least
+once on the tree it ships in.
 
 That single splash test is the only one in the suite that launches the real
 `MainActivity` instead of a composable in a test activity, which is why it can
