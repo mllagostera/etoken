@@ -361,7 +361,7 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - It joins the C8 list: the entry cell is a new layout with badges in it, in seven languages, and
     nobody has looked at any of them.
 
-- [~] **B16** Tapping asks how many, and the untap step joins the table back up
+- [~] **B16** Tapping asks how many, everywhere; the untap step joins the table back up
   - Two follow-ups to B15 from the repo owner, and they pull in opposite directions on purpose.
   - **Tapping some.** A tap on an entry of one still just turns it. On an entry holding more, the
     screen asks how many — "All (6)" is one press, a smaller number splits the entry so the copies
@@ -382,9 +382,13 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     all go through one `EntryAsk`, which also decides when there is nothing to ask. That retired
     the "+1/+1 on just some…" button — it existed only because the stepper could speak for a whole
     entry and nothing else, and it had become the same question in a second place.
-  - **Green on run #93**, first try: four unit tests and two instrumented, including the owner's
-    own example — two tapped, two ready and two sick becoming one entry of six, with a Hellion
-    beside them that stays its own cell because a different token is not a difference a turn erases.
+  - **Green on runs #93 and #96.** The rules went in first and passed on the first try: four unit
+    tests and two instrumented, including the owner's own example — two tapped, two ready and two
+    sick becoming one entry of six, with a Hellion beside them that stays its own cell because a
+    different token is not a difference a turn erases. Spreading the question to the chips and the
+    stepper cost one red run, and it was the test's fault rather than the app's: with the detail
+    sheet open there are two nodes saying "Sick", the cell's badge and the chip over it, and the
+    finder has to say which window it means. That is now a named step in the robot, `inSheet`.
 
 ### C. Quality and infrastructure
 
@@ -473,4 +477,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-27 · run **#93** green including the emulator: 131 unit tests and 39 instrumented, lint clean · Scryfall verified live, Moxfield 403 from CI · B15 rebuilt the battlefield in this run's tree, so every figure above is measured on the app as it now stands — what nobody has done is *look* at it
+**Last reviewed:** 2026-08-27 · run **#96** green including the emulator: 131 unit tests and 40 instrumented, lint clean · Scryfall verified live, Moxfield 403 from CI · B15 rebuilt the battlefield in this run's tree, so every figure above is measured on the app as it now stands — what nobody has done is *look* at it
