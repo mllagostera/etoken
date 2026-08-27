@@ -1,9 +1,9 @@
 package com.etoken
 
 import com.etoken.data.scryfall.ScryfallCard
-import com.etoken.domain.TokenBoardRules
+import com.etoken.domain.BoardRules
 import com.etoken.domain.TokenExtractor
-import com.etoken.domain.model.TokenBoard
+import com.etoken.domain.model.GameBoard
 import com.etoken.domain.model.TokenCard
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,7 +20,9 @@ import org.junit.Test
  */
 class HasteTokenTest {
 
-    private val empty = TokenBoard()
+    private val empty = GameBoard()
+
+    private val hellion = "hellion-token-id"
 
     /** Hellion Crucible's Hellion: a 4/4 that really is printed with haste. */
     private fun printing(
@@ -76,43 +78,46 @@ class HasteTokenTest {
 
     @Test
     fun `copies of a hasty token arrive able to attack`() {
-        val board = TokenBoardRules.add(empty, 2, entersSick = false)
+        val board = BoardRules.add(empty, hellion, 2, entersSick = false)
 
-        assertFalse(board.stacks.single().summoningSick)
+        assertFalse(board.entries.single().summoningSick)
         assertEquals(0, board.summoningSickCount)
         assertEquals(2, board.total)
     }
 
     @Test
-    fun `hasty copies join the ones already on the battlefield`() {
-        // The complaint B9 came from: two made this turn and three made last
-        // turn are five Hellions able to attack, not two rows.
-        val board = TokenBoardRules.add(
-            TokenBoardRules.add(empty, 3, entersSick = false),
+    fun `every hasty entry can attack, however many entries there are`() {
+        // Two made this turn and three made last turn are five Hellions able to
+        // attack. They are two entries now -- each press of "add" is its own
+        // thing on the table -- and the count that matters is the same either way.
+        val board = BoardRules.add(
+            BoardRules.add(empty, hellion, 3, entersSick = false),
+            hellion,
             2,
             entersSick = false,
         )
 
-        assertEquals(1, board.stacks.size)
+        assertEquals(2, board.entries.size)
         assertEquals(5, board.total)
+        assertEquals(0, board.summoningSickCount)
     }
 
     @Test
     fun `the untap step has nothing left to do`() {
-        val board = TokenBoardRules.add(empty, 2, entersSick = false)
+        val board = BoardRules.add(empty, hellion, 2, entersSick = false)
 
-        assertEquals(board, TokenBoardRules.beginTurn(board))
+        assertEquals(board, BoardRules.beginTurn(board))
     }
 
     @Test
     fun `the chip can still put summoning sickness back by hand`() {
         // Printed haste can be turned off at the table — a Torpor Orb effect,
         // or simply a miscount — so automating it must not take the control away.
-        val hasty = TokenBoardRules.add(empty, 2, entersSick = false)
+        val hasty = BoardRules.add(empty, hellion, 2, entersSick = false)
 
-        val board = TokenBoardRules.setSummoningSick(hasty, hasty.stacks.single().id, sick = true)
+        val board = BoardRules.setSummoningSick(hasty, hasty.entries.single().id, sick = true)
 
-        assertTrue(board.stacks.single().summoningSick)
+        assertTrue(board.entries.single().summoningSick)
         assertEquals(2, board.summoningSickCount)
     }
 }

@@ -27,42 +27,27 @@
     <string name="decks_empty">Este usuario no tiene mazos públicos.</string>
     <string name="deck_untitled">Mazo sin nombre</string>
 
-    <string name="tokens_title">Tokens</string>
     <string name="tokens_empty">Ninguna carta de este mazo crea tokens.</string>
     <string name="tokens_created_by">Lo crean: %1$s</string>
-    <string name="tokens_filter_in_play">Solo en juego</string>
-    <string name="tokens_filtered_count">%1$d de %2$d</string>
-    <string name="tokens_none_in_play">No tienes ningún token en juego.</string>
-    <string name="tokens_sick_some">%1$s ×%2$d</string>
 
-    <string name="board_in_play">En juego</string>
-    <string name="board_sick">%1$d con mareo de invocación</string>
-    <string name="board_none_sick">Ninguno con mareo</string>
     <string name="board_empty">Todavía no tienes ninguno en juego.</string>
     <string name="board_add">Añadir</string>
-    <string name="board_add_other">Otra cantidad…</string>
     <string name="board_begin_turn">Empieza mi turno</string>
     <string name="board_counter_all">+1/+1 a todos</string>
-    <string name="board_pick_token">Elige un token para llevar la cuenta.</string>
-    <string name="board_clear">Vaciar</string>
-    <string name="clear_title">¿Vaciar este token?</string>
-    <string name="board_base">Base %1$s</string>
-    <string name="board_haste">Prisa</string>
     <string name="board_haste_note">Entra sin mareo de invocación. Si la prisa se la da otra carta, márcalo tú en cada grupo.</string>
     <string name="board_enter_tapped">Entra girado</string>
 
-    <string name="stack_quantity">Cantidad</string>
-    <string name="stack_counters">+1/+1</string>
-    <string name="stack_counters_chip">+1/+1 ×%1$d</string>
-    <string name="stack_sick">Mareo</string>
-    <string name="stack_ready">Puede atacar</string>
-    <string name="stack_tapped">Girado</string>
-    <string name="stack_untapped">Enderezado</string>
-    <string name="stack_counter_some">+1/+1 a solo algunos…</string>
-    <string name="stack_remove">Quitar uno</string>
-    <string name="stack_add">Poner uno más</string>
-    <string name="stack_counter_remove">Quitar un contador</string>
-    <string name="stack_counter_add">Poner un contador</string>
+    <string name="entry_quantity">Cantidad</string>
+    <string name="entry_counters">+1/+1</string>
+    <string name="entry_counters_chip">+1/+1 ×%1$d</string>
+    <string name="entry_sick">Mareo</string>
+    <string name="entry_ready">Puede atacar</string>
+    <string name="entry_tapped">Girado</string>
+    <string name="entry_untapped">Enderezado</string>
+    <string name="entry_remove_one">Quitar uno</string>
+    <string name="entry_add_one">Poner uno más</string>
+    <string name="entry_counter_remove">Quitar un contador</string>
+    <string name="entry_counter_add">Poner un contador</string>
 
     <string name="dialog_how_many">¿Cuántos tokens?</string>
     <string name="dialog_how_many_of">¿A cuántos de los %1$d?</string>
@@ -74,10 +59,19 @@
     <string name="error_blocked">Moxfield ha rechazado la petición. Prueba otra vez en unos minutos.</string>
     <string name="error_network">No hay conexión. Comprueba tu red e inténtalo de nuevo.</string>
     <string name="error_unknown">Algo ha salido mal.</string>
-    <string name="copy_of_title">¿Qué está copiando?</string>
     <string name="copy_of_hint">Nombre de la carta</string>
 
     <string name="action_language">Idioma</string>
     <string name="language_title">Elige un idioma</string>
     <string name="language_system">Idioma del dispositivo</string>
+    <string name="board_title">Campo de batalla</string>
+    <string name="board_add_token">Añadir tokens</string>
+    <string name="board_picker_title">¿Qué estás creando?</string>
+    <string name="board_empty_detail">Toca + para poner en juego los tokens del mazo.</string>
+    <string name="entry_remove">Quitar de la mesa</string>
+    <string name="entry_sick_how_many">¿Cuántos tienen mareo?</string>
+    <string name="entry_ready_how_many">¿Cuántos pueden atacar?</string>
+    <string name="entry_tap_how_many">¿Cuántos giras?</string>
+    <string name="entry_untap_how_many">¿Cuántos enderezas?</string>
+    <string name="action_all">Todos (%1$d)</string>
 </resources>

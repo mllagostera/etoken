@@ -34,8 +34,8 @@ object Fakes {
     const val COMMANDER = "Krenko, Mob Boss"
     const val TOKEN_ID = "goblin-sid"
     const val TOKEN_NAME = "Goblin"
-    // A second token in the same deck, so a test can watch a filter hide one
-    // token and keep the other.
+    // A second token in the same deck, and a non-creature one: a Treasure is
+    // never summoning sick however it entered.
     const val TREASURE_TOKEN_ID = "treasure-sid"
     const val TREASURE_TOKEN_NAME = "Treasure"
     const val COPY_TOKEN_ID = "copy-sid"
@@ -175,8 +175,8 @@ private class FakeScryfall : ScryfallApi {
             ),
         ),
         "chieftain-sid" to ScryfallCard(id = "chieftain-sid", name = "Goblin Chieftain"),
-        // The deck's one hasty token, so a board can be opened on a token that
-        // enters able to attack and on one that does not.
+        // The deck's one hasty token, so the picker offers both a token that
+        // enters able to attack and one that does not.
         "crucible-sid" to ScryfallCard(
             id = "crucible-sid",
             name = "Hellion Crucible",

@@ -7,8 +7,8 @@ import org.junit.Test
 
 /**
  * Only creatures can be summoning sick. `isCreature` is what
- * `TokenBoardViewModel.add` gates `entersSick` on -- see [TappedTokenTest] and
- * `TokenBoardRulesTest` for the board side of the rule.
+ * `BoardViewModel.add` gates `entersSick` on -- see [TappedTokenTest] and
+ * `BoardRulesTest` for the board side of the rule.
  */
 class CreatureTokenTest {
 
