@@ -4,6 +4,10 @@
     <string name="public_decks_only">Los mazos privados y los no listados no aparecen: la app lee Moxfield sin iniciar sesión.</string>
     <string name="username_label">Usuario de Moxfield</string>
     <string name="action_load_decks">Cargar mazos</string>
+    <string name="action_load_precons">Ver mazos precon</string>
+    <string name="precons_hint">Los mazos Commander precon de Wizards. No hace falta usuario.</string>
+    <string name="precons_title">Mazos precon</string>
+    <string name="precons_empty">Moxfield no ha devuelto ningún mazo precon.</string>
     <string name="action_retry">Reintentar</string>
     <string name="action_back">Volver</string>
 

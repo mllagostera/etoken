@@ -4,6 +4,10 @@
     <string name="public_decks_only">非公開デッキと限定公開デッキは表示されません。アプリはログインせずに Moxfield を読み込みます。</string>
     <string name="username_label">Moxfield のユーザー名</string>
     <string name="action_load_decks">デッキを読み込む</string>
+    <string name="action_load_precons">構築済みデッキを見る</string>
+    <string name="precons_hint">Wizards の統率者構築済みデッキ。ユーザー名は不要です。</string>
+    <string name="precons_title">構築済みデッキ</string>
+    <string name="precons_empty">Moxfield から構築済みデッキが返ってきませんでした。</string>
     <string name="action_retry">再試行</string>
     <string name="action_back">戻る</string>
     <string name="decks_search_hint">デッキ名または統率者で検索</string>

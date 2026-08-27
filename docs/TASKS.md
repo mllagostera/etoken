@@ -26,12 +26,18 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 120 unit and 33 instrumented tests, 0 failures, green on CI
+## 1. Verified — 115 unit and 33 instrumented tests, 0 failures, green on CI
 
-> Run **#76** is where these figures come from. It is the first run to execute
-> the language picker's tests (B11, 6 unit and 2 instrumented) and the grid's
-> summoning-sickness badge (B12, 5 unit and 1 instrumented); both passed, and
-> both are in the figures above.
+> Run **#73** is where those figures come from, and it is the first to execute
+> the language picker's 8 tests (B11) and the splash screen's 1 (B12). Both
+> landed after the last green run and were claims until it finished; they are
+> not any more.
+>
+> Two things have landed since and are **not** in the figures: the precons
+> button (B13, 8 unit and 2 instrumented), which no run has ever executed, and
+> the grid's summoning-sickness badge (B14, 5 unit and 1 instrumented), green on
+> run **#76** but on a tree that did not yet carry B13. The first run after the
+> two meet is what settles the count.
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -62,6 +68,11 @@ the two APIs are ever faked.
   says so instead of going blank when the table empties — `ui/tokens/`, 4 instrumented tests
 - [x] The public-decks limit is on screen before the username is typed, and again on an empty deck
   list — `ui/username/`, `ui/decks/`, 2 instrumented tests
+- [x] The **real** `MainActivity` starts: the launch theme, `installSplashScreen()` and
+  `attachBaseContext` all run, and the app reaches the username screen — `SplashScreenTest`, run #73
+  - Every other UI test drives a composable inside a test activity, so until this one nothing in CI
+    ever executed `MainActivity.onCreate`. A splash theme the library cannot use, or a
+    `postSplashScreenTheme` pointing at nothing, takes the activity down there and nowhere else.
 - [x] Printed haste: `keywords` off the wire, `TokenCard.hasHaste`, copies that enter able to
   attack, and a chip that still overrides it — `domain/`, `ui/board/`, 10 unit and 4 instrumented tests
 - [x] The grid says how much of a token is still summoning sick: nothing, all of it, or a count —
@@ -74,6 +85,8 @@ push; no person has looked at any of it.
 
 ### Screens
 - [~] Username entry, remembered in DataStore; insets- and keyboard-aware — `ui/username/`
+- [ ] A second button on that screen loading Wizards' Commander precons, no username needed —
+  `ui/username/`, `domain/DeckSource.kt` (B13: written, never compiled or run)
 - [~] Deck grid with commander art and streaming hydration — `ui/decks/`
 - [~] Deck search field with result counter — `ui/decks/DecksScreen.kt`
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
@@ -85,6 +98,7 @@ push; no person has looked at any of it.
 - [~] Both destructive actions confirm and name what is lost — `ui/board/`, `ui/tokens/`
 - [~] Every dialog survives rotation, and the counters one holds a stack id rather than a stack
 - [~] New game, behind a confirmation that names what is lost — `ui/tokens/TokensScreen.kt`
+- [~] A splash screen on every version, held while the remembered username is read — `MainActivity`, `res/values/themes.xml`
 
 ### Text
 - [~] Seven locales: **English default**, plus `es`, `ca`, `fr`, `de`, `it`, `ja` — key parity and XML verified
@@ -122,6 +136,13 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - `api-smoke.yml` §6 now asks, through Hellion Crucible's 4/4 Hellion, and turns the job red if
     the token comes back without `Haste` among its keywords. Nobody has run it yet — and it does not
     need a device, unlike A3 and A4, only someone pressing the button.
+
+- [ ] **A7** Watch a cold start: the splash, and the handover to the username screen · S
+  - What no test can reach — whether the splash is held long enough to be seen and short enough not
+    to be waited on, and whether the field is already filled when it appears or fills in visibly.
+  - It is also the second thing installing an APK answers for free, after A4 and A5, and wants no
+    setup at all: launch the app from the launcher icon rather than from Studio, which is the only
+    way to get a real starting window.
 
 ### B. Product gaps
 
@@ -219,13 +240,60 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - Android 13's per-app language setting does the same job and was not used: `minSdk` is 26, and
     on Android 8 through 12 that setting does not exist.
   - **The half nobody can test is the half that matters.** The dialog and the stored choice are
-    covered — 2 instrumented tests, green on run #76, the first to execute them — but
-    `MainActivity.attachBaseContext` never runs under a test activity, so nothing in CI can tell you
-    whether picking Japanese actually redraws the app in Japanese. That needs the APK on a device, and it joins A5 in wanting one. `AppLanguageTest`
+    covered — 2 instrumented tests — but nothing asserts on the result of applying a language, so
+    nothing in CI can tell you whether picking Japanese actually redraws the app in Japanese.
+    B12's `SplashScreenTest` narrowed this without closing it: it launches the real activity, so
+    `attachBaseContext` does now run in CI and can no longer throw unnoticed. That needs the APK on a device, and it joins A5 in wanting one. `AppLanguageTest`
     covers the part that can be: 6 unit tests, including one that fails if a language is offered
     with no `values-` folder behind it.
 
-- [~] **B12** The grid's badge says how much of a token is still summoning sick
+- [~] **B12** A splash screen, and the same one on every version the app supports
+  - Android 12 draws a splash from the launcher icon whether an app asks or not, so on half the
+    supported versions this was never a question of whether to have one — only of whether it was
+    chosen. Below 12 there was no splash at all: a blank window in the theme's background colour
+    until the first frame. `androidx.core:core-splashscreen` is what makes those two the same
+    screen, and it is the reason the launch theme is `Theme.Etoken.Splash` in the manifest and
+    `installSplashScreen()` is the first line of `onCreate` — that call is what swaps it for
+    `Theme.Etoken`, and without it the app would wear the splash theme and never draw.
+  - The mark is the launcher icon's, redrawn at 1.5x as `ic_splash_logo`. Reusing
+    `ic_launcher_foreground` was the obvious move and is wrong: an adaptive foreground keeps its
+    content inside the middle 2/3 of the canvas, which is the same safe zone the platform sizes a
+    splash icon against, so the mark would arrive at a third of the size it should be.
+  - The background is the launcher icon's background, in light and dark alike. Not an oversight:
+    the mark is a pale purple and an amber picked to sit on `#1C1A21`, and neither has any contrast
+    left on white.
+  - It is **held** until DataStore answers with the remembered username, which is the one thing the
+    first screen shows and cannot show synchronously. Bounded at a second — a splash that never
+    leaves is a worse bug than an empty field, and an empty field is what a first-time user sees
+    anyway. Cold start only: a language change applies itself by recreating the activity, and
+    splashing again there would read as the app restarting.
+  - **Green on run #73**, which is also what proved `androidx.core:core-splashscreen:1.0.1`
+    resolves: the machine this was written on has no Android SDK and cannot reach Google's Maven,
+    so the coordinate was a guess until the build ran.
+  - One instrumented test, and it is the first in the suite to launch the real `MainActivity` —
+    every other one drives a composable inside a test activity, which is why B11's
+    `attachBaseContext` hole exists. It fails on a launch theme the library cannot use. It cannot
+    fail on a splash that hangs: the condition holds *drawing*, and an undrawn composable still
+    reports itself displayed to the semantics tree. That half is A7.
+
+- [ ] **B13** A way in for someone with no Moxfield account: Wizards' Commander precons
+  - One button on the username screen, and no new screen behind it. The precons are the same
+    `v2/decks/search-sfw` call the app already makes, filtered to `authorUserNames=WizardsOfTheCoast`
+    **and** `fmt=commanderPrecons` — Wizards publishes far more than precons under that account, so
+    the author alone would list a few thousand decks of every format.
+  - `DeckSource` in `domain/` is what carries the pair, so the route, the repository call and the
+    screen title all read one answer instead of each spelling the filter out again.
+    `MoxfieldRepository.listDecks` takes it in place of a bare username.
+  - The deck screen titles that listing by what it is, not by who published it: "WizardsOfTheCoast"
+    is where precons live, not something a user typed. Its empty state differs too — nothing there
+    is private, so an empty answer means the filter moved rather than that decks are being withheld.
+  - **Written, not verified.** Eight unit tests and two instrumented tests come with it; none has
+    run, and nothing has compiled it — this environment has no Android SDK. The unverifiable half is
+    `fmt=commanderPrecons` itself: Moxfield documents nothing, and only a live request can say
+    whether that is still the format's name. If it has moved, the symptom is an empty grid with the
+    precon empty state, and `DeckSource.PRECON_FORMAT` is the one line to change.
+
+- [~] **B14** The grid's badge says how much of a token is still summoning sick
   - Same question as B10, asked about the other half of a stack's state: mid-turn what a player
     needs is "what have I got out, and can it attack?" The count and the counters were on the cell;
     whether the copies were still waiting meant opening the board.
@@ -243,7 +311,8 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     corner alignment lets them meet in the middle. A half each truncates instead of overlapping. That
     is a layout claim nobody has looked at, and it belongs to C8.
   - **Run #76 is green**, the emulator suite included: the badge appears when copies arrive, names a
-    count once part of the table can attack, and goes when the untap step clears the rest.
+    count once part of the table can attack, and goes when the untap step clears the rest. That run
+    predates B13, though, so no single run has yet executed both.
 
 ### C. Quality and infrastructure
 
@@ -257,6 +326,8 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
 - [x] **C3** Seven locales: English default plus `es`, `ca`, `fr`, `de`, `it`, `ja`, with Magic's own terminology
 - [ ] **C4** Release build never exercised: R8 off, ProGuard rules unproven, unsigned · M
 - [ ] **C5** Launcher icon is a hand-drawn placeholder · S
+  - Now in two places: B12's splash draws the same mark, scaled up. Replacing the icon means
+    replacing `ic_splash_logo` in the same change, or the launcher and the splash stop agreeing.
 - [x] **C6** `ui-tooling-preview` dropped; the logging interceptor is now wired, debug builds only
 - [x] **C10** One debug key for every build, so an APK from CI installs over the last one
   - CI signed with AGP's auto-generated `~/.android/debug.keystore`, which a GitHub runner does not
@@ -312,7 +383,7 @@ clean, the tests pass. But every `[~]` in §2 is still a claim about behaviour
 **nobody has watched happen**, and that is now the only thing standing between
 this and a working app.
 
-1. **A4 and A5, and they need you.** Install the APK from the latest green run:
+1. **A4, A5 and A7, and they need you.** Install the APK from the latest green run:
    Actions → the run → `etoken-debug-apk-<run number>` at the bottom, unzipped.
    Everything below is guesswork ranked against an app no one has used.
 2. **A3 resolves itself from that.** If Moxfield answers on a phone, the 403
@@ -330,4 +401,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 48 commits · CI green including the emulator, all 30 instrumented tests · Scryfall verified live, Moxfield 403 from CI · B11's own tests written but not yet run
+**Last reviewed:** 2026-08-27 · 51 commits · run #73 green including the emulator, all 33 instrumented tests · Scryfall verified live, Moxfield 403 from CI · everything up to run #73 has run; B13's ten tests are written and unrun, and no compiler has read that change yet

@@ -1,3 +1,9 @@
 <resources>
     <color name="ic_launcher_background">#1C1A21</color>
+
+    <!-- The splash is the launcher icon's mark on the launcher icon's own
+         background, so the two must not drift apart. Deliberately the same in
+         light and dark: the mark is a pale purple and an amber chosen to sit on
+         this colour, and on a white background neither has any contrast left. -->
+    <color name="splash_background">@color/ic_launcher_background</color>
 </resources>

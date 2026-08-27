@@ -4,6 +4,10 @@
     <string name="public_decks_only">Les decks privés et non répertoriés n\'apparaissent pas : l\'app lit Moxfield sans se connecter.</string>
     <string name="username_label">Nom d\'utilisateur Moxfield</string>
     <string name="action_load_decks">Charger les decks</string>
+    <string name="action_load_precons">Voir les decks préconstruits</string>
+    <string name="precons_hint">Les decks Commander préconstruits de Wizards. Aucun nom d\'utilisateur requis.</string>
+    <string name="precons_title">Decks préconstruits</string>
+    <string name="precons_empty">Moxfield n\'a renvoyé aucun deck préconstruit.</string>
     <string name="action_retry">Réessayer</string>
     <string name="action_back">Retour</string>
     <string name="decks_search_hint">Rechercher un deck ou un commandant</string>
