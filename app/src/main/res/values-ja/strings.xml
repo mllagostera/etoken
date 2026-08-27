@@ -62,4 +62,7 @@
     <string name="board_picker_title">何を生成する？</string>
     <string name="board_empty_detail">＋ をタップしてデッキのトークンを戦場に出します。</string>
     <string name="entry_remove">戦場から取り除く</string>
+    <string name="entry_tap_how_many">何体をタップする？</string>
+    <string name="entry_untap_how_many">何体をアンタップする？</string>
+    <string name="action_all">すべて（%1$d）</string>
 </resources>

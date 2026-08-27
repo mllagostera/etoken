@@ -101,19 +101,28 @@ is one thing rather than three; what is gone is anything that joins batches up.
   other creatures has none itself. Haste handed out at the table by another
   permanent is something no app can see, so that half stays a chip you tap.
 - **A tap turns an entry**, and turns it back. It is the gesture a table asks
-  for most, so it is the one that costs nothing.
+  for most, so it is the one that costs nothing. On an entry holding more than
+  one copy it asks how many first — "All (6)" is one press, and a smaller
+  number splits the entry, because three of six Goblins tapped for mana leaves
+  three that can still attack and they are not the same three.
 - **A long press opens everything else**: the +1/+1 counters, the sickness, the
   count, and taking the entry off the table.
-- **"My turn begins"** clears sickness and untaps the whole table at once, and
-  **"+1/+1 on all"** grows every entry of every token.
+- **"My turn begins"** clears sickness, untaps the whole table — and joins back
+  up whatever it has just made identical. Two tapped, two ready and two
+  summoning sick are three cells while those states differ, and one cell of six
+  the moment a turn resets them. It is the only thing that merges, and it is
+  what the no-merge rule is for: the untap step erases exactly the differences
+  that kept those entries apart. What it does not reset still tells them apart —
+  a different token, different counters, a different creature being copied.
+- **"+1/+1 on all"** grows every entry of every token.
 - Putting a counter on **only some** of an entry splits it in place; the halves
   stay side by side and stay apart.
 - Nothing re-sorts. Entries sit in the order they were made, so one you touch
   does not move out from under your finger.
 
 `BoardRules` enforces the one invariant left after every operation — an entry
-that has emptied disappears — and deliberately no longer enforces the merge
-that used to sit beside it.
+that has emptied disappears — and deliberately no longer merges on every edit,
+only at the untap step.
 
 **Starting a new game** asks first and says how many tokens leave the table. It
 empties everything, including what another deck put there: the board belongs to

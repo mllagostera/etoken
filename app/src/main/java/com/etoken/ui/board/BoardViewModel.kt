@@ -154,8 +154,15 @@ class BoardViewModel(
     fun setSummoningSick(entryId: Long, sick: Boolean) =
         boards.update { BoardRules.setSummoningSick(it, entryId, sick) }
 
-    fun setTapped(entryId: Long, tapped: Boolean) =
-        boards.update { BoardRules.setTapped(it, entryId, tapped) }
+    /**
+     * Turns [appliesTo] copies of an entry, or all of them when it is null.
+     *
+     * Fewer than all splits the entry, which is the point: tapping three of six
+     * Goblins for mana leaves three that can still attack, and they are not the
+     * same three.
+     */
+    fun setTapped(entryId: Long, tapped: Boolean, appliesTo: Int? = null) =
+        boards.update { BoardRules.setTapped(it, entryId, tapped, appliesTo) }
 
     fun remove(entryId: Long) = boards.update { BoardRules.remove(it, entryId) }
 

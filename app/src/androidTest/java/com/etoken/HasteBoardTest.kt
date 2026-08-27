@@ -2,7 +2,6 @@ package com.etoken
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -37,9 +36,8 @@ class HasteBoardTest {
         robot.add(Fakes.HASTE_TOKEN_NAME, quantity = 2, scroll = true)
 
         robot.awaitText("×2")
+        // The badge is the whole claim: nothing on this table is waiting.
         compose.onAllNodesWithText(robot.str(R.string.entry_sick)).assertCountEquals(0)
-        // Nothing is waiting, so there is nothing for the untap step to do.
-        compose.onNodeWithText(robot.str(R.string.board_begin_turn)).assertIsNotEnabled()
     }
 
     @Test

@@ -98,6 +98,7 @@ class BoardScreenTest {
         robot.add(Fakes.TOKEN_NAME, quantity = 3)
         robot.awaitText(robot.str(R.string.entry_sick))
         robot.tapEntry(Fakes.TOKEN_NAME)
+        robot.answerAll(3)
         robot.awaitText(robot.str(R.string.entry_tapped))
 
         compose.onNodeWithText(robot.str(R.string.board_begin_turn)).performClick()
@@ -106,6 +107,45 @@ class BoardScreenTest {
         compose.onAllNodesWithText(robot.str(R.string.entry_tapped)).assertCountEquals(0)
         // Nothing left the table on the way: the three are still one entry.
         compose.onNodeWithText("×3").assertIsDisplayed()
+    }
+
+    @Test
+    fun tapping_some_of_an_entry_leaves_the_rest_able_to_attack() {
+        robot.show()
+        robot.add(Fakes.TOKEN_NAME, quantity = 6)
+        robot.awaitText("×6")
+
+        // Six Goblins, two tapped for mana: the table now holds two things.
+        robot.tapEntry(Fakes.TOKEN_NAME)
+        robot.answerSome(2)
+
+        robot.awaitCount(Fakes.TOKEN_NAME, 2)
+        compose.onNodeWithText("×4").assertIsDisplayed()
+        compose.onNodeWithText("×2").assertIsDisplayed()
+        compose.onAllNodesWithText(robot.str(R.string.entry_tapped)).assertCountEquals(1)
+    }
+
+    @Test
+    fun the_untap_step_joins_the_table_back_up() {
+        // The case the redesign has to get right both ways round: two tapped,
+        // two ready and two summoning sick are three cells while those states
+        // differ, and one cell of six the moment a turn resets them.
+        robot.show()
+        robot.add(Fakes.TOKEN_NAME, quantity = 2, tapped = true)
+        robot.awaitText(robot.str(R.string.entry_tapped))
+        robot.add(Fakes.HASTE_TOKEN_NAME, quantity = 2, scroll = true)
+        robot.add(Fakes.TOKEN_NAME, quantity = 2)
+        robot.awaitText(robot.plural(R.plurals.board_in_play_count, 6))
+
+        compose.onNodeWithText(robot.str(R.string.board_begin_turn)).performClick()
+
+        // The Goblins join up; the Hellions are a different token and stay
+        // their own cell.
+        robot.awaitCount(Fakes.TOKEN_NAME, 1)
+        compose.onNodeWithText("×4").assertIsDisplayed()
+        compose.onNodeWithText(Fakes.HASTE_TOKEN_NAME).assertIsDisplayed()
+        compose.onAllNodesWithText(robot.str(R.string.entry_tapped)).assertCountEquals(0)
+        compose.onAllNodesWithText(robot.str(R.string.entry_sick)).assertCountEquals(0)
     }
 
     @Test

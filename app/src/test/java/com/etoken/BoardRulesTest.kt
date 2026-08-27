@@ -78,14 +78,52 @@ class BoardRulesTest {
     }
 
     @Test
-    fun `starting a turn clears sickness without joining entries up`() {
-        val mixed = add(BoardRules.beginTurn(add(quantity = 2)), quantity = 3)
+    fun `the untap step joins back up what it has just made identical`() {
+        // The case the table actually reaches: two tapped, two ready, two that
+        // arrived this turn. The untap step erases all three differences at
+        // once, and six identical Goblins are one entry of six.
+        var board = add(quantity = 2, entersTapped = true, entersSick = false)
+        board = add(board, quantity = 2, entersSick = false)
+        board = add(board, quantity = 2)
+        assertEquals(3, board.entries.size)
 
-        val board = BoardRules.beginTurn(mixed)
+        board = BoardRules.beginTurn(board)
 
-        assertEquals(2, board.entries.size)
-        assertEquals(5, board.total)
+        assertEquals(1, board.entries.size)
+        assertEquals(6, board.entries.single().quantity)
         assertEquals(0, board.summoningSickCount)
+        assertFalse(board.entries.single().tapped)
+        // The oldest id survives, so the row does not read as a new one.
+        assertEquals(1L, board.entries.single().id)
+    }
+
+    @Test
+    fun `the untap step keeps apart what a turn does not reset`() {
+        // Different tokens, and different counters on the same token: neither
+        // is a difference the turn erases, so neither merges.
+        var board = add(quantity = 2)
+        board = add(board, tokenId = treasure, quantity = 1)
+        board = add(board, quantity = 3)
+        board = BoardRules.addCounters(board, board.entries.last().id, 1)
+
+        board = BoardRules.beginTurn(board)
+
+        assertEquals(3, board.entries.size)
+        assertEquals(6, board.total)
+        assertEquals(listOf(2, 1, 3), board.entries.map { it.quantity })
+    }
+
+    @Test
+    fun `copies of different creatures survive the untap step apart`() {
+        var board = add(quantity = 1, copying = "Krenko, Mob Boss")
+        board = add(board, quantity = 1, copying = "Atraxa, Praetors' Voice")
+        board = add(board, quantity = 1, copying = "Krenko, Mob Boss")
+
+        board = BoardRules.beginTurn(board)
+
+        // The two Krenkos are one entry of two; Atraxa is still her own.
+        assertEquals(2, board.entries.size)
+        assertEquals(listOf(2, 1), board.entries.map { it.quantity })
     }
 
     @Test
@@ -313,6 +351,29 @@ class BoardRulesTest {
 
         val back = BoardRules.setTapped(tapped, entryId = 1, tapped = false)
         assertFalse(back.entries.single().tapped)
+    }
+
+    @Test
+    fun `tapping some of an entry leaves the rest able to attack`() {
+        // Six Goblins, three tapped for mana: the other three are a row of
+        // their own and are not the same three.
+        val board = BoardRules.setTapped(add(quantity = 6), entryId = 1, tapped = true, appliesTo = 3)
+
+        assertEquals(2, board.entries.size)
+        assertEquals(3, board.entries.single { it.tapped }.quantity)
+        assertEquals(3, board.entries.single { !it.tapped }.quantity)
+        assertEquals(6, board.total)
+    }
+
+    @Test
+    fun `untapping some of a tapped entry splits it the same way`() {
+        val tapped = add(quantity = 4, entersTapped = true)
+
+        val board = BoardRules.setTapped(tapped, entryId = 1, tapped = false, appliesTo = 1)
+
+        assertEquals(2, board.entries.size)
+        assertEquals(3, board.entries.single { it.tapped }.quantity)
+        assertEquals(1, board.entries.single { !it.tapped }.quantity)
     }
 
     @Test

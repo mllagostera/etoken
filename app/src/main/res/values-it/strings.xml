@@ -62,4 +62,7 @@
     <string name="board_picker_title">Cosa stai creando?</string>
     <string name="board_empty_detail">Tocca + per mettere in gioco le pedine del mazzo.</string>
     <string name="entry_remove">Togli dal tavolo</string>
+    <string name="entry_tap_how_many">Quante ne TAPpi?</string>
+    <string name="entry_untap_how_many">Quante ne STAPpi?</string>
+    <string name="action_all">Tutte (%1$d)</string>
 </resources>

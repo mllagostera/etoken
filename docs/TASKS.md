@@ -41,8 +41,8 @@ the two APIs are ever faked.
 - [x] Scryfall collection envelope and identifier serialization — `data/scryfall/`, 6 tests
 - [x] Token extraction from `all_parts`, dedupe, emblems, self-reference — `domain/TokenExtractor.kt`, 9 tests
 - [x] Repository: paging, caching, 75-id batching, by-name fallback — `data/MoxfieldRepository.kt`, 11 tests
-- [x] Battlefield rules: entries that never merge, split, order of entry, clamping —
-  `domain/BoardRules.kt`, 35 tests
+- [~] Battlefield rules: entries that never merge except at the untap step, split, order of entry,
+  clamping — `domain/BoardRules.kt`, 39 tests (B16's four are written and unrun)
 - [x] Undo: bounded trail, no-op edits are not steps, an emptied table comes back, and one press of
   add is one step — `domain/UndoHistory.kt`, `data/GameBoardStore.kt`, 14 tests
 - [x] Power/toughness with counters, including `*` and `1+*` — `domain/PowerToughness.kt`, 4 tests
@@ -361,6 +361,24 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - It joins the C8 list: the entry cell is a new layout with badges in it, in seven languages, and
     nobody has looked at any of them.
 
+- [ ] **B16** Tapping asks how many, and the untap step joins the table back up
+  - Two follow-ups to B15 from the repo owner, and they pull in opposite directions on purpose.
+  - **Tapping some.** A tap on an entry of one still just turns it. On an entry holding more, the
+    screen asks how many — "All (6)" is one press, a smaller number splits the entry so the copies
+    that were tapped are a cell of their own. That is the case the table actually reaches: three of
+    six Goblins tapped for mana leaves three that can still attack, and they are not the same three.
+    Untapping asks the same question the other way round.
+  - **The untap step merges.** Two tapped, two ready and two summoning sick are three cells while
+    those states differ, and one cell of six the moment a turn resets them. This is the one place
+    that merges and it is not an exception to the no-merge rule — it is what the rule is for: the
+    untap step erases exactly the differences that kept those entries apart, so keeping them apart
+    afterwards is bookkeeping about a distinction that no longer exists. What a turn does not reset
+    still tells entries apart: a different token, different +1/+1 counters, a different creature
+    being copied.
+  - "My turn begins" is offered whenever there is a table, rather than only when something is
+    summoning sick: it now has three jobs and the row knew about one.
+  - **Written, never run.** Four unit tests and three instrumented ones.
+
 ### C. Quality and infrastructure
 
 - [x] **C1** CI on every branch: build, unit tests, lint, APK artifact — `.github/workflows/android-ci.yml`
@@ -448,4 +466,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-27 · run **#91** green including the emulator: 127 unit tests and 37 instrumented, lint clean · Scryfall verified live, Moxfield 403 from CI · B15 rebuilt the battlefield in this run's tree, so every figure above is measured on the app as it now stands — what nobody has done is *look* at it
+**Last reviewed:** 2026-08-27 · run **#91** green including the emulator: 127 unit tests and 37 instrumented, lint clean · B16 lands on top of that and has not run · Scryfall verified live, Moxfield 403 from CI · B15 rebuilt the battlefield in this run's tree, so every figure above is measured on the app as it now stands — what nobody has done is *look* at it

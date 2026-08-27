@@ -70,4 +70,7 @@
     <string name="board_picker_title">¿Qué estás creando?</string>
     <string name="board_empty_detail">Toca + para poner en juego los tokens del mazo.</string>
     <string name="entry_remove">Quitar de la mesa</string>
+    <string name="entry_tap_how_many">¿Cuántos giras?</string>
+    <string name="entry_untap_how_many">¿Cuántos enderezas?</string>
+    <string name="action_all">Todos (%1$d)</string>
 </resources>

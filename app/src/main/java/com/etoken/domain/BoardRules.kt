@@ -10,8 +10,12 @@ import com.etoken.domain.model.GameBoard
  * [normalize]: an entry that has emptied disappears. Entries that look alike
  * are deliberately left alone — each press of "add" is a thing that happened at
  * the table, and merging two of them because their state happens to coincide
- * loses that. (An earlier version of this file did merge them, which is why the
- * absence is worth stating.)
+ * loses that. (An earlier version of this file merged on every edit, which is
+ * why the absence is worth stating.)
+ *
+ * [beginTurn] is the single exception, and it earns it: the untap step is the
+ * moment the differences that kept entries apart stop existing. See its own
+ * comment.
  *
  * Order is the order entries were made, and nothing here re-sorts: an entry
  * that jumped to the top of the grid because you put a counter on it would be
@@ -135,9 +139,51 @@ object BoardRules {
         entry.copy(tapped = tapped)
     }
 
-    /** Your untap step: everything that was waiting can now attack, and everything tapped untaps. */
-    fun beginTurn(board: GameBoard): GameBoard = normalize(
-        board.copy(entries = board.entries.map { it.copy(summoningSick = false, tapped = false) }),
+    /**
+     * Your untap step: everything that was waiting can now attack, everything
+     * tapped untaps — and what is left indistinguishable is joined back up.
+     *
+     * This is the one place that merges, and it is not an exception to the rule
+     * that entries stay apart: it is what the rule is *for*. Two entries are
+     * separate because something told them apart — one was tapped, one was
+     * waiting, one arrived a turn later. The untap step erases exactly those
+     * differences at once, and after it "the three I made last turn" and "the
+     * three that were tapped" are six identical Goblins that a player thinks of
+     * as six Goblins. Keeping them in three cells would be bookkeeping about a
+     * distinction that no longer exists.
+     *
+     * What still tells entries apart survives it: a different token, a
+     * different number of +1/+1 counters, a different creature being copied.
+     * None of those is something a turn resets.
+     */
+    fun beginTurn(board: GameBoard): GameBoard {
+        val merged = LinkedHashMap<Signature, BoardEntry>()
+
+        for (entry in board.entries) {
+            val ready = entry.copy(summoningSick = false, tapped = false)
+            val signature = Signature(ready.tokenId, ready.plusOneCounters, ready.copying)
+            val existing = merged[signature]
+
+            merged[signature] = if (existing == null) {
+                ready
+            } else {
+                existing.copy(
+                    // The older id wins, so a merge does not read as a new cell
+                    // appearing where two used to be.
+                    id = minOf(existing.id, ready.id),
+                    quantity = existing.quantity + ready.quantity,
+                )
+            }
+        }
+
+        return normalize(board.copy(entries = merged.values.toList()))
+    }
+
+    /** What still tells two entries apart once a turn has reset the rest. */
+    private data class Signature(
+        val tokenId: String,
+        val plusOneCounters: Int,
+        val copying: String?,
     )
 
     /** Board wipe, or simply a new game. Entry ids keep counting up. */

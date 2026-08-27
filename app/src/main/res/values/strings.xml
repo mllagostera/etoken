@@ -58,6 +58,9 @@
     <string name="entry_add_one">Add one more</string>
     <string name="entry_counter_remove">Remove a counter</string>
     <string name="entry_counter_add">Add a counter</string>
+    <string name="entry_tap_how_many">How many do you tap?</string>
+    <string name="entry_untap_how_many">How many do you untap?</string>
+    <string name="action_all">All (%1$d)</string>
     <string name="entry_remove">Take off the table</string>
 
     <string name="dialog_how_many">How many tokens?</string>

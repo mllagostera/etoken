@@ -107,12 +107,15 @@ fun BoardScreen(
     var addingTokenId by rememberSaveable { mutableStateOf<String?>(null) }
     var detailEntryId by rememberSaveable { mutableStateOf<Long?>(null) }
     var countersForEntryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var tappingEntryId by rememberSaveable { mutableStateOf<Long?>(null) }
     var confirmingNewGame by rememberSaveable { mutableStateOf(false) }
 
     val adding = addingTokenId?.let { id -> ready?.deckTokens?.firstOrNull { it.id == id } }
     val detail = detailEntryId?.let { id -> ready?.entries?.firstOrNull { it.entry.id == id } }
     val countersTarget =
         countersForEntryId?.let { id -> ready?.entries?.firstOrNull { it.entry.id == id } }
+    val tappingTarget =
+        tappingEntryId?.let { id -> ready?.entries?.firstOrNull { it.entry.id == id } }
 
     BoxWithConstraints(modifier.fillMaxSize()) {
         val twoPane = maxWidth >= TWO_PANE_WIDTH
@@ -200,6 +203,7 @@ fun BoardScreen(
                                 state = current,
                                 viewModel = viewModel,
                                 onOpenEntry = { detailEntryId = it },
+                                onAskHowManyToTap = { tappingEntryId = it },
                                 modifier = Modifier.weight(1.15f),
                             )
                         }
@@ -208,6 +212,7 @@ fun BoardScreen(
                             state = current,
                             viewModel = viewModel,
                             onOpenEntry = { detailEntryId = it },
+                            onAskHowManyToTap = { tappingEntryId = it },
                             // Room for the button that floats over the grid.
                             contentPadding = PaddingValues(
                                 start = 12.dp,
@@ -279,6 +284,30 @@ fun BoardScreen(
         }
     }
 
+    tappingTarget?.let { target ->
+        val entry = target.entry
+        // What the gesture means is the opposite of what the entry is now:
+        // a tapped entry is being straightened, an untapped one turned.
+        val turning = !entry.tapped
+
+        NumberDialog(
+            title = stringResource(
+                if (turning) R.string.entry_tap_how_many else R.string.entry_untap_how_many,
+            ),
+            initial = 1,
+            max = entry.quantity,
+            // The common answer, one press away: everything the entry holds.
+            // It is the same call with the whole count, which the rules take
+            // as "no split".
+            allLabel = stringResource(R.string.action_all, entry.quantity),
+            onDismiss = { tappingEntryId = null },
+            onConfirm = { amount ->
+                viewModel.setTapped(entry.id, turning, appliesTo = amount)
+                tappingEntryId = null
+            },
+        )
+    }
+
     countersTarget?.let { target ->
         NumberDialog(
             title = stringResource(R.string.dialog_how_many_of, target.entry.quantity),
@@ -339,13 +368,13 @@ private fun BoardPane(
     state: BoardUiState.Ready,
     viewModel: BoardViewModel,
     onOpenEntry: (Long) -> Unit,
+    onAskHowManyToTap: (Long) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(12.dp),
 ) {
     Column(modifier.fillMaxSize()) {
         if (!state.isEmpty) {
             TurnActions(
-                sickCount = state.board.summoningSickCount,
                 onBeginTurn = viewModel::beginTurn,
                 onCounterAll = viewModel::addCounterToAll,
             )
@@ -379,7 +408,15 @@ private fun BoardPane(
                     items(state.entries, key = { it.entry.id }) { entry ->
                         EntryCell(
                             on = entry,
-                            onTap = { viewModel.setTapped(entry.entry.id, !entry.entry.tapped) },
+                            onTap = {
+                                // A single copy has only one answer, so asking
+                                // for it would be a dialog with nothing in it.
+                                if (entry.entry.quantity == 1) {
+                                    viewModel.setTapped(entry.entry.id, !entry.entry.tapped)
+                                } else {
+                                    onAskHowManyToTap(entry.entry.id)
+                                }
+                            },
                             onOpen = { onOpenEntry(entry.entry.id) },
                         )
                     }
@@ -391,12 +428,16 @@ private fun BoardPane(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TurnActions(sickCount: Int, onBeginTurn: () -> Unit, onCounterAll: () -> Unit) {
+private fun TurnActions(onBeginTurn: () -> Unit, onCounterAll: () -> Unit) {
     FlowRow(
         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        OutlinedButton(onClick = onBeginTurn, enabled = sickCount > 0) {
+        // Offered whenever there is a table at all, rather than only when
+        // something is summoning sick: the untap step also straightens what is
+        // tapped and joins back up what it has made identical, so there are
+        // three reasons to press it and the row only knew about one.
+        OutlinedButton(onClick = onBeginTurn) {
             Text(stringResource(R.string.board_begin_turn), maxLines = 1)
         }
         OutlinedButton(onClick = onCounterAll) {
@@ -741,6 +782,8 @@ private fun NumberDialog(
     max: Int,
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit,
+    /** When given, a button answering [max] without typing it. */
+    allLabel: String? = null,
 ) {
     var text by rememberSaveable { mutableStateOf(initial.toString()) }
     val parsed = text.toIntOrNull()
@@ -758,8 +801,13 @@ private fun NumberDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = { parsed?.let(onConfirm) }, enabled = valid) {
-                Text(stringResource(R.string.action_accept))
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (allLabel != null) {
+                    TextButton(onClick = { onConfirm(max) }) { Text(allLabel, maxLines = 1) }
+                }
+                TextButton(onClick = { parsed?.let(onConfirm) }, enabled = valid) {
+                    Text(stringResource(R.string.action_accept))
+                }
             }
         },
         dismissButton = {

@@ -62,4 +62,7 @@
     <string name="board_picker_title">Què estàs creant?</string>
     <string name="board_empty_detail">Toca + per posar en joc els tokens del deck.</string>
     <string name="entry_remove">Treu de la taula</string>
+    <string name="entry_tap_how_many">Quants en gires?</string>
+    <string name="entry_untap_how_many">Quants en redreces?</string>
+    <string name="action_all">Tots (%1$d)</string>
 </resources>

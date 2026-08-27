@@ -62,4 +62,7 @@
     <string name="board_picker_title">Was erzeugst du?</string>
     <string name="board_empty_detail">Tippe auf +, um Spielsteine des Decks ins Spiel zu bringen.</string>
     <string name="entry_remove">Vom Tisch nehmen</string>
+    <string name="entry_tap_how_many">Wie viele tappst du?</string>
+    <string name="entry_untap_how_many">Wie viele enttappst du?</string>
+    <string name="action_all">Alle (%1$d)</string>
 </resources>

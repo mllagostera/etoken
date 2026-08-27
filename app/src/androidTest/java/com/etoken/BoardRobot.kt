@@ -97,9 +97,26 @@ class BoardRobot(private val compose: ComposeContentTestRule) {
         awaitText(str(R.string.dialog_how_many))
     }
 
-    /** Turns the first entry of that token, which is what a tap on its cell does. */
+    /**
+     * Taps the first cell of that token, which turns it.
+     *
+     * An entry holding more than one copy answers with a dialog instead —
+     * three of six Goblins tapped for mana is the case it exists for — so
+     * those calls are followed by [answerAll] or [answerSome].
+     */
     fun tapEntry(tokenName: String) {
         entryCell(tokenName).performClick()
+    }
+
+    /** Answers that dialog with every copy the entry holds. */
+    fun answerAll(count: Int) {
+        inDialog(str(R.string.action_all, count)).performClick()
+    }
+
+    /** Answers it with fewer, which splits the entry in two. */
+    fun answerSome(amount: Int) {
+        amountField().performTextReplacement(amount.toString())
+        inDialog(str(R.string.action_accept)).performClick()
     }
 
     /** Opens that entry's detail sheet, which is what a long press does. */
