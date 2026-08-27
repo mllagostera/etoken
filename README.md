@@ -106,7 +106,9 @@ is one thing rather than three; what is gone is anything that joins batches up.
   number splits the entry, because three of six Goblins tapped for mana leaves
   three that can still attack and they are not the same three.
 - **A long press opens everything else**: the +1/+1 counters, the sickness, the
-  count, and taking the entry off the table.
+  count, and taking the entry off the table. Every edit there that could land on
+  part of an entry asks the same "how many?" the tap does — chips and counters
+  alike — and none of them asks when the entry holds a single copy.
 - **"My turn begins"** clears sickness, untaps the whole table — and joins back
   up whatever it has just made identical. Two tapped, two ready and two
   summoning sick are three cells while those states differ, and one cell of six
@@ -115,7 +117,7 @@ is one thing rather than three; what is gone is anything that joins batches up.
   that kept those entries apart. What it does not reset still tells them apart —
   a different token, different counters, a different creature being copied.
 - **"+1/+1 on all"** grows every entry of every token.
-- Putting a counter on **only some** of an entry splits it in place; the halves
+- Anything applied to **only some** of an entry splits it in place; the halves
   stay side by side and stay apart.
 - Nothing re-sorts. Entries sit in the order they were made, so one you touch
   does not move out from under your finger.

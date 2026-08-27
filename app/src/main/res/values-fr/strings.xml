@@ -38,7 +38,6 @@
     <string name="entry_ready">Peut attaquer</string>
     <string name="entry_tapped">Engagé</string>
     <string name="entry_untapped">Dégagé</string>
-    <string name="entry_counter_some">+1/+1 sur quelques-uns…</string>
     <string name="entry_remove_one">En retirer un</string>
     <string name="entry_add_one">En ajouter un</string>
     <string name="entry_counter_remove">Retirer un marqueur</string>
@@ -62,6 +61,8 @@
     <string name="board_picker_title">Que crées-tu ?</string>
     <string name="board_empty_detail">Touche + pour mettre en jeu les jetons du deck.</string>
     <string name="entry_remove">Retirer de la table</string>
+    <string name="entry_sick_how_many">Combien ont le mal d\'invocation ?</string>
+    <string name="entry_ready_how_many">Combien peuvent attaquer ?</string>
     <string name="entry_tap_how_many">Combien en engages-tu ?</string>
     <string name="entry_untap_how_many">Combien en dégages-tu ?</string>
     <string name="action_all">Tous (%1$d)</string>

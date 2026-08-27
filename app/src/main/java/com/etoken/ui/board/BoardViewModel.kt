@@ -151,8 +151,9 @@ class BoardViewModel(
 
     fun addCounterToAll() = boards.update { BoardRules.addCountersToAll(it, 1) }
 
-    fun setSummoningSick(entryId: Long, sick: Boolean) =
-        boards.update { BoardRules.setSummoningSick(it, entryId, sick) }
+    /** Like [setTapped]: fewer than all splits the entry, which is the point. */
+    fun setSummoningSick(entryId: Long, sick: Boolean, appliesTo: Int? = null) =
+        boards.update { BoardRules.setSummoningSick(it, entryId, sick, appliesTo) }
 
     /**
      * Turns [appliesTo] copies of an entry, or all of them when it is null.

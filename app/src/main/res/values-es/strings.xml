@@ -44,7 +44,6 @@
     <string name="entry_ready">Puede atacar</string>
     <string name="entry_tapped">Girado</string>
     <string name="entry_untapped">Enderezado</string>
-    <string name="entry_counter_some">+1/+1 a solo algunos…</string>
     <string name="entry_remove_one">Quitar uno</string>
     <string name="entry_add_one">Poner uno más</string>
     <string name="entry_counter_remove">Quitar un contador</string>
@@ -70,6 +69,8 @@
     <string name="board_picker_title">¿Qué estás creando?</string>
     <string name="board_empty_detail">Toca + para poner en juego los tokens del mazo.</string>
     <string name="entry_remove">Quitar de la mesa</string>
+    <string name="entry_sick_how_many">¿Cuántos tienen mareo?</string>
+    <string name="entry_ready_how_many">¿Cuántos pueden atacar?</string>
     <string name="entry_tap_how_many">¿Cuántos giras?</string>
     <string name="entry_untap_how_many">¿Cuántos enderezas?</string>
     <string name="action_all">Todos (%1$d)</string>

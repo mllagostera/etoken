@@ -377,6 +377,11 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     being copied.
   - "My turn begins" is offered whenever there is a table, rather than only when something is
     summoning sick: it now has three jobs and the row knew about one.
+  - Every edit that can land on part of an entry now asks the same way, not just the tap on a
+    cell: the tapped chip, the summoning-sickness chip and the +1/+1 stepper in the detail sheet
+    all go through one `EntryAsk`, which also decides when there is nothing to ask. That retired
+    the "+1/+1 on just some…" button — it existed only because the stepper could speak for a whole
+    entry and nothing else, and it had become the same question in a second place.
   - **Green on run #93**, first try: four unit tests and two instrumented, including the owner's
     own example — two tapped, two ready and two sick becoming one entry of six, with a Hellion
     beside them that stays its own cell because a different token is not a difference a turn erases.

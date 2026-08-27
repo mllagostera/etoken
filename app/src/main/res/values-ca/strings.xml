@@ -38,7 +38,6 @@
     <string name="entry_ready">Pot atacar</string>
     <string name="entry_tapped">Girat</string>
     <string name="entry_untapped">Redreçat</string>
-    <string name="entry_counter_some">+1/+1 només a alguns…</string>
     <string name="entry_remove_one">Treu-ne un</string>
     <string name="entry_add_one">Posa\'n un més</string>
     <string name="entry_counter_remove">Treu un comptador</string>
@@ -62,6 +61,8 @@
     <string name="board_picker_title">Què estàs creant?</string>
     <string name="board_empty_detail">Toca + per posar en joc els tokens del deck.</string>
     <string name="entry_remove">Treu de la taula</string>
+    <string name="entry_sick_how_many">Quants tenen mareig?</string>
+    <string name="entry_ready_how_many">Quants poden atacar?</string>
     <string name="entry_tap_how_many">Quants en gires?</string>
     <string name="entry_untap_how_many">Quants en redreces?</string>
     <string name="action_all">Tots (%1$d)</string>

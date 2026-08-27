@@ -38,7 +38,6 @@
     <string name="entry_ready">Kann angreifen</string>
     <string name="entry_tapped">Getappt</string>
     <string name="entry_untapped">Ungetappt</string>
-    <string name="entry_counter_some">+1/+1 nur auf einige…</string>
     <string name="entry_remove_one">Einen entfernen</string>
     <string name="entry_add_one">Einen hinzufügen</string>
     <string name="entry_counter_remove">Eine Marke entfernen</string>
@@ -62,6 +61,8 @@
     <string name="board_picker_title">Was erzeugst du?</string>
     <string name="board_empty_detail">Tippe auf +, um Spielsteine des Decks ins Spiel zu bringen.</string>
     <string name="entry_remove">Vom Tisch nehmen</string>
+    <string name="entry_sick_how_many">Wie viele haben Einsatzverzögerung?</string>
+    <string name="entry_ready_how_many">Wie viele können angreifen?</string>
     <string name="entry_tap_how_many">Wie viele tappst du?</string>
     <string name="entry_untap_how_many">Wie viele enttappst du?</string>
     <string name="action_all">Alle (%1$d)</string>

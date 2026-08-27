@@ -1,5 +1,6 @@
 package com.etoken.ui.board
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -66,6 +67,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.etoken.R
 import com.etoken.domain.PowerToughness
+import com.etoken.domain.model.BoardEntry
 import com.etoken.ui.common.ActionButton
 import com.etoken.ui.common.BackButton
 import com.etoken.ui.common.ErrorView
@@ -106,16 +108,36 @@ fun BoardScreen(
     var picking by rememberSaveable { mutableStateOf(false) }
     var addingTokenId by rememberSaveable { mutableStateOf<String?>(null) }
     var detailEntryId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var countersForEntryId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var tappingEntryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    // One pair for every "how many of them?" the screen asks, rather than one
+    // per edit: they are the same question about the same entry, and only the
+    // wording and the call at the end differ. The action is held by name
+    // because that is what a Bundle can carry.
+    var askEntryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var askAction by rememberSaveable { mutableStateOf<String?>(null) }
     var confirmingNewGame by rememberSaveable { mutableStateOf(false) }
 
     val adding = addingTokenId?.let { id -> ready?.deckTokens?.firstOrNull { it.id == id } }
     val detail = detailEntryId?.let { id -> ready?.entries?.firstOrNull { it.entry.id == id } }
-    val countersTarget =
-        countersForEntryId?.let { id -> ready?.entries?.firstOrNull { it.entry.id == id } }
-    val tappingTarget =
-        tappingEntryId?.let { id -> ready?.entries?.firstOrNull { it.entry.id == id } }
+    val askTarget = askEntryId?.let { id -> ready?.entries?.firstOrNull { it.entry.id == id } }
+    val asked = askAction?.let { name -> EntryAsk.entries.firstOrNull { it.name == name } }
+
+    /**
+     * Runs an edit over a whole entry, or asks how much of it to run over when
+     * the entry holds more than one copy.
+     *
+     * Everything that can apply to part of an entry goes through here — the tap
+     * on a cell, and the chips and steppers in the detail sheet — so the
+     * question is asked in one voice and never asked when there is only one
+     * possible answer.
+     */
+    val askHowMany: (EntryOnBoard, EntryAsk) -> Unit = { on, action ->
+        if (on.entry.quantity == 1) {
+            action.apply(viewModel, on.entry, appliesTo = 1)
+        } else {
+            askEntryId = on.entry.id
+            askAction = action.name
+        }
+    }
 
     BoxWithConstraints(modifier.fillMaxSize()) {
         val twoPane = maxWidth >= TWO_PANE_WIDTH
@@ -203,7 +225,7 @@ fun BoardScreen(
                                 state = current,
                                 viewModel = viewModel,
                                 onOpenEntry = { detailEntryId = it },
-                                onAskHowManyToTap = { tappingEntryId = it },
+                                onEdit = askHowMany,
                                 modifier = Modifier.weight(1.15f),
                             )
                         }
@@ -212,7 +234,7 @@ fun BoardScreen(
                             state = current,
                             viewModel = viewModel,
                             onOpenEntry = { detailEntryId = it },
-                            onAskHowManyToTap = { tappingEntryId = it },
+                            onEdit = askHowMany,
                             // Room for the button that floats over the grid.
                             contentPadding = PaddingValues(
                                 start = 12.dp,
@@ -270,12 +292,11 @@ fun BoardScreen(
             EntryDetail(
                 on = entry,
                 onQuantity = { delta -> viewModel.changeQuantity(entry.entry.id, delta) },
-                onCounters = { delta -> viewModel.changeCounters(entry.entry.id, delta) },
-                onToggleSick = {
-                    viewModel.setSummoningSick(entry.entry.id, !entry.entry.summoningSick)
+                onCounters = { delta ->
+                    askHowMany(entry, if (delta > 0) EntryAsk.CounterUp else EntryAsk.CounterDown)
                 },
-                onToggleTapped = { viewModel.setTapped(entry.entry.id, !entry.entry.tapped) },
-                onCountersForSome = { countersForEntryId = entry.entry.id },
+                onToggleSick = { askHowMany(entry, EntryAsk.Sick) },
+                onToggleTapped = { askHowMany(entry, EntryAsk.Tap) },
                 onRemove = {
                     viewModel.remove(entry.entry.id)
                     detailEntryId = null
@@ -284,39 +305,25 @@ fun BoardScreen(
         }
     }
 
-    tappingTarget?.let { target ->
-        val entry = target.entry
-        // What the gesture means is the opposite of what the entry is now:
-        // a tapped entry is being straightened, an untapped one turned.
-        val turning = !entry.tapped
+    if (askTarget != null && asked != null) {
+        val entry = askTarget.entry
+        val dismiss = {
+            askEntryId = null
+            askAction = null
+        }
 
         NumberDialog(
-            title = stringResource(
-                if (turning) R.string.entry_tap_how_many else R.string.entry_untap_how_many,
-            ),
+            title = stringResource(asked.titleFor(entry), entry.quantity),
             initial = 1,
             max = entry.quantity,
             // The common answer, one press away: everything the entry holds.
             // It is the same call with the whole count, which the rules take
             // as "no split".
             allLabel = stringResource(R.string.action_all, entry.quantity),
-            onDismiss = { tappingEntryId = null },
+            onDismiss = dismiss,
             onConfirm = { amount ->
-                viewModel.setTapped(entry.id, turning, appliesTo = amount)
-                tappingEntryId = null
-            },
-        )
-    }
-
-    countersTarget?.let { target ->
-        NumberDialog(
-            title = stringResource(R.string.dialog_how_many_of, target.entry.quantity),
-            initial = 1,
-            max = target.entry.quantity,
-            onDismiss = { countersForEntryId = null },
-            onConfirm = { amount ->
-                viewModel.changeCounters(target.entry.id, delta = 1, appliesTo = amount)
-                countersForEntryId = null
+                asked.apply(viewModel, entry, appliesTo = amount)
+                dismiss()
             },
         )
     }
@@ -368,7 +375,7 @@ private fun BoardPane(
     state: BoardUiState.Ready,
     viewModel: BoardViewModel,
     onOpenEntry: (Long) -> Unit,
-    onAskHowManyToTap: (Long) -> Unit,
+    onEdit: (EntryOnBoard, EntryAsk) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(12.dp),
 ) {
@@ -408,15 +415,7 @@ private fun BoardPane(
                     items(state.entries, key = { it.entry.id }) { entry ->
                         EntryCell(
                             on = entry,
-                            onTap = {
-                                // A single copy has only one answer, so asking
-                                // for it would be a dialog with nothing in it.
-                                if (entry.entry.quantity == 1) {
-                                    viewModel.setTapped(entry.entry.id, !entry.entry.tapped)
-                                } else {
-                                    onAskHowManyToTap(entry.entry.id)
-                                }
-                            },
+                            onTap = { onEdit(entry, EntryAsk.Tap) },
                             onOpen = { onOpenEntry(entry.entry.id) },
                         )
                     }
@@ -576,7 +575,6 @@ private fun EntryDetail(
     onCounters: (Int) -> Unit,
     onToggleSick: () -> Unit,
     onToggleTapped: () -> Unit,
-    onCountersForSome: () -> Unit,
     onRemove: () -> Unit,
 ) {
     val entry = on.entry
@@ -683,12 +681,6 @@ private fun EntryDetail(
             minusDescription = stringResource(R.string.entry_counter_remove),
             plusDescription = stringResource(R.string.entry_counter_add),
         )
-
-        if (entry.quantity > 1) {
-            TextButton(onClick = onCountersForSome, contentPadding = PaddingValues(0.dp)) {
-                Text(stringResource(R.string.entry_counter_some))
-            }
-        }
 
         TextButton(onClick = onRemove, contentPadding = PaddingValues(0.dp)) {
             Text(
@@ -814,6 +806,43 @@ private fun NumberDialog(
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
+}
+
+/**
+ * The edits that can land on part of an entry, and what each of them asks.
+ *
+ * A tap on a cell, the chips in the detail sheet and its +1/+1 stepper are all
+ * the same shape of thing: an edit that means one number of copies out of
+ * several. Gathering them here is what lets the screen ask the question once,
+ * in one voice, and skip it whenever the entry holds a single copy and there is
+ * only one possible answer.
+ *
+ * It replaced a separate "+1/+1 on just some…" button, which existed because
+ * the stepper could only speak for a whole entry. Now that every edit asks,
+ * that button was the same question in a second place.
+ */
+private enum class EntryAsk {
+    Tap,
+    Sick,
+    CounterUp,
+    CounterDown,
+    ;
+
+    /** The question, which depends on the state the entry is in right now. */
+    @StringRes
+    fun titleFor(entry: BoardEntry): Int = when (this) {
+        Tap -> if (entry.tapped) R.string.entry_untap_how_many else R.string.entry_tap_how_many
+        Sick ->
+            if (entry.summoningSick) R.string.entry_ready_how_many else R.string.entry_sick_how_many
+        CounterUp, CounterDown -> R.string.dialog_how_many_of
+    }
+
+    fun apply(viewModel: BoardViewModel, entry: BoardEntry, appliesTo: Int) = when (this) {
+        Tap -> viewModel.setTapped(entry.id, !entry.tapped, appliesTo)
+        Sick -> viewModel.setSummoningSick(entry.id, !entry.summoningSick, appliesTo)
+        CounterUp -> viewModel.changeCounters(entry.id, delta = 1, appliesTo = appliesTo)
+        CounterDown -> viewModel.changeCounters(entry.id, delta = -1, appliesTo = appliesTo)
+    }
 }
 
 /** Dimmed rather than redrawn sideways: a rotated card would leave its cell. */

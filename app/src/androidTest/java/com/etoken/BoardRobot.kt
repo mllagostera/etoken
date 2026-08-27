@@ -155,6 +155,11 @@ class BoardRobot(private val compose: ComposeContentTestRule) {
         compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isEmpty()
     }
 
+    /** Waits for the table itself to hold that many entries. */
+    fun awaitEntries(count: Int) = compose.waitUntil(TIMEOUT) {
+        boards.board.value.entries.size == count
+    }
+
     fun awaitCount(text: String, count: Int) = compose.waitUntil(TIMEOUT) {
         compose.onAllNodesWithText(text).fetchSemanticsNodes().size == count
     }

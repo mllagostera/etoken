@@ -38,7 +38,6 @@
     <string name="entry_ready">Può attaccare</string>
     <string name="entry_tapped">Girata</string>
     <string name="entry_untapped">Non girata</string>
-    <string name="entry_counter_some">+1/+1 solo ad alcune…</string>
     <string name="entry_remove_one">Togline una</string>
     <string name="entry_add_one">Aggiungine una</string>
     <string name="entry_counter_remove">Togli un segnalino</string>
@@ -62,6 +61,8 @@
     <string name="board_picker_title">Cosa stai creando?</string>
     <string name="board_empty_detail">Tocca + per mettere in gioco le pedine del mazzo.</string>
     <string name="entry_remove">Togli dal tavolo</string>
+    <string name="entry_sick_how_many">Quante hanno la svogliatezza?</string>
+    <string name="entry_ready_how_many">Quante possono attaccare?</string>
     <string name="entry_tap_how_many">Quante ne TAPpi?</string>
     <string name="entry_untap_how_many">Quante ne STAPpi?</string>
     <string name="action_all">Tutte (%1$d)</string>

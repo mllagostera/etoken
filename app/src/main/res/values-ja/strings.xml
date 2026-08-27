@@ -38,7 +38,6 @@
     <string name="entry_ready">攻撃可能</string>
     <string name="entry_tapped">タップ</string>
     <string name="entry_untapped">アンタップ</string>
-    <string name="entry_counter_some">一部にだけ +1/+1…</string>
     <string name="entry_remove_one">1 つ減らす</string>
     <string name="entry_add_one">1 つ増やす</string>
     <string name="entry_counter_remove">カウンターを 1 つ取り除く</string>
@@ -62,6 +61,8 @@
     <string name="board_picker_title">何を生成する？</string>
     <string name="board_empty_detail">＋ をタップしてデッキのトークンを戦場に出します。</string>
     <string name="entry_remove">戦場から取り除く</string>
+    <string name="entry_sick_how_many">何体が召喚酔い？</string>
+    <string name="entry_ready_how_many">何体が攻撃可能？</string>
     <string name="entry_tap_how_many">何体をタップする？</string>
     <string name="entry_untap_how_many">何体をアンタップする？</string>
     <string name="action_all">すべて（%1$d）</string>

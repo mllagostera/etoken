@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -173,6 +174,27 @@ class BoardScreenTest {
         compose.onNodeWithText(robot.str(R.string.entry_remove)).performClick()
 
         robot.awaitText(robot.str(R.string.board_empty))
+    }
+
+    @Test
+    fun the_sickness_chip_asks_the_same_question_the_cell_does() {
+        robot.show()
+        robot.add(Fakes.TOKEN_NAME, quantity = 4)
+        robot.awaitText("×4")
+
+        robot.openEntry(Fakes.TOKEN_NAME)
+        compose.onNodeWithText(robot.str(R.string.entry_sick)).performClick()
+        // All four are waiting, so the question is about the other direction.
+        robot.awaitText(robot.str(R.string.entry_ready_how_many))
+        robot.answerSome(1)
+
+        // One can attack, three are still waiting, and they are two entries.
+        // Read off the board rather than the grid: the detail sheet is still
+        // up and covering the cells it just split.
+        robot.awaitEntries(2)
+        val entries = robot.boards.board.value.entries
+        assertEquals(listOf(3, 1), entries.map { it.quantity })
+        assertEquals(1, entries.count { !it.summoningSick })
     }
 
     @Test
