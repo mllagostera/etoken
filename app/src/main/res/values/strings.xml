@@ -31,6 +31,10 @@
     <string name="tokens_filter_in_play">In play only</string>
     <string name="tokens_filtered_count">%1$d of %2$d</string>
     <string name="tokens_none_in_play">You have no tokens in play.</string>
+    <!-- The grid's summoning-sickness badge when only part of the table is
+         waiting. It reuses stack_sick, already translated everywhere, so the
+         two screens cannot end up calling the same state different things. -->
+    <string name="tokens_sick_some">%1$s ×%2$d</string>
 
     <string name="board_in_play">In play</string>
     <string name="board_sick">%1$d with summoning sickness</string>

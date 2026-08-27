@@ -1,6 +1,7 @@
 package com.etoken
 
 import com.etoken.domain.TokenBoardRules
+import com.etoken.domain.model.SummoningSickness
 import com.etoken.domain.model.TokenBoard
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -306,5 +307,46 @@ class TokenBoardRulesTest {
 
         assertEquals(1, board.stacks.size)
         assertEquals(0, board.uniformPlusOneCounters)
+    }
+
+    @Test
+    fun `a table where every copy is waiting says so without a number`() {
+        // What the grid's badge is drawn from: five Goblins that all entered
+        // this turn. The count would only repeat the ×5 already on the cell.
+        val board = TokenBoardRules.add(empty, 5)
+
+        assertEquals(SummoningSickness.All, board.summoningSickness)
+    }
+
+    @Test
+    fun `part of the table waiting is the case that needs the number`() {
+        // Two of the five can attack, three cannot, and neither half describes
+        // the cell on its own.
+        var board = TokenBoardRules.add(empty, 5)
+        board = TokenBoardRules.setSummoningSick(board, 1, sick = false, appliesTo = 2)
+
+        assertEquals(SummoningSickness.Some(3), board.summoningSickness)
+    }
+
+    @Test
+    fun `the untap step leaves nothing waiting`() {
+        val board = TokenBoardRules.beginTurn(TokenBoardRules.add(empty, 5))
+
+        assertEquals(SummoningSickness.None, board.summoningSickness)
+    }
+
+    @Test
+    fun `an empty battlefield is not a battlefield of sick tokens`() {
+        // Zero of zero is All if the cases are read in the wrong order, and a
+        // sickness badge on a token with nothing in play is the worst of the
+        // three answers.
+        assertEquals(SummoningSickness.None, empty.summoningSickness)
+    }
+
+    @Test
+    fun `a token with haste is not waiting the turn it arrives`() {
+        val board = TokenBoardRules.add(empty, 3, entersSick = false)
+
+        assertEquals(SummoningSickness.None, board.summoningSickness)
     }
 }

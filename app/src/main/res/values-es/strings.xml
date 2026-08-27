@@ -29,6 +29,7 @@
     <string name="tokens_filter_in_play">Solo en juego</string>
     <string name="tokens_filtered_count">%1$d de %2$d</string>
     <string name="tokens_none_in_play">No tienes ningún token en juego.</string>
+    <string name="tokens_sick_some">%1$s ×%2$d</string>
 
     <string name="board_in_play">En juego</string>
     <string name="board_sick">%1$d con mareo de invocación</string>

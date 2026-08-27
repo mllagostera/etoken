@@ -62,6 +62,14 @@ single stack. Two stacks mean two answers, and one badge that picked either
 would be lying about the other; there the grid says nothing and the board
 screen, which has room for a stack at a time, is where to look.
 
+Beside them, in the other bottom corner, the cell says how much of that token
+is still **summoning sick**. Three answers, not a number: nothing waiting draws
+no badge, since that is what an untouched cell already looks like; a table where
+every copy is waiting is named without a count, because the count is the one
+already in the corner above; and only a part-waiting table spends the room on a
+figure. It uses the board screen's own word for the state, so one thing cannot
+end up with two names.
+
 Tokens are collapsed by name, type, rules text and printed power/toughness
 rather than by id. `all_parts` points at one specific *printing*, so a deck
 drawing on several sets would otherwise show the same 1/1 Soldier four times
@@ -302,6 +310,8 @@ to a cell before asserting on it, and #65 is green across all thirty.
 six unit tests and two UI tests come with it, and the counts above include them
 on the assumption that they pass. Until a run says otherwise, treat them as
 claims. One part of that feature has no test at all and is called out below.
+The grid's summoning-sickness badge is newer still — five unit tests and one UI
+test that nothing has executed, and they are *not* in the counts above.
 
 **Not verified.** Anything that needs eyes or a live network. The screens are
 exercised, not inspected — nothing has checked that a layout is legible, well

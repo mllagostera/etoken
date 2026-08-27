@@ -29,7 +29,8 @@ not truncated. A4, A5 and C8 are that gap.
 ## 1. Verified — 109 unit and 30 instrumented tests, 0 failures, green on CI
 
 > The language picker (B11) adds 6 unit and 2 instrumented tests that **no run
-> has executed yet**. They are not in the figures above, and they will not be
+> has executed yet**, and the grid's summoning-sickness badge (B12) adds 5 unit
+> and 1 instrumented. They are not in the figures above, and they will not be
 > until a run says they pass.
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
@@ -74,7 +75,8 @@ push; no person has looked at any of it.
 - [~] Deck grid with commander art and streaming hydration — `ui/decks/`
 - [~] Deck search field with result counter — `ui/decks/DecksScreen.kt`
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
-- [~] Token grid with in-play badges, +1/+1 counters included while there is one stack — `ui/tokens/`
+- [~] Token grid with in-play badges: the count, the +1/+1 counters while there is one stack,
+  and how much of the table is still summoning sick — `ui/tokens/`
 - [~] Quick filter chip: only the tokens with copies on the table — `ui/tokens/TokensScreen.kt`
 - [~] Token board: quantity, summoning sickness, +1/+1 counters — `ui/board/`
 - [~] A "Prisa" badge and one line saying why a hasty token shows no "Mareo" — `ui/board/`
@@ -220,6 +222,24 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     Japanese. That needs the APK on a device, and it joins A5 in wanting one. `AppLanguageTest`
     covers the part that can be: 6 unit tests, including one that fails if a language is offered
     with no `values-` folder behind it.
+
+- [~] **B12** The grid's badge says how much of a token is still summoning sick
+  - Same question as B10, asked about the other half of a stack's state: mid-turn what a player
+    needs is "what have I got out, and can it attack?" The count and the counters were on the cell;
+    whether the copies were still waiting meant opening the board.
+  - Three cases, not a number — `TokenBoard.summoningSickness`. Nothing waiting draws no badge at
+    all, which is what an untouched cell already looks like; a table where every copy is waiting is
+    named without a count, since the number would only repeat the ×N in the opposite corner; and a
+    part-waiting table is the one case where the figure earns its room.
+  - Zero of zero is `None`, not `All`: a sickness badge on a token with nothing in play would be the
+    worst of the three answers, so the empty case is decided before the "all of them" one.
+  - The word is `stack_sick`, the board screen's own, so one state cannot end up with two names. The
+    only new string is `tokens_sick_some` (`%1$s ×%2$d`), which is the same pattern in all seven
+    locales.
+  - The two bottom badges sit in halves of the cell rather than at their own corners: at ~150dp wide
+    and with a label that is a full word in every language — `Einsatzverzögerung` is 19 characters —
+    corner alignment lets them meet in the middle. A half each truncates instead of overlapping. That
+    is a layout claim nobody has looked at, and it belongs to C8.
 
 ### C. Quality and infrastructure
 

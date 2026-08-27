@@ -188,6 +188,42 @@ class TokensScreenTest {
         compose.onNodeWithText("×3").assertExists()
     }
 
+    @Test
+    fun the_grid_says_which_copies_are_still_summoning_sick() {
+        showTokens()
+        putGoblinsInPlay()
+        awaitText(str(R.string.tokens_filter_in_play))
+        scrollToCell(Fakes.TOKEN_NAME)
+
+        // All three entered this turn, so the word is true of every copy and a
+        // number would only repeat the ×3 in the opposite corner.
+        awaitText(str(R.string.stack_sick))
+        compose.onNodeWithText("×3").assertExists()
+
+        // One of the three can attack now, and the table stops having one
+        // answer: the badge has to say how much of it is still waiting.
+        boards.update(Fakes.TOKEN_ID) { board ->
+            TokenBoardRules.setSummoningSick(
+                board,
+                board.stacks.single().id,
+                sick = false,
+                appliesTo = 1,
+            )
+        }
+
+        awaitText(str(R.string.tokens_sick_some, str(R.string.stack_sick), 2))
+
+        // The untap step takes the badge away rather than zeroing it: a token
+        // that can attack is what an untouched cell already looks like.
+        boards.update(Fakes.TOKEN_ID) { board -> TokenBoardRules.beginTurn(board) }
+
+        awaitGone(str(R.string.tokens_sick_some, str(R.string.stack_sick), 2))
+        compose.onAllNodesWithText(str(R.string.stack_sick), substring = true)
+            .assertCountEquals(0)
+        // The count is untouched: three Goblins are still three Goblins.
+        compose.onNodeWithText("×3").assertExists()
+    }
+
     /**
      * Brings one token's cell into view, and into existence.
      *

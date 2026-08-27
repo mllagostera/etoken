@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,10 +36,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,6 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.etoken.R
+import com.etoken.domain.model.SummoningSickness
 import com.etoken.domain.model.TokenBoard
 import com.etoken.domain.model.TokenCard
 import com.etoken.ui.common.ActionButton
@@ -288,6 +293,10 @@ private fun TokenCell(
     // which has room to show a stack at a time. Zero counters is not worth a
     // badge either -- it is what an untouched token already looks like.
     val counters = board.uniformPlusOneCounters?.takeIf { it > 0 }
+    // Whether the copies can attack is the other half of "what have I got
+    // out?", and it used to need the board screen to answer. Nothing waiting
+    // draws nothing: a token that can attack is what a cell already looks like.
+    val sick = board.summoningSickness
 
     Column(
         modifier = Modifier.clickable(onClick = onClick),
@@ -331,37 +340,41 @@ private fun TokenCell(
             }
 
             if (inPlay > 0) {
-                Surface(
-                    color = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                CornerBadge(
+                    text = "×$inPlay",
+                    container = MaterialTheme.colorScheme.primary,
+                    content = MaterialTheme.colorScheme.onPrimary,
                     shape = RoundedCornerShape(bottomStart = 10.dp),
+                    style = MaterialTheme.typography.labelLarge,
                     modifier = Modifier.align(Alignment.TopEnd),
-                ) {
-                    Text(
-                        text = "×$inPlay",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                    )
-                }
+                )
             }
 
-            if (counters != null) {
-                // Opposite corner from the count, not under it: the art's own
-                // power/toughness box sits bottom-right, which is where a Magic
-                // player already looks for a creature's size.
-                Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    shape = RoundedCornerShape(topStart = 10.dp),
-                    modifier = Modifier.align(Alignment.BottomEnd),
-                ) {
-                    Text(
-                        text = stringResource(R.string.stack_counters_chip, counters),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                    )
+            // The bottom two badges share the row in halves rather than being
+            // aligned to their corners: a cell is about 150dp wide and the
+            // sickness label is a full word in every language -- German's is
+            // 19 characters -- so at their own corners the two would meet in
+            // the middle and overlap. A half each means the long one
+            // truncates, which is legible; overlapping is not.
+            Row(
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Box(Modifier.weight(1f), contentAlignment = Alignment.BottomStart) {
+                    SummoningSicknessBadge(sick)
+                }
+                Box(Modifier.weight(1f), contentAlignment = Alignment.BottomEnd) {
+                    if (counters != null) {
+                        // Bottom-right, where the art's own power/toughness box
+                        // sits: a Magic player already looks there for a
+                        // creature's size.
+                        CornerBadge(
+                            text = stringResource(R.string.stack_counters_chip, counters),
+                            container = MaterialTheme.colorScheme.primaryContainer,
+                            content = MaterialTheme.colorScheme.onPrimaryContainer,
+                            shape = RoundedCornerShape(topStart = 10.dp),
+                        )
+                    }
                 }
             }
         }
@@ -391,5 +404,64 @@ private fun TokenCell(
                 overflow = TextOverflow.Ellipsis,
             )
         }
+    }
+}
+
+/**
+ * The grid's summoning-sickness badge, or nothing at all.
+ *
+ * Names the state alone when the whole table is waiting, and adds a count —
+ * "Sick ×2" in English — when only part of it is: the number is worth the room
+ * only when it is not the total already in the opposite corner. A token that can attack draws nothing: the absence is
+ * the common case, and a badge on every cell would say nothing by being on all
+ * of them.
+ *
+ * The word is [R.string.stack_sick], the same one the board screen's chip uses,
+ * so the two cannot end up naming one state differently.
+ */
+@Composable
+private fun SummoningSicknessBadge(sickness: SummoningSickness, modifier: Modifier = Modifier) {
+    val label = when (sickness) {
+        SummoningSickness.None -> null
+        SummoningSickness.All -> stringResource(R.string.stack_sick)
+        is SummoningSickness.Some -> stringResource(
+            R.string.tokens_sick_some,
+            stringResource(R.string.stack_sick),
+            sickness.count,
+        )
+    }
+
+    if (label != null) {
+        CornerBadge(
+            text = label,
+            // The same tertiary container the board screen's sick chip uses, so
+            // one state is one colour wherever it is shown.
+            container = MaterialTheme.colorScheme.tertiaryContainer,
+            content = MaterialTheme.colorScheme.onTertiaryContainer,
+            shape = RoundedCornerShape(topEnd = 10.dp),
+            modifier = modifier,
+        )
+    }
+}
+
+/** One badge sitting in a corner of a cell's artwork. */
+@Composable
+private fun CornerBadge(
+    text: String,
+    container: Color,
+    content: Color,
+    shape: Shape,
+    modifier: Modifier = Modifier,
+    style: TextStyle = MaterialTheme.typography.labelMedium,
+) {
+    Surface(color = container, contentColor = content, shape = shape, modifier = modifier) {
+        Text(
+            text = text,
+            style = style,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+        )
     }
 }
