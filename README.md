@@ -18,6 +18,15 @@ sick, and what +1/+1 counters they carry.
 You enter a Moxfield username once; the app remembers it. It then lists that
 user's public decks as a grid of commander artwork.
 
+Before any of that there is a splash: the launcher icon's mark on the icon's
+own background. Android 12 and later put one up whether an app asks or not, so
+this is less about adding a screen than about deciding what that screen looks
+like — and about drawing the same one on Android 8 through 11, which otherwise
+open on a blank window. It is held for the moment it takes to read the
+remembered username out of DataStore, so the field is already filled the first
+time it is seen rather than a beat later, and it is bounded: a store that never
+answers costs a second, not a splash that never leaves.
+
 **Public** is the whole of it: the app reads Moxfield without signing in, so
 private and unlisted decks are invisible to it. Moxfield's search endpoint does
 not mention the decks it will not show, which means an account with only
@@ -292,10 +301,10 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: 115 unit tests and 32 UI tests pass,
-lint is clean, and the run produces an installable APK. The UI tests drive the
-real screens and view models with only the two APIs faked, so they fail when
-the app breaks rather than when a double does.
+runs the instrumented suite against it: as of run #73, 115 unit tests and 33 UI
+tests pass, lint is clean, and the run produces an installable APK. The UI tests
+drive the real screens and view models with only the two APIs faked, so they
+fail when the app breaks rather than when a double does.
 
 The seven tests behind the grid's counter badge are in those figures now. The
 first run to execute them, #64, failed three — and none of the three for a
@@ -305,18 +314,29 @@ does not compose what is far from the viewport, so a cell below the fold is
 absent from the semantics tree rather than merely off screen. The tests scroll
 to a cell before asserting on it, and #65 is green across all thirty.
 
-**Written, not yet run.** The language picker landed after the last green run:
-six unit tests and two UI tests come with it, and the counts above include them
-on the assumption that they pass. Until a run says otherwise, treat them as
-claims. One part of that feature has no test at all and is called out below.
-The precon button is in the same position, and newer still: eight unit tests
-and two UI tests, none of them executed, and no compiler has read the change —
-the environment it was written in has no Android SDK. What nothing here can
-check either way is whether `fmt=commanderPrecons` is still what Moxfield's
-search endpoint calls that format; it is undocumented, and the only proof is a
-live request.
+Run #73 is the first to execute the language picker's eight tests and the
+splash screen's one, both of which landed after the previous green run and were
+claims until it finished. They pass. One part of the picker still has no test at
+all and is called out below.
 
-**Not verified.** Anything that needs eyes or a live network. The screens are
+That single splash test is the only one in the suite that launches the real
+`MainActivity` instead of a composable in a test activity, which is why it can
+fail on a misconfigured launch theme — and why, until it existed, nothing in CI
+had ever run `MainActivity.onCreate`. It cannot fail on the thing worth
+watching: the splash holds the *drawing* of the first frame, and a composable
+that is never drawn still reports itself displayed, so a splash that hung would
+pass. That one needs eyes, and joins the list below.
+
+**Written, not yet run.** The precon button landed after run #73, and its eight
+unit tests and two UI tests are on top of the figures above rather than in them:
+none has executed, and no compiler has read the change — the environment it was
+written in has no Android SDK. What nothing in CI can check either way is
+whether `fmt=commanderPrecons` is still what Moxfield's search endpoint calls
+that format; it is undocumented, and the only proof is a live request.
+
+**Not verified.** Anything that needs eyes or a live network. Nobody has
+watched a cold start, so nothing has confirmed that the splash hands over to
+the username screen without a flicker between them. The screens are
 exercised, not inspected — nothing has checked that a layout is legible, well
 spaced, or that a German compound noun fits the badge it lands in. The `api-smoke` workflow walks the real APIs with
 the app's own headers, and its first run got **HTTP 403 from Moxfield** — from
@@ -327,10 +347,11 @@ verdict. Installing the APK is still the real test.
 The language switch has a hole in the middle of it that no test reaches.
 Choosing a language is covered — the dialog lists all seven, and the choice is
 written where a freshly built store reads it back — but *applying* it happens in
-`MainActivity.attachBaseContext`, and the UI tests drive composables in a test
-activity that never runs it. That nothing in CI can fail there is precisely why
-it is written down: what is untested is whether picking Japanese redraws the app
-in Japanese, which is the entire point of the feature.
+`MainActivity.attachBaseContext`, and nothing asserts on the result. The splash
+test narrowed that hole without closing it: launching the real activity means
+`attachBaseContext` now at least runs in CI, so it can no longer throw
+unnoticed. What is still untested is whether picking Japanese redraws the app in
+Japanese, which is the entire point of the feature.
 
 One live question is neither of those and needs nothing but a button press:
 whether Scryfall puts `keywords` on **token** card objects, which is what the

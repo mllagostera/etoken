@@ -90,6 +90,10 @@ kotlin {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
+    // The splash screen, on every version. Android 12 draws one whether the
+    // app asks or not; this backports the same one to 8 through 11 and is
+    // what lets MainActivity hold it while the store is read.
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     // collectAsStateWithLifecycle()
