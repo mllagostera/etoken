@@ -293,7 +293,7 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: 115 unit tests and 32 UI tests pass,
+runs the instrumented suite against it: 120 unit tests and 33 UI tests pass,
 lint is clean, and the run produces an installable APK. The UI tests drive the
 real screens and view models with only the two APIs faked, so they fail when
 the app breaks rather than when a double does.
@@ -306,12 +306,10 @@ does not compose what is far from the viewport, so a cell below the fold is
 absent from the semantics tree rather than merely off screen. The tests scroll
 to a cell before asserting on it, and #65 is green across all thirty.
 
-**Written, not yet run.** The language picker landed after the last green run:
-six unit tests and two UI tests come with it, and the counts above include them
-on the assumption that they pass. Until a run says otherwise, treat them as
-claims. One part of that feature has no test at all and is called out below.
-The grid's summoning-sickness badge is newer still — five unit tests and one UI
-test that nothing has executed, and they are *not* in the counts above.
+Run #76 is the first to have executed the language picker's eight tests and the
+six behind the grid's summoning-sickness badge; both sets passed, and both are
+in the figures above. One part of the picker has no test at all and is called
+out below.
 
 **Not verified.** Anything that needs eyes or a live network. The screens are
 exercised, not inspected — nothing has checked that a layout is legible, well

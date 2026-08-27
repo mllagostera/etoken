@@ -26,12 +26,12 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 109 unit and 30 instrumented tests, 0 failures, green on CI
+## 1. Verified — 120 unit and 33 instrumented tests, 0 failures, green on CI
 
-> The language picker (B11) adds 6 unit and 2 instrumented tests that **no run
-> has executed yet**, and the grid's summoning-sickness badge (B12) adds 5 unit
-> and 1 instrumented. They are not in the figures above, and they will not be
-> until a run says they pass.
+> Run **#76** is where these figures come from. It is the first run to execute
+> the language picker's tests (B11, 6 unit and 2 instrumented) and the grid's
+> summoning-sickness badge (B12, 5 unit and 1 instrumented); both passed, and
+> both are in the figures above.
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -64,6 +64,8 @@ the two APIs are ever faked.
   list — `ui/username/`, `ui/decks/`, 2 instrumented tests
 - [x] Printed haste: `keywords` off the wire, `TokenCard.hasHaste`, copies that enter able to
   attack, and a chip that still overrides it — `domain/`, `ui/board/`, 10 unit and 4 instrumented tests
+- [x] The grid says how much of a token is still summoning sick: nothing, all of it, or a count —
+  `domain/model/Board.kt`, `ui/tokens/`, 5 unit and 1 instrumented test
 
 ## 2. Works, never looked at
 
@@ -217,9 +219,9 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - Android 13's per-app language setting does the same job and was not used: `minSdk` is 26, and
     on Android 8 through 12 that setting does not exist.
   - **The half nobody can test is the half that matters.** The dialog and the stored choice are
-    covered — 2 instrumented tests — but `MainActivity.attachBaseContext` never runs under a test
-    activity, so nothing in CI can tell you whether picking Japanese actually redraws the app in
-    Japanese. That needs the APK on a device, and it joins A5 in wanting one. `AppLanguageTest`
+    covered — 2 instrumented tests, green on run #76, the first to execute them — but
+    `MainActivity.attachBaseContext` never runs under a test activity, so nothing in CI can tell you
+    whether picking Japanese actually redraws the app in Japanese. That needs the APK on a device, and it joins A5 in wanting one. `AppLanguageTest`
     covers the part that can be: 6 unit tests, including one that fails if a language is offered
     with no `values-` folder behind it.
 
@@ -240,6 +242,8 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     and with a label that is a full word in every language — `Einsatzverzögerung` is 19 characters —
     corner alignment lets them meet in the middle. A half each truncates instead of overlapping. That
     is a layout claim nobody has looked at, and it belongs to C8.
+  - **Run #76 is green**, the emulator suite included: the badge appears when copies arrive, names a
+    count once part of the table can attack, and goes when the untap step clears the rest.
 
 ### C. Quality and infrastructure
 
