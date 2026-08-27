@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -44,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -346,7 +348,15 @@ private fun QuickActions(
     onEnterTappedChange: (Boolean) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // The row itself is the toggle target, Switch style: without it the
+        // click action sits on the Switch alone, and tapping the label (where
+        // Material's own switches respond) does nothing.
         Row(
+            modifier = Modifier.toggleable(
+                value = enterTapped,
+                onValueChange = onEnterTappedChange,
+                role = Role.Switch,
+            ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -354,7 +364,7 @@ private fun QuickActions(
                 text = stringResource(R.string.board_enter_tapped),
                 style = MaterialTheme.typography.bodyMedium,
             )
-            Switch(checked = enterTapped, onCheckedChange = onEnterTappedChange)
+            Switch(checked = enterTapped, onCheckedChange = null)
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
