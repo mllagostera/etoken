@@ -56,12 +56,15 @@
     <string name="board_base">Base %1$s</string>
     <string name="board_haste">Haste</string>
     <string name="board_haste_note">Enters ready to attack. Haste given by another card is yours to mark on each stack.</string>
+    <string name="board_enter_tapped">Enter tapped</string>
 
     <string name="stack_quantity">Quantity</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>
     <string name="stack_sick">Sick</string>
     <string name="stack_ready">Can attack</string>
+    <string name="stack_tapped">Tapped</string>
+    <string name="stack_untapped">Untapped</string>
     <string name="stack_counter_some">+1/+1 on just some…</string>
     <string name="stack_remove">Remove one</string>
     <string name="stack_add">Add one more</string>

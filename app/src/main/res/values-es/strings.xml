@@ -49,12 +49,15 @@
     <string name="board_base">Base %1$s</string>
     <string name="board_haste">Prisa</string>
     <string name="board_haste_note">Entra sin mareo de invocación. Si la prisa se la da otra carta, márcalo tú en cada grupo.</string>
+    <string name="board_enter_tapped">Entra girado</string>
 
     <string name="stack_quantity">Cantidad</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>
     <string name="stack_sick">Mareo</string>
     <string name="stack_ready">Puede atacar</string>
+    <string name="stack_tapped">Girado</string>
+    <string name="stack_untapped">Enderezado</string>
     <string name="stack_counter_some">+1/+1 a solo algunos…</string>
     <string name="stack_remove">Quitar uno</string>
     <string name="stack_add">Poner uno más</string>

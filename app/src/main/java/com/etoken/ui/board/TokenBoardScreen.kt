@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -28,6 +29,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -43,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -115,13 +118,22 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
     var askingHowMany by rememberSaveable { mutableStateOf(false) }
     var confirmingClear by rememberSaveable { mutableStateOf(false) }
     var countersForStackId by rememberSaveable { mutableStateOf<Long?>(null) }
+    // Read at the moment tokens are added, so it never applies retroactively
+    // to what is already on the battlefield.
+    var enterTapped by rememberSaveable { mutableStateOf(false) }
     // A copy token means nothing without saying what it copies, so the amount
-    // waits here until the name arrives.
+    // (and whether it enters tapped) waits here until the name arrives.
     var pendingCopyQuantity by rememberSaveable { mutableStateOf<Int?>(null) }
+    var pendingCopyTapped by rememberSaveable { mutableStateOf(false) }
     val countersTarget = countersForStackId?.let { id -> board.stacks.firstOrNull { it.id == id } }
 
     val addTokens: (Int) -> Unit = { amount ->
-        if (token.isCopy) pendingCopyQuantity = amount else viewModel.add(amount)
+        if (token.isCopy) {
+            pendingCopyQuantity = amount
+            pendingCopyTapped = enterTapped
+        } else {
+            viewModel.add(amount, tapped = enterTapped)
+        }
     }
 
     LazyColumn(
@@ -130,7 +142,7 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         item { TokenHeader(token) }
-        item { BoardSummary(board) }
+        item { BoardSummary(token, board) }
         item {
             QuickActions(
                 board = board,
@@ -138,6 +150,8 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
                 onAdd = addTokens,
                 onAskHowMany = { askingHowMany = true },
                 onAskClear = { confirmingClear = true },
+                enterTapped = enterTapped,
+                onEnterTappedChange = { enterTapped = it },
             )
         }
 
@@ -159,6 +173,7 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
                 onQuantity = { delta -> viewModel.changeQuantity(stack.id, delta) },
                 onCounters = { delta -> viewModel.changeCounters(stack.id, delta) },
                 onToggleSick = { viewModel.setSummoningSick(stack.id, !stack.summoningSick) },
+                onToggleTapped = { viewModel.setTapped(stack.id, !stack.tapped) },
                 onCountersForSome = { countersForStackId = stack.id },
             )
         }
@@ -208,7 +223,7 @@ private fun BoardContent(token: TokenCard, board: TokenBoard, viewModel: TokenBo
             label = stringResource(R.string.copy_of_hint),
             onDismiss = { pendingCopyQuantity = null },
             onConfirm = { name ->
-                viewModel.add(amount, copying = name)
+                viewModel.add(amount, copying = name, tapped = pendingCopyTapped)
                 pendingCopyQuantity = null
             },
         )
@@ -286,7 +301,7 @@ private fun TokenHeader(token: TokenCard) {
 }
 
 @Composable
-private fun BoardSummary(board: TokenBoard) {
+private fun BoardSummary(token: TokenCard, board: TokenBoard) {
     Card {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -303,15 +318,19 @@ private fun BoardSummary(board: TokenBoard) {
                     text = stringResource(R.string.board_in_play),
                     style = MaterialTheme.typography.labelLarge,
                 )
-                Text(
-                    text = if (board.summoningSickCount == 0) {
-                        stringResource(R.string.board_none_sick)
-                    } else {
-                        stringResource(R.string.board_sick, board.summoningSickCount)
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                // A non-creature token can never be summoning sick, so the line
+                // would only ever read "None" -- true, but not worth a row.
+                if (token.isCreature) {
+                    Text(
+                        text = if (board.summoningSickCount == 0) {
+                            stringResource(R.string.board_none_sick)
+                        } else {
+                            stringResource(R.string.board_sick, board.summoningSickCount)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }
@@ -325,8 +344,29 @@ private fun QuickActions(
     onAdd: (Int) -> Unit,
     onAskHowMany: () -> Unit,
     onAskClear: () -> Unit,
+    enterTapped: Boolean,
+    onEnterTappedChange: (Boolean) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // The row itself is the toggle target, Switch style: without it the
+        // click action sits on the Switch alone, and tapping the label (where
+        // Material's own switches respond) does nothing.
+        Row(
+            modifier = Modifier.toggleable(
+                value = enterTapped,
+                onValueChange = onEnterTappedChange,
+                role = Role.Switch,
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.board_enter_tapped),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Switch(checked = enterTapped, onCheckedChange = null)
+        }
+
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             // Fixed steps cover the common triggers; the dialog covers Krenko,
             // where the count is whatever is on the battlefield right now.
@@ -369,6 +409,7 @@ private fun StackCard(
     onQuantity: (Int) -> Unit,
     onCounters: (Int) -> Unit,
     onToggleSick: () -> Unit,
+    onToggleTapped: () -> Unit,
     onCountersForSome: () -> Unit,
 ) {
     Card {
@@ -408,23 +449,45 @@ private fun StackCard(
                         content = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
+                // Non-creature tokens are never summoning sick, so there is
+                // nothing here for that chip to say or to toggle.
+                if (token.isCreature) {
+                    StateBadge(
+                        text = if (stack.summoningSick) {
+                            stringResource(R.string.stack_sick)
+                        } else {
+                            stringResource(R.string.stack_ready)
+                        },
+                        container = if (stack.summoningSick) {
+                            MaterialTheme.colorScheme.tertiaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        },
+                        content = if (stack.summoningSick) {
+                            MaterialTheme.colorScheme.onTertiaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        onClick = onToggleSick,
+                    )
+                }
                 StateBadge(
-                    text = if (stack.summoningSick) {
-                        stringResource(R.string.stack_sick)
+                    text = if (stack.tapped) {
+                        stringResource(R.string.stack_tapped)
                     } else {
-                        stringResource(R.string.stack_ready)
+                        stringResource(R.string.stack_untapped)
                     },
-                    container = if (stack.summoningSick) {
+                    container = if (stack.tapped) {
                         MaterialTheme.colorScheme.tertiaryContainer
                     } else {
                         MaterialTheme.colorScheme.surfaceVariant
                     },
-                    content = if (stack.summoningSick) {
+                    content = if (stack.tapped) {
                         MaterialTheme.colorScheme.onTertiaryContainer
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant
                     },
-                    onClick = onToggleSick,
+                    onClick = onToggleTapped,
                 )
             }
 

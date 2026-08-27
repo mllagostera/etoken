@@ -44,11 +44,14 @@
     <string name="board_base">Base %1$s</string>
     <string name="board_haste">Célérité</string>
     <string name="board_haste_note">Arrive sans mal d\'invocation. La célérité donnée par une autre carte, c\'est à toi de la marquer sur chaque groupe.</string>
+    <string name="board_enter_tapped">Entre engagé</string>
     <string name="stack_quantity">Quantité</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>
     <string name="stack_sick">Mal d\'invocation</string>
     <string name="stack_ready">Peut attaquer</string>
+    <string name="stack_tapped">Engagé</string>
+    <string name="stack_untapped">Dégagé</string>
     <string name="stack_counter_some">+1/+1 sur quelques-uns…</string>
     <string name="stack_remove">En retirer un</string>
     <string name="stack_add">En ajouter un</string>

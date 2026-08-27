@@ -44,11 +44,14 @@
     <string name="board_base">基本 %1$s</string>
     <string name="board_haste">速攻</string>
     <string name="board_haste_note">召喚酔いなしで戦場に出ます。他のカードが与える速攻は、グループごとに自分で設定してください。</string>
+    <string name="board_enter_tapped">タップ状態で戦場に出す</string>
     <string name="stack_quantity">数</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>
     <string name="stack_sick">召喚酔い</string>
     <string name="stack_ready">攻撃可能</string>
+    <string name="stack_tapped">タップ</string>
+    <string name="stack_untapped">アンタップ</string>
     <string name="stack_counter_some">一部にだけ +1/+1…</string>
     <string name="stack_remove">1 つ減らす</string>
     <string name="stack_add">1 つ増やす</string>

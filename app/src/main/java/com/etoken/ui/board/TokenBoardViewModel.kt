@@ -80,9 +80,24 @@ class TokenBoardViewModel(
      * summoning sickness by hand every single time one lands. Haste given by
      * another permanent is table state the app cannot see, and stays what the
      * per-stack chip is for.
+     *
+     * Only creatures can be summoning sick at all — a Treasure or a Clue is
+     * usable the instant it exists — so a non-creature token never arrives
+     * sick regardless of [TokenCard.hasHaste].
+     *
+     * [tapped] is the player's call at the moment of adding: some effects
+     * create tokens tapped, and it is easier to say so up front than to flip
+     * every stack's chip right after.
      */
-    fun add(quantity: Int, copying: String? = null) = edit {
-        TokenBoardRules.add(it, quantity, copying, entersSick = token.value?.hasHaste != true)
+    fun add(quantity: Int, copying: String? = null, tapped: Boolean = false) = edit {
+        val card = token.value
+        TokenBoardRules.add(
+            it,
+            quantity,
+            copying,
+            entersSick = card?.isCreature == true && card.hasHaste != true,
+            entersTapped = tapped,
+        )
     }
 
     fun changeQuantity(stackId: Long, delta: Int) =
@@ -95,6 +110,9 @@ class TokenBoardViewModel(
 
     fun setSummoningSick(stackId: Long, sick: Boolean) =
         edit { TokenBoardRules.setSummoningSick(it, stackId, sick) }
+
+    fun setTapped(stackId: Long, tapped: Boolean) =
+        edit { TokenBoardRules.setTapped(it, stackId, tapped) }
 
     fun beginTurn() = edit { TokenBoardRules.beginTurn(it) }
 

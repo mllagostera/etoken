@@ -19,19 +19,25 @@ object TokenBoardRules {
      *
      * [entersSick] is what the caller knows about the token itself: copies
      * arrive summoning sick, which is what actually happens, unless the token
-     * is printed with haste and can attack the turn it enters. It is a
+     * is printed with haste and can attack the turn it enters — or is not a
+     * creature at all, since only creatures can be summoning sick. It is a
      * parameter rather than an assumption because the rule lives on the token,
      * and only the caller has it.
      *
      * Haste given at the table by another permanent is not in it: nothing here
      * can see the rest of the battlefield, so that stays the per-stack chip's
      * job — as does correcting a miscount.
+     *
+     * [entersTapped] is likewise the caller's to say: some tokens are made
+     * tapped by the effect that creates them, and some players enter their
+     * tokens tapped as a house rule for pre-tapped mana rocks and the like.
      */
     fun add(
         board: TokenBoard,
         quantity: Int,
         copying: String? = null,
         entersSick: Boolean = true,
+        entersTapped: Boolean = false,
     ): TokenBoard {
         if (quantity <= 0) return board
 
@@ -40,6 +46,7 @@ object TokenBoardRules {
             quantity = quantity,
             plusOneCounters = 0,
             summoningSick = entersSick,
+            tapped = entersTapped,
             copying = copying?.trim()?.takeIf { it.isNotEmpty() },
         )
         return normalize(
@@ -94,9 +101,18 @@ object TokenBoardRules {
         stack.copy(summoningSick = sick)
     }
 
-    /** Your untap step: everything that was waiting can now attack and tap. */
+    fun setTapped(
+        board: TokenBoard,
+        stackId: Long,
+        tapped: Boolean,
+        appliesTo: Int? = null,
+    ): TokenBoard = modify(board, stackId, appliesTo) { stack ->
+        stack.copy(tapped = tapped)
+    }
+
+    /** Your untap step: everything that was waiting can now attack, and everything tapped untaps. */
     fun beginTurn(board: TokenBoard): TokenBoard = normalize(
-        board.copy(stacks = board.stacks.map { it.copy(summoningSick = false) }),
+        board.copy(stacks = board.stacks.map { it.copy(summoningSick = false, tapped = false) }),
     )
 
     /** Board wipe, or simply a new game. Stack ids keep counting up. */
@@ -145,13 +161,20 @@ object TokenBoardRules {
         )
     }
 
+    private data class Signature(
+        val plusOneCounters: Int,
+        val summoningSick: Boolean,
+        val tapped: Boolean,
+        val copying: String?,
+    )
+
     /**
      * Drops empty stacks, merges the ones that are now indistinguishable, and
      * orders what's left: usable before summoning-sick, and bigger creatures
      * first, so the row you most likely want to touch is at the top.
      */
     private fun normalize(board: TokenBoard): TokenBoard {
-        val merged = LinkedHashMap<Triple<Int, Boolean, String?>, TokenStack>()
+        val merged = LinkedHashMap<Signature, TokenStack>()
 
         for (stack in board.stacks) {
             if (stack.quantity <= 0) continue
@@ -159,7 +182,7 @@ object TokenBoardRules {
             // What this copy copies is part of the signature: without it a copy
             // of Krenko and a copy of Atraxa would merge into one row, which is
             // the exact confusion stacks exist to prevent.
-            val signature = Triple(stack.plusOneCounters, stack.summoningSick, stack.copying)
+            val signature = Signature(stack.plusOneCounters, stack.summoningSick, stack.tapped, stack.copying)
             val existing = merged[signature]
 
             merged[signature] = if (existing == null) {

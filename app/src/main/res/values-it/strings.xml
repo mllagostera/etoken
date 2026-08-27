@@ -44,11 +44,14 @@
     <string name="board_base">Base %1$s</string>
     <string name="board_haste">Rapidità</string>
     <string name="board_haste_note">Entra senza svogliatezza da evocazione. La rapidità data da un\'altra carta la segni tu su ogni gruppo.</string>
+    <string name="board_enter_tapped">Entra girata</string>
     <string name="stack_quantity">Quantità</string>
     <string name="stack_counters">+1/+1</string>
     <string name="stack_counters_chip">+1/+1 ×%1$d</string>
     <string name="stack_sick">Svogliatezza</string>
     <string name="stack_ready">Può attaccare</string>
+    <string name="stack_tapped">Girata</string>
+    <string name="stack_untapped">Non girata</string>
     <string name="stack_counter_some">+1/+1 solo ad alcune…</string>
     <string name="stack_remove">Togline una</string>
     <string name="stack_add">Aggiungine una</string>
