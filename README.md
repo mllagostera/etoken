@@ -306,10 +306,10 @@ dependency on that project at runtime.
 
 Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
-**Verified (as of run #91).** The app builds and the screens work. CI runs `assembleDebug`,
+**Verified (as of run #93).** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: as of run #91, 127 unit tests and 37 UI
-tests pass, lint is clean, and the run produces an installable APK. That run is
+runs the instrumented suite against it: as of run #93, 131 unit tests and 39 UI
+tests pass, lint is clean, and the run produces an installable APK. Run #91 is
 the first on the rebuilt battlefield — the table as the screen a deck opens
 onto, the "+" that adds to it, and entries that never merge — so the figures
 describe the app as it now stands. The UI tests
