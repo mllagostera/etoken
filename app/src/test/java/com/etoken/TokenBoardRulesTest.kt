@@ -393,7 +393,7 @@ class TokenBoardRulesTest {
 
         assertEquals(2, board.stacks.size)
         assertEquals(5, board.total)
-        assertEquals(2, board.stacks.count { it.tapped })
+        assertEquals(2, board.stacks.single { it.tapped }.quantity)
     }
 
     @Test
