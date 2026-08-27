@@ -129,10 +129,6 @@ class MoxfieldRepository(
         return tokens
     }
 
-    /** The token the board screen is showing, out of the cached deck lookup. */
-    suspend fun token(publicId: String, tokenId: String): TokenCard? =
-        tokensFor(publicId).firstOrNull { it.id == tokenId }
-
     private suspend fun computeTokens(publicId: String): List<TokenCard> = withContext(Dispatchers.IO) {
         val deck = deckDetail(publicId)
 
