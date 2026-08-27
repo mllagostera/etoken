@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.etoken.EtokenApplication
 import com.etoken.data.MoxfieldRepository
 import com.etoken.domain.DeckFilter
+import com.etoken.domain.DeckSource
 import com.etoken.domain.model.DeckSummary
 import com.etoken.ui.common.LoadError
 import kotlinx.coroutines.CancellationException
@@ -45,7 +46,8 @@ sealed interface DecksUiState {
 class DecksViewModel(
     private val repository: MoxfieldRepository,
     private val savedState: SavedStateHandle,
-    val username: String,
+    /** Whose decks these are: a Moxfield user, or the preconstructed listing. */
+    val source: DeckSource,
 ) : ViewModel() {
 
     private val decks = MutableStateFlow<List<DeckSummary>>(emptyList())
@@ -113,7 +115,7 @@ class DecksViewModel(
             try {
                 if (isRefresh) repository.invalidate()
 
-                val fresh = repository.listDecks(username)
+                val fresh = repository.listDecks(source)
                 decks.value = fresh
                 phase.value = Phase.Ready
                 if (fresh.isNotEmpty()) hydrate(fresh)
@@ -177,6 +179,14 @@ class DecksViewModel(
         /** Route argument carrying the Moxfield username. */
         const val ARG_USERNAME = "username"
 
+        /**
+         * Route argument carrying Moxfield's `fmt` filter. Optional, and empty
+         * for every route but the precons one — a route argument cannot be
+         * absent once the screen has it, so "no filter" is the empty string
+         * and [DeckSource.of] turns that back into null.
+         */
+        const val ARG_FORMAT = "fmt"
+
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
@@ -185,7 +195,10 @@ class DecksViewModel(
                 DecksViewModel(
                     repository = app.container.repository,
                     savedState = handle,
-                    username = checkNotNull(handle.get<String>(ARG_USERNAME)) { "missing $ARG_USERNAME" },
+                    source = DeckSource.of(
+                        username = checkNotNull(handle.get<String>(ARG_USERNAME)) { "missing $ARG_USERNAME" },
+                        format = handle.get<String>(ARG_FORMAT),
+                    ),
                 )
             }
         }

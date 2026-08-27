@@ -25,6 +25,13 @@ private decks looks exactly like an empty one — so the app says so where the
 question comes up, under the username field and again on an empty list, rather
 than leaving a missing deck to read as a bug.
 
+You do not need an account of your own to try the app. A second button on that
+first screen loads **Wizards' preconstructed Commander decks**, which is the
+same deck search filtered to `WizardsOfTheCoast` with `fmt=commanderPrecons`
+— that account publishes far more than precons, so the format filter is what
+makes it a listing rather than a dump. From there everything behaves as it does
+for your own decks: the grid, the search, the tokens, the board.
+
 The grid streams rather than blocks. Deck names appear as soon as the search
 endpoint answers, and the cover art fills in afterwards four decks at a time,
 so the grid is usable immediately instead of waiting on a request per deck. One
@@ -302,6 +309,12 @@ to a cell before asserting on it, and #65 is green across all thirty.
 six unit tests and two UI tests come with it, and the counts above include them
 on the assumption that they pass. Until a run says otherwise, treat them as
 claims. One part of that feature has no test at all and is called out below.
+The precon button is in the same position, and newer still: eight unit tests
+and two UI tests, none of them executed, and no compiler has read the change —
+the environment it was written in has no Android SDK. What nothing here can
+check either way is whether `fmt=commanderPrecons` is still what Moxfield's
+search endpoint calls that format; it is undocumented, and the only proof is a
+live request.
 
 **Not verified.** Anything that needs eyes or a live network. The screens are
 exercised, not inspected — nothing has checked that a layout is legible, well

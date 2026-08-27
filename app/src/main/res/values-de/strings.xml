@@ -4,6 +4,10 @@
     <string name="public_decks_only">Private und nicht gelistete Decks tauchen nicht auf: Die App liest Moxfield, ohne sich anzumelden.</string>
     <string name="username_label">Moxfield-Benutzername</string>
     <string name="action_load_decks">Decks laden</string>
+    <string name="action_load_precons">Fertigdecks ansehen</string>
+    <string name="precons_hint">Die Commander-Fertigdecks von Wizards. Kein Benutzername nötig.</string>
+    <string name="precons_title">Fertigdecks</string>
+    <string name="precons_empty">Moxfield hat keine Fertigdecks geliefert.</string>
     <string name="action_retry">Erneut versuchen</string>
     <string name="action_back">Zurück</string>
     <string name="decks_search_hint">Deck oder Kommandeur suchen</string>

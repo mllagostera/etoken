@@ -9,6 +9,7 @@ import com.etoken.data.moxfield.MoxfieldApi
 import com.etoken.data.moxfield.MoxfieldCard
 import com.etoken.data.moxfield.SearchDeckSummary
 import com.etoken.data.moxfield.SearchResponse
+import com.etoken.domain.DeckSource
 import com.etoken.domain.model.DeckSummary
 import com.etoken.data.scryfall.CollectionRequest
 import com.etoken.data.scryfall.CollectionResponse
@@ -36,7 +37,7 @@ class MoxfieldRepositoryTest {
         )
         val repository = MoxfieldRepository(moxfield, FakeScryfall())
 
-        val decks = repository.listDecks("someone")
+        val decks = repository.listDecks(DeckSource("someone"))
 
         assertEquals(listOf("a", "b", "c", "d"), decks.map { it.publicId })
         assertEquals(listOf(1, 2, 3), moxfield.requestedPages)
@@ -51,7 +52,7 @@ class MoxfieldRepositoryTest {
             ),
         )
 
-        val decks = MoxfieldRepository(moxfield, FakeScryfall()).listDecks("someone")
+        val decks = MoxfieldRepository(moxfield, FakeScryfall()).listDecks(DeckSource("someone"))
 
         assertEquals(listOf("a"), decks.map { it.publicId })
         assertEquals(listOf(1, 2), moxfield.requestedPages)
@@ -83,7 +84,7 @@ class MoxfieldRepositoryTest {
         )
         val repository = MoxfieldRepository(moxfield, FakeScryfall())
 
-        val hydrated = repository.hydrate(repository.listDecks("someone").single())
+        val hydrated = repository.hydrate(repository.listDecks(DeckSource("someone")).single())
 
         assertEquals("Krenko, Mob Boss", hydrated.commander)
         assertEquals(1, moxfield.deckCalls)
@@ -97,7 +98,7 @@ class MoxfieldRepositoryTest {
         )
         val repository = MoxfieldRepository(moxfield, FakeScryfall())
 
-        val hydrated = repository.hydrate(repository.listDecks("someone").single())
+        val hydrated = repository.hydrate(repository.listDecks(DeckSource("someone")).single())
 
         assertEquals("https://assets.moxfield.net/cards/card-aB3xY-art_crop.jpg", hydrated.imageUrl)
         assertEquals("Krenko, Mob Boss", hydrated.commander)
@@ -231,7 +232,38 @@ class MoxfieldRepositoryTest {
     fun `a search result with no cover card yields no image`() = runTest {
         val moxfield = FakeMoxfield(pages = listOf(searchPage(1, listOf("a"), withCover = false)))
 
-        assertNull(MoxfieldRepository(moxfield, FakeScryfall()).listDecks("u").single().imageUrl)
+        assertNull(MoxfieldRepository(moxfield, FakeScryfall()).listDecks(DeckSource("u")).single().imageUrl)
+    }
+
+    @Test
+    fun `a plain user listing asks for no format at all`() = runTest {
+        val moxfield = FakeMoxfield(pages = listOf(searchPage(1, listOf("a"))))
+
+        MoxfieldRepository(moxfield, FakeScryfall()).listDecks(DeckSource(" someone "))
+
+        // Trimmed, because the username comes from a text field.
+        assertEquals(listOf("someone"), moxfield.requestedAuthors)
+        // Null rather than an empty string: Retrofit then leaves `fmt` off the
+        // URL entirely, which is what an unfiltered search is.
+        assertEquals(listOf<String?>(null), moxfield.requestedFormats)
+    }
+
+    @Test
+    fun `the precons listing filters by Wizards and by the precon format`() = runTest {
+        val moxfield = FakeMoxfield(
+            pages = listOf(
+                searchPage(totalPages = 2, ids = listOf("a")),
+                searchPage(totalPages = 2, ids = listOf("b")),
+            ),
+        )
+
+        val decks = MoxfieldRepository(moxfield, FakeScryfall()).listDecks(DeckSource.PRECONS)
+
+        assertEquals(listOf("a", "b"), decks.map { it.publicId })
+        // The filter has to hold on every page, not only the first: without it
+        // page two would come back with the whole account's decks.
+        assertEquals(listOf("WizardsOfTheCoast", "WizardsOfTheCoast"), moxfield.requestedAuthors)
+        assertEquals(listOf("commanderPrecons", "commanderPrecons"), moxfield.requestedFormats)
     }
 
     // --- fixtures -------------------------------------------------------
@@ -296,6 +328,8 @@ private class FakeMoxfield(
 ) : MoxfieldApi {
 
     val requestedPages = mutableListOf<Int>()
+    val requestedAuthors = mutableListOf<String>()
+    val requestedFormats = mutableListOf<String?>()
     var deckCalls = 0
         private set
 
@@ -303,12 +337,15 @@ private class FakeMoxfield(
         username: String,
         pageNumber: Int,
         pageSize: Int,
+        format: String?,
         sortType: String,
         sortDirection: String,
         includePinned: Boolean,
         showIllegal: Boolean,
     ): SearchResponse {
         requestedPages += pageNumber
+        requestedAuthors += username
+        requestedFormats += format
         return pages.getOrElse(pageNumber - 1) { SearchResponse() }
     }
 

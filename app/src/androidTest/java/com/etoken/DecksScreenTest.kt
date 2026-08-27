@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.etoken.domain.DeckSource
 import com.etoken.ui.decks.DecksScreen
 import com.etoken.ui.decks.DecksViewModel
 import com.etoken.ui.theme.EtokenTheme
@@ -29,7 +30,8 @@ class DecksScreenTest {
     private fun str(id: Int) = context.getString(id)
 
     private fun showDecks(onDeckClick: (com.etoken.domain.model.DeckSummary) -> Unit = {}) {
-        val viewModel = DecksViewModel(Fakes.repository(), SavedStateHandle(), "someone")
+        val viewModel =
+            DecksViewModel(Fakes.repository(), SavedStateHandle(), DeckSource("someone"))
         compose.setContent {
             EtokenTheme { DecksScreen(onDeckClick = onDeckClick, onBack = {}, viewModel = viewModel) }
         }
@@ -91,7 +93,8 @@ class DecksScreenTest {
 
     @Test
     fun an_account_with_no_public_decks_is_told_why_it_might_look_empty() {
-        val viewModel = DecksViewModel(Fakes.emptyRepository(), SavedStateHandle(), "someone")
+        val viewModel =
+            DecksViewModel(Fakes.emptyRepository(), SavedStateHandle(), DeckSource("someone"))
         compose.setContent {
             EtokenTheme { DecksScreen(onDeckClick = {}, onBack = {}, viewModel = viewModel) }
         }
@@ -100,6 +103,20 @@ class DecksScreenTest {
         // is the one reading that is usually wrong.
         awaitText(str(R.string.decks_empty))
         compose.onNodeWithText(str(R.string.public_decks_only)).assertIsDisplayed()
+    }
+
+    @Test
+    fun the_precons_listing_is_titled_by_what_it_is_not_by_who_published_it() {
+        val viewModel = DecksViewModel(Fakes.repository(), SavedStateHandle(), DeckSource.PRECONS)
+        compose.setContent {
+            EtokenTheme { DecksScreen(onDeckClick = {}, onBack = {}, viewModel = viewModel) }
+        }
+        awaitText(Fakes.DECK_NAME)
+
+        // "WizardsOfTheCoast" is where Moxfield keeps the precons, which is
+        // not something the user typed and not what the screen is about.
+        compose.onNodeWithText(str(R.string.precons_title)).assertIsDisplayed()
+        assertEquals(0, nodesWithText(DeckSource.PRECON_AUTHOR).size)
     }
 
     private fun nodesWithText(text: String) =

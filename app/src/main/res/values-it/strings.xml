@@ -4,6 +4,10 @@
     <string name="public_decks_only">I mazzi privati e quelli non elencati non compaiono: l\'app legge Moxfield senza accedere.</string>
     <string name="username_label">Nome utente Moxfield</string>
     <string name="action_load_decks">Carica i mazzi</string>
+    <string name="action_load_precons">Vedi i mazzi precostruiti</string>
+    <string name="precons_hint">I mazzi Commander precostruiti di Wizards. Non serve un nome utente.</string>
+    <string name="precons_title">Mazzi precostruiti</string>
+    <string name="precons_empty">Moxfield non ha restituito nessun mazzo precostruito.</string>
     <string name="action_retry">Riprova</string>
     <string name="action_back">Indietro</string>
     <string name="decks_search_hint">Cerca mazzo o comandante</string>

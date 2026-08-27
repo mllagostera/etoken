@@ -4,6 +4,10 @@
     <string name="public_decks_only">Els decks privats i els no llistats no hi surten: l\'app llegeix Moxfield sense iniciar sessió.</string>
     <string name="username_label">Usuari de Moxfield</string>
     <string name="action_load_decks">Carrega els decks</string>
+    <string name="action_load_precons">Mira els decks precon</string>
+    <string name="precons_hint">Els decks Commander precon de Wizards. No cal cap usuari.</string>
+    <string name="precons_title">Decks precon</string>
+    <string name="precons_empty">Moxfield no ha retornat cap deck precon.</string>
     <string name="action_retry">Torna-ho a provar</string>
     <string name="action_back">Enrere</string>
     <string name="decks_search_hint">Cerca deck o comandant</string>
