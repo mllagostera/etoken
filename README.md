@@ -297,18 +297,13 @@ dependency on that project at runtime.
 
 Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
-**Rewritten and unrun.** The battlefield redesign — the table as the screen a
-deck opens onto, the "+" that adds to it, and entries that never merge — touched
-the model, both screens, the strings and every test that names a board. Nothing
-below it has been re-run: the figures in this section are run #81's, on the tree
-*before* that change, and the environment it was written in has no Android SDK.
-Read the rest of this section as what was true, and the next CI run as what
-settles it.
-
-**Verified (as of run #81).** The app builds and the screens work. CI runs `assembleDebug`,
+**Verified (as of run #91).** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: as of run #81, 128 unit tests and 36 UI
-tests pass, lint is clean, and the run produces an installable APK. The UI tests
+runs the instrumented suite against it: as of run #91, 127 unit tests and 37 UI
+tests pass, lint is clean, and the run produces an installable APK. That run is
+the first on the rebuilt battlefield — the table as the screen a deck opens
+onto, the "+" that adds to it, and entries that never merge — so the figures
+describe the app as it now stands. The UI tests
 drive the real screens and view models with only the two APIs faked, so they
 fail when the app breaks rather than when a double does.
 

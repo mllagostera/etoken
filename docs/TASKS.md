@@ -41,11 +41,10 @@ the two APIs are ever faked.
 - [x] Scryfall collection envelope and identifier serialization — `data/scryfall/`, 6 tests
 - [x] Token extraction from `all_parts`, dedupe, emblems, self-reference — `domain/TokenExtractor.kt`, 9 tests
 - [x] Repository: paging, caching, 75-id batching, by-name fallback — `data/MoxfieldRepository.kt`, 11 tests
-- [~] Battlefield rules: entries, split, ordering, clamping — `domain/BoardRules.kt`, 30 tests.
-  Rewritten by B15 and **not yet run**: the merge these covered is gone, and the tests that
-  asserted it now assert the opposite
-- [~] Undo: bounded trail, no-op edits are not steps, an emptied table comes back, and one press of
-  add is one step — `domain/UndoHistory.kt`, `data/GameBoardStore.kt`, 8 tests. Also B15's, also unrun
+- [x] Battlefield rules: entries that never merge, split, order of entry, clamping —
+  `domain/BoardRules.kt`, 35 tests
+- [x] Undo: bounded trail, no-op edits are not steps, an emptied table comes back, and one press of
+  add is one step — `domain/UndoHistory.kt`, `data/GameBoardStore.kt`, 14 tests
 - [x] Power/toughness with counters, including `*` and `1+*` — `domain/PowerToughness.kt`, 4 tests
 - [x] Deck search: accent-blind, commander, multi-word AND — `domain/DeckFilter.kt`, 10 tests
 - [x] The whole app compiles: `assembleDebug`, `testDebugUnitTest` and `lintDebug` all green — run #3
@@ -87,9 +86,9 @@ push; no person has looked at any of it.
 - [~] Deck grid with commander art and streaming hydration — `ui/decks/`
 - [~] Deck search field with result counter — `ui/decks/DecksScreen.kt`
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
-- [ ] The battlefield, and the picker behind its "+": every entry its own cell, a tap to turn one,
-  a long press for the rest — `ui/board/BoardScreen.kt`, `ui/tokens/TokenPicker.kt` (B15: written,
-  never compiled or run)
+- [~] The battlefield, and the picker behind its "+": every entry its own cell, a tap to turn one,
+  a long press for the rest — `ui/board/BoardScreen.kt`, `ui/tokens/TokenPicker.kt` (B15, green on
+  run **#91**: 23 instrumented tests across the table, the picker, copies, haste and the two panes)
 - [~] The picker's cells say how many of each token are already out — `ui/tokens/TokenPicker.kt`
 - [~] Summoning sickness is gated on `TokenCard.isCreature`, and every entry can be marked entering
   tapped (a switch in the add dialog, plus a chip to correct it by hand); the untap step clears
@@ -329,7 +328,7 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     arrive, names a count once part of the table can attack, and goes when the untap step clears
     the rest.
 
-- [ ] **B15** The table is the screen, and the "+" is what adds to it
+- [~] **B15** The table is the screen, and the "+" is what adds to it
   - Asked for on 2026-08-27, and it inverts the app: a deck used to open onto a grid of every token
     it could create, with one token's board a tap further in. What a player looks at between turns
     is the table, so the table is what a deck opens onto now, and the deck's tokens live behind a
@@ -352,9 +351,15 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - `TokenFilter` and the per-token "Vaciar" go (B8, B6), and `stack_*` becomes `entry_*` across
     seven locales. Two view models become one: the old pair existed only because the grid and the
     board were separate destinations.
-  - **Written, never compiled.** The unit tests are rewritten, the instrumented suites are rewritten
-    around a robot that spells the new gesture out once, and nothing has run any of it. It joins the
-    C8 list too: the entry cell is a new layout with badges in it, in seven languages.
+  - **Green on run #91**, third attempt, and both failures before it were in the tests rather than
+    the app. #89 died compiling them, on an import of `onAllNodes` — a member of the test rule, not
+    an extension. #90 then failed every board test on its first line, waiting for the button that
+    opens the picker: `ExtendedFloatingActionButton`'s label does not survive into the merged
+    semantics tree, so the button said nothing to the tests *or* to TalkBack. It is a plain
+    `FloatingActionButton` with an icon and a description now, like every other action here, which
+    is an accessibility fix that the emulator happened to find.
+  - It joins the C8 list: the entry cell is a new layout with badges in it, in seven languages, and
+    nobody has looked at any of them.
 
 ### C. Quality and infrastructure
 
@@ -443,4 +448,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-27 · run #81 green including the emulator · Scryfall verified live, Moxfield 403 from CI · **B15 is on top of all of it and nothing has compiled it**: the model, both screens, the strings and every test that touches a board were rewritten in one change, so treat §1's battlefield rows and §2's board row as claims waiting on the next CI run
+**Last reviewed:** 2026-08-27 · run **#91** green including the emulator: 127 unit tests and 37 instrumented, lint clean · Scryfall verified live, Moxfield 403 from CI · B15 rebuilt the battlefield in this run's tree, so every figure above is measured on the app as it now stands — what nobody has done is *look* at it
