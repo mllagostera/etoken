@@ -26,18 +26,12 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 115 unit and 33 instrumented tests, 0 failures, green on CI
+## 1. Verified — 128 unit and 36 instrumented tests, 0 failures, green on CI
 
-> Run **#73** is where those figures come from, and it is the first to execute
-> the language picker's 8 tests (B11) and the splash screen's 1 (B12). Both
-> landed after the last green run and were claims until it finished; they are
-> not any more.
->
-> Two things have landed since and are **not** in the figures: the precons
-> button (B13, 8 unit and 2 instrumented), which no run has ever executed, and
-> the grid's summoning-sickness badge (B14, 5 unit and 1 instrumented), green on
-> run **#76** but on a tree that did not yet carry B13. The first run after the
-> two meet is what settles the count.
+> Run **#81** is where those figures come from. It is the first to execute the
+> precons button's 10 tests (B13) and the summoning-sickness badge's 6 (B14)
+> together — #73 had measured neither, #76 only the second — so every test in
+> the tree has now run at least once on the tree it ships in.
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -76,7 +70,7 @@ the two APIs are ever faked.
 - [x] Printed haste: `keywords` off the wire, `TokenCard.hasHaste`, copies that enter able to
   attack, and a chip that still overrides it — `domain/`, `ui/board/`, 10 unit and 4 instrumented tests
 - [x] The grid says how much of a token is still summoning sick: nothing, all of it, or a count —
-  `domain/model/Board.kt`, `ui/tokens/`, 5 unit and 1 instrumented test
+  `domain/model/Board.kt`, `ui/tokens/`, 5 unit and 1 instrumented test — B14
 
 ## 2. Works, never looked at
 
@@ -276,7 +270,7 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     fail on a splash that hangs: the condition holds *drawing*, and an undrawn composable still
     reports itself displayed to the semantics tree. That half is A7.
 
-- [ ] **B13** A way in for someone with no Moxfield account: Wizards' Commander precons
+- [~] **B13** A way in for someone with no Moxfield account: Wizards' Commander precons
   - One button on the username screen, and no new screen behind it. The precons are the same
     `v2/decks/search-sfw` call the app already makes, filtered to `authorUserNames=WizardsOfTheCoast`
     **and** `fmt=commanderPrecons` — Wizards publishes far more than precons under that account, so
@@ -287,11 +281,11 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - The deck screen titles that listing by what it is, not by who published it: "WizardsOfTheCoast"
     is where precons live, not something a user typed. Its empty state differs too — nothing there
     is private, so an empty answer means the filter moved rather than that decks are being withheld.
-  - **Written, not verified.** Eight unit tests and two instrumented tests come with it; none has
-    run, and nothing has compiled it — this environment has no Android SDK. The unverifiable half is
-    `fmt=commanderPrecons` itself: Moxfield documents nothing, and only a live request can say
-    whether that is still the format's name. If it has moved, the symptom is an empty grid with the
-    precon empty state, and `DeckSource.PRECON_FORMAT` is the one line to change.
+  - **Green on run #81**, the first to compile or execute any of it: eight unit tests and two
+    instrumented. The unverifiable half is untouched by that — `fmt=commanderPrecons` itself.
+    Moxfield documents nothing, and only a live request can say whether that is still the format's
+    name. If it has moved, the symptom is an empty grid with the precon empty state, and
+    `DeckSource.PRECON_FORMAT` is the one line to change.
 
 - [~] **B14** The grid's badge says how much of a token is still summoning sick
   - Same question as B10, asked about the other half of a stack's state: mid-turn what a player
@@ -310,9 +304,9 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     and with a label that is a full word in every language — `Einsatzverzögerung` is 19 characters —
     corner alignment lets them meet in the middle. A half each truncates instead of overlapping. That
     is a layout claim nobody has looked at, and it belongs to C8.
-  - **Run #76 is green**, the emulator suite included: the badge appears when copies arrive, names a
-    count once part of the table can attack, and goes when the untap step clears the rest. That run
-    predates B13, though, so no single run has yet executed both.
+  - **Green on runs #76 and #81**, the emulator suite included: the badge appears when copies
+    arrive, names a count once part of the table can attack, and goes when the untap step clears
+    the rest.
 
 ### C. Quality and infrastructure
 

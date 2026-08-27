@@ -309,7 +309,7 @@ Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
 **Verified.** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
-runs the instrumented suite against it: as of run #73, 115 unit tests and 33 UI
+runs the instrumented suite against it: as of run #81, 128 unit tests and 36 UI
 tests pass, lint is clean, and the run produces an installable APK. The UI tests
 drive the real screens and view models with only the two APIs faked, so they
 fail when the app breaks rather than when a double does.
@@ -327,11 +327,10 @@ splash screen's one, both of which landed after the previous green run and were
 claims until it finished. They pass. One part of the picker still has no test at
 all and is called out below.
 
-Two later arrivals are not in those figures. The precons button brings eight
-unit tests and two UI tests that nothing has executed. The grid's
-summoning-sickness badge brings five and one, green on run #76 — but that run
-predates the precons, so no single run has yet seen both. The next one settles
-the count.
+Run #81 did the same for the two that landed after it: the precons button's ten
+tests, which nothing had executed or even compiled, and the grid's
+summoning-sickness badge's six. Every test in the tree has now run at least
+once on the tree it ships in.
 
 That single splash test is the only one in the suite that launches the real
 `MainActivity` instead of a composable in a test activity, which is why it can
