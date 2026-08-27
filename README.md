@@ -66,25 +66,11 @@ These come from Scryfall's `all_parts`, which names the tokens related to a
 card. **The app never parses rules text to work out what a card creates.**
 Scryfall already knows, and a text parser would be a permanent source of bugs.
 
-A quick filter sits above the grid: one chip that narrows it to the tokens with
-copies on the battlefield. It appears with the first token on the table — a
-filter with nothing to filter is noise — and it reads the same boards the grid's
-badges are drawn from, so the two can never disagree. Emptying the table leaves
-the chip in place and the grid saying so, rather than blank.
-
-A cell with copies in play carries the count, and beneath it the **+1/+1
-counters** those copies are carrying — but only while the token's board is a
-single stack. Two stacks mean two answers, and one badge that picked either
-would be lying about the other; there the grid says nothing and the board
-screen, which has room for a stack at a time, is where to look.
-
-Beside them, in the other bottom corner, the cell says how much of that token
-is still **summoning sick**. Three answers, not a number: nothing waiting draws
-no badge, since that is what an untouched cell already looks like; a table where
-every copy is waiting is named without a count, because the count is the one
-already in the corner above; and only a part-waiting table spends the room on a
-figure. It uses the board screen's own word for the state, so one thing cannot
-end up with two names.
+Those tokens are what the **"+"** on the battlefield offers. Picking one asks
+how many to make, whether they enter tapped, and — for a token named `Copy` —
+what it is a copy of, all in one dialog, so a press of OK is exactly one thing
+happening on the table. A cell in the picker carries the count of that token
+already in play, so "have I made these yet?" is answered without going back.
 
 Tokens are collapsed by name, type, rules text and printed power/toughness
 rather than by id. `all_parts` points at one specific *printing*, so a deck
@@ -94,46 +80,53 @@ the image.
 
 ### Tracking them in play
 
-Tapping a token opens its board — local state only, with no request leaving the
-device.
+Opening a deck goes straight to the battlefield — local state only, with no
+request leaving the device. It starts empty, and the "+" is what fills it.
 
-The board holds **stacks**: groups of copies that are genuinely identical.
-Magic tracks counters and summoning sickness per permanent, so seven Goblins of
-which three carry a +1/+1 counter are not interchangeable, and a single count
-with counters bolted onto it would be a lie. So:
+The table holds **entries**: the copies made by one press of "add", kept
+together with their own counters, their own summoning sickness and their own
+tapped state. Magic tracks all three per permanent, so seven Goblins of which
+three carry a +1/+1 counter are not interchangeable.
+
+**Two entries never merge.** Make three Goblins now and three more next turn and
+that is two cells for the rest of the game, however alike they look — they are
+two things that happened at the table, and an app that fused them would be
+throwing that away. Quantity still lives on the entry, because a batch of three
+is one thing rather than three; what is gone is anything that joins batches up.
 
 - Tokens arrive **summoning sick**, which is what actually happens — unless the
-  token is printed with **haste**, in which case they enter able to attack and
-  the board says so. Printed haste comes from Scryfall's `keywords`, never from
-  reading rules text: a token that *grants* haste to other creatures has none
-  itself. Haste handed out at the table by another permanent is something no
-  app can see, so that half stays a chip the player taps.
-- **"My turn begins"** clears sickness across every stack at once.
-- Putting a counter on **only some** of a stack splits it; taking that counter
-  off merges it straight back.
-- Stacks sort ready-before-sick and larger-first, so the row you are most
-  likely to touch is at the top, and a merge keeps the older stack id so the
-  list does not re-animate under your finger.
+  token is printed with **haste**, in which case they enter able to attack. A
+  non-creature token is never sick at all. Printed haste comes from Scryfall's
+  `keywords`, never from reading rules text: a token that *grants* haste to
+  other creatures has none itself. Haste handed out at the table by another
+  permanent is something no app can see, so that half stays a chip you tap.
+- **A tap turns an entry**, and turns it back. It is the gesture a table asks
+  for most, so it is the one that costs nothing.
+- **A long press opens everything else**: the +1/+1 counters, the sickness, the
+  count, and taking the entry off the table.
+- **"My turn begins"** clears sickness and untaps the whole table at once, and
+  **"+1/+1 on all"** grows every entry of every token.
+- Putting a counter on **only some** of an entry splits it in place; the halves
+  stay side by side and stay apart.
+- Nothing re-sorts. Entries sit in the order they were made, so one you touch
+  does not move out from under your finger.
 
-`TokenBoardRules` enforces two invariants after every operation — merge what
-has become identical, drop what has emptied — so no action can leave a board
-showing two rows that look the same but are not.
+`BoardRules` enforces the one invariant left after every operation — an entry
+that has emptied disappears — and deliberately no longer enforces the merge
+that used to sit beside it.
 
-Both destructive actions ask first and say what is at stake: clearing one
-token's board, and starting a new game, which clears every board because token
-ids are Scryfall ids and the same Goblin is the same entry whichever deck
-brought it.
+**Starting a new game** asks first and says how many tokens leave the table. It
+empties everything, including what another deck put there: the board belongs to
+the game being played, not to the deck on screen.
 
-On a screen at least 840dp wide — a tablet in landscape — the board stops
-being a screen of its own and becomes a pane beside the grid, with the open
-token marked in the list. Below that it is a destination like any other. The
-width decides, not the navigation graph, and both arrangements run on the same
-view models and the same board store.
+On a screen at least 840dp wide — a tablet in landscape — the picker stops
+hiding behind the "+" and becomes a pane beside the table. Below that it is a
+modal sheet. The width decides, not the navigation graph, and both arrangements
+run on the same view model and the same board store.
 
-**Undo** covers both, and every other edit. The trail is kept over all the
-boards at once rather than one per token, which is what makes a new game
-undoable at all — it empties every board, and a per-token trail could not put
-that back. An edit that changed nothing is not a step, so undo never has to be
+**Undo** covers that and every other edit, including a new game. The trail is a
+snapshot of the whole table rather than one per token, which is what makes
+emptying it undoable at all. Adding an entry of seven is one step, not seven. An edit that changed nothing is not a step, so undo never has to be
 pressed twice to see something happen, and the trail stops at twenty steps:
 this is a play aid for one game at one table, not a document editor.
 
@@ -165,27 +158,25 @@ etoken/
     │   │   ├── Network.kt                OkHttp: headers, rate limiting, retries
     │   │   ├── DeckMapper.kt             Moxfield's board-keyed JSON → domain model
     │   │   ├── MoxfieldRepository.kt     paging, caching, batching, name fallback
-    │   │   ├── TokenBoardStore.kt        in-memory battlefield state, and undo
+    │   │   ├── GameBoardStore.kt         in-memory battlefield state, and undo
     │   │   └── UserPreferences.kt        DataStore: the remembered username
     │   │
     │   ├── domain/                   pure Kotlin — no Android imports at all
     │   │   ├── TokenExtractor.kt         which tokens a deck can make
-    │   │   ├── TokenBoardRules.kt        what is on the battlefield
+    │   │   ├── BoardRules.kt             every edit the battlefield supports
     │   │   ├── DeckFilter.kt             accent-blind search over name and commander
-    │   │   ├── TokenFilter.kt            the quick filter: what counts as in play
     │   │   ├── PowerToughness.kt         printed size plus counters, `*` included
     │   │   ├── UndoHistory.kt            a bounded trail, and what counts as a step
     │   │   └── model/
     │   │       ├── Models.kt             DeckSummary, DeckDetail, TokenCard
-    │   │       └── Board.kt              TokenStack, TokenBoard
+    │   │       └── Board.kt              BoardEntry, GameBoard
     │   │
     │   └── ui/                       Compose, Material 3, one ViewModel per screen
-    │       ├── EtokenNavHost.kt          the four routes
-    │       ├── TokensAndBoard.kt         one pane or two, decided by the width
+    │       ├── EtokenNavHost.kt          the three routes
     │       ├── username/                 screen 1 — who are you on Moxfield
     │       ├── decks/                    screen 2 — the deck grid, search, refresh
-    │       ├── tokens/                   screen 3 — what this deck can create, and the quick filter
-    │       ├── board/                    screen 4 — what is on the table
+    │       ├── tokens/                   the picker behind the "+", and its add dialog
+    │       ├── board/                    screen 3 — the table, one pane or two
     │       ├── common/                   error states, icon buttons, LoadError
     │       └── theme/                    colours, dynamic colour on Android 12+
     │
@@ -195,16 +186,15 @@ etoken/
     │   ├── values-night/             dark theme
     │   └── drawable/                 local vector icons; no material-icons artifacts
     │
-    └── test/java/com/etoken/         115 unit tests, all on the JVM
-        ├── TokenBoardRulesTest.kt        29
+    └── test/java/com/etoken/         unit tests, all on the JVM
+        ├── BoardRulesTest.kt             30
         ├── MoxfieldRepositoryTest.kt     11
         ├── DeckFilterTest.kt             10
-        ├── TokenFilterTest.kt            6
         ├── TokenExtractorTest.kt         9
         ├── MoxfieldParsingTest.kt        8
         ├── ScryfallParsingTest.kt        8
         ├── HasteTokenTest.kt             8
-        ├── TokenBoardStoreTest.kt        7
+        ├── GameBoardStoreTest.kt         8
         ├── UndoHistoryTest.kt            6
         ├── AppLanguageTest.kt            6
         ├── PowerToughnessTest.kt         4
@@ -307,7 +297,15 @@ dependency on that project at runtime.
 
 Item-by-item status is in [docs/TASKS.md](docs/TASKS.md). In summary:
 
-**Verified.** The app builds and the screens work. CI runs `assembleDebug`,
+**Rewritten and unrun.** The battlefield redesign — the table as the screen a
+deck opens onto, the "+" that adds to it, and entries that never merge — touched
+the model, both screens, the strings and every test that names a board. Nothing
+below it has been re-run: the figures in this section are run #81's, on the tree
+*before* that change, and the environment it was written in has no Android SDK.
+Read the rest of this section as what was true, and the next CI run as what
+settles it.
+
+**Verified (as of run #81).** The app builds and the screens work. CI runs `assembleDebug`,
 `testDebugUnitTest` and `lintDebug` on every push, then boots an emulator and
 runs the instrumented suite against it: as of run #81, 128 unit tests and 36 UI
 tests pass, lint is clean, and the run produces an installable APK. The UI tests

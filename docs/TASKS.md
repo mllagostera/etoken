@@ -41,13 +41,13 @@ the two APIs are ever faked.
 - [x] Scryfall collection envelope and identifier serialization — `data/scryfall/`, 6 tests
 - [x] Token extraction from `all_parts`, dedupe, emblems, self-reference — `domain/TokenExtractor.kt`, 9 tests
 - [x] Repository: paging, caching, 75-id batching, by-name fallback — `data/MoxfieldRepository.kt`, 11 tests
-- [x] Battlefield rules: stacks, split, merge, ordering, clamping — `domain/TokenBoardRules.kt`, 24 tests
-- [x] Undo: bounded trail, no-op edits are not steps, a cleared board and a new game both come
-  back — `domain/UndoHistory.kt`, `data/TokenBoardStore.kt`, 13 tests
+- [~] Battlefield rules: entries, split, ordering, clamping — `domain/BoardRules.kt`, 30 tests.
+  Rewritten by B15 and **not yet run**: the merge these covered is gone, and the tests that
+  asserted it now assert the opposite
+- [~] Undo: bounded trail, no-op edits are not steps, an emptied table comes back, and one press of
+  add is one step — `domain/UndoHistory.kt`, `data/GameBoardStore.kt`, 8 tests. Also B15's, also unrun
 - [x] Power/toughness with counters, including `*` and `1+*` — `domain/PowerToughness.kt`, 4 tests
 - [x] Deck search: accent-blind, commander, multi-word AND — `domain/DeckFilter.kt`, 10 tests
-- [x] Token quick filter: what counts as in play, deck order kept, another deck's board ignored —
-  `domain/TokenFilter.kt`, 6 tests
 - [x] The whole app compiles: `assembleDebug`, `testDebugUnitTest` and `lintDebug` all green — run #3
 - [x] Scryfall's half of the contract, live: `/cards/collection` answers 200 and `all_parts` is there
 - [x] Scryfall's image CDN really does answer **400** to OkHttp's default User-Agent, and 200 to a
@@ -56,10 +56,12 @@ the two APIs are ever faked.
   search narrows by name and by commander, tapping a deck reports the right one, tokens arrive
   summoning sick and the untap step clears them, a counter turns a 1/1 into a 2/2, and clearing asks
   first — `app/src/androidTest/`, 18 tests on an AVD
-- [x] A copy token asks what it is copying, keeps the answer on the stack, and two copies of
-  different creatures stay two rows — `domain/`, `ui/board/`, 3 unit and 4 instrumented tests
+- [x] A copy token asks what it is copying, and two copies of different creatures stay two rows —
+  `domain/`, `ui/board/`, 3 unit and 4 instrumented tests. The answer now lives on the entry, and
+  B15 added the case that two copies of the *same* creature also stay two rows
 - [x] The quick filter appears with the first token on the table, hides the rest of the grid, and
-  says so instead of going blank when the table empties — `ui/tokens/`, 4 instrumented tests
+  says so instead of going blank when the table empties — `ui/tokens/`, 4 instrumented tests.
+  **Retired by B15**: the table is now the screen, so there is nothing left to filter
 - [x] The public-decks limit is on screen before the username is typed, and again on an empty deck
   list — `ui/username/`, `ui/decks/`, 2 instrumented tests
 - [x] The **real** `MainActivity` starts: the launch theme, `installSplashScreen()` and
@@ -70,7 +72,8 @@ the two APIs are ever faked.
 - [x] Printed haste: `keywords` off the wire, `TokenCard.hasHaste`, copies that enter able to
   attack, and a chip that still overrides it — `domain/`, `ui/board/`, 10 unit and 4 instrumented tests
 - [x] The grid says how much of a token is still summoning sick: nothing, all of it, or a count —
-  `domain/model/Board.kt`, `ui/tokens/`, 5 unit and 1 instrumented test — B14
+  `domain/model/Board.kt`, `ui/tokens/`, 5 unit and 1 instrumented test — B14. B15 moved the
+  question onto each entry's own cell, where a badge answers for the copies it is drawn on
 
 ## 2. Works, never looked at
 
@@ -84,20 +87,19 @@ push; no person has looked at any of it.
 - [~] Deck grid with commander art and streaming hydration — `ui/decks/`
 - [~] Deck search field with result counter — `ui/decks/DecksScreen.kt`
 - [~] Refresh, with a banner that keeps the last good list on failure — `ui/decks/`
-- [~] Token grid with in-play badges: the count, the +1/+1 counters while there is one stack,
-  and how much of the table is still summoning sick — `ui/tokens/`
-- [~] Quick filter chip: only the tokens with copies on the table — `ui/tokens/TokensScreen.kt`
-- [~] Token board: quantity, summoning sickness, +1/+1 counters — `ui/board/`
-- [~] Summoning sickness is gated on `TokenCard.isCreature`, and every stack can be marked entering
-  tapped (a per-add switch, plus a per-stack chip to correct it by hand); the untap step now clears
-  both — `domain/model/Models.kt`, `domain/TokenBoardRules.kt`, `ui/board/`. 9 unit and 5
+- [ ] The battlefield, and the picker behind its "+": every entry its own cell, a tap to turn one,
+  a long press for the rest — `ui/board/BoardScreen.kt`, `ui/tokens/TokenPicker.kt` (B15: written,
+  never compiled or run)
+- [~] The picker's cells say how many of each token are already out — `ui/tokens/TokenPicker.kt`
+- [~] Summoning sickness is gated on `TokenCard.isCreature`, and every entry can be marked entering
+  tapped (a switch in the add dialog, plus a chip to correct it by hand); the untap step clears
+  both — `domain/model/Models.kt`, `domain/BoardRules.kt`, `ui/board/`. 9 unit and 5
   instrumented tests, green on CI run **#86**. The first two pushes (#84, #85) each caught a real
   bug before this one did: a bad assertion in a unit test, then a switch whose click action sat on
   the `Switch` alone so tapping its label — what the instrumented tests did — never toggled it
 - [~] A "Prisa" badge and one line saying why a hasty token shows no "Mareo" — `ui/board/`
-- [~] Both destructive actions confirm and name what is lost — `ui/board/`, `ui/tokens/`
-- [~] Every dialog survives rotation, and the counters one holds a stack id rather than a stack
-- [~] New game, behind a confirmation that names what is lost — `ui/tokens/TokensScreen.kt`
+- [~] Every dialog survives rotation, and the ones about an entry hold its id rather than the entry
+- [~] New game, behind a confirmation that names what is lost — `ui/board/BoardScreen.kt`
 - [~] A splash screen on every version, held while the remembered username is read — `MainActivity`, `res/values/themes.xml`
 
 ### Text
@@ -163,7 +165,10 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     private decks is indistinguishable from an empty one. That is why the note lives on the empty
     state rather than being computed from anything.
 - [x] **B4** The search query survives process death — it lives in the `SavedStateHandle`
-- [x] **B5** Two panes past 840dp: the token grid beside the open board — `ui/TokensAndBoard.kt`
+- [x] **B5** Two panes past 840dp — now the picker beside the table, `ui/board/BoardScreen.kt`
+  - **Reshaped by B15**, not undone: the threshold, the reason for it and the reading of the
+    layout's own constraints are unchanged; what sits in the panes swapped round, since the table
+    is the screen now and the deck's tokens are what opens beside it.
   - The split reads the layout's own constraints instead of pulling in `material3-window-size-class`:
     same 840dp threshold, one place in the app asks the question, one fewer artifact in the build.
   - 840 and not 600: a tablet in portrait is around 800dp, and half of that is narrower than the phone
@@ -171,11 +176,16 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - The board is still its own route on a phone. Which arrangement is used is decided from the width,
     not from the navigation graph, so both drive the same view models and the same board store.
 - [x] **B6** "Vaciar" asks first and names how many tokens leave the table
+  - **Retired by B15.** With one board for the whole table, "clear this token" and "new game" did
+    the same thing to within a token type. The confirmation survives on the one that is left.
 - [x] **B7** A copy token asks what it is copying — recognised by name, since Scryfall calls them `Copy`
   - The name lives on the **stack**, not the token, and joined the merge signature in
     `TokenBoardRules`: a copy of Krenko and a copy of Atraxa are two stacks, not three tokens in one.
   - In memory like the rest of the board, and cleared by "Nueva partida".
 - [x] **B8** A quick filter over the token grid: only what has copies on the battlefield
+  - **Retired by B15**, filter and `TokenFilter` alike. The question it answered — "what have I got
+    out?" — is now the screen a deck opens onto, and a filter over the picker would hide the tokens
+    you came there to make.
   - A deck that makes a dozen tokens shows two or three of them at a time in a real game. Mid-turn
     the question is "what have I got out?", and the answer was spread across a grid of mostly empty
     cells.
@@ -203,6 +213,9 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     **A6**: `api-smoke.yml` §6 asks it and fails if the answer is no. It could not be asked from
     here, where the proxy blocks Scryfall with 403.
 - [x] **B10** The grid's badge names the +1/+1 counters when the board has a single stack
+  - **Retired by B15**, and by the thing it was working around: one badge had to speak for a whole
+    token, so it could only speak when the token had one answer. Each entry now draws its own
+    counters, so the case that made `uniformPlusOneCounters` necessary cannot arise.
   - Mid-turn the question a badge should answer is "what have I got out, and how big is it?" The
     count was there; the counters meant opening the board to find out.
   - Only with **one stack**, and that is the whole rule — `TokenBoard.uniformPlusOneCounters`, null
@@ -294,6 +307,8 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     `DeckSource.PRECON_FORMAT` is the one line to change.
 
 - [~] **B14** The grid's badge says how much of a token is still summoning sick
+  - **Reshaped by B15**: same question, asked per entry, where the answer is always all or nothing
+    and needs no count. `SummoningSickness` stays for the table as a whole.
   - Same question as B10, asked about the other half of a stack's state: mid-turn what a player
     needs is "what have I got out, and can it attack?" The count and the counters were on the cell;
     whether the copies were still waiting meant opening the board.
@@ -313,6 +328,33 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - **Green on runs #76 and #81**, the emulator suite included: the badge appears when copies
     arrive, names a count once part of the table can attack, and goes when the untap step clears
     the rest.
+
+- [ ] **B15** The table is the screen, and the "+" is what adds to it
+  - Asked for on 2026-08-27, and it inverts the app: a deck used to open onto a grid of every token
+    it could create, with one token's board a tap further in. What a player looks at between turns
+    is the table, so the table is what a deck opens onto now, and the deck's tokens live behind a
+    "+" — a modal sheet on a phone, the left-hand pane past 840dp.
+  - **Each press of add is its own entry, and nothing merges.** That is the whole of the model
+    change. Quantity stays on the entry — "make three Goblins" is one thing that happened, and
+    splitting it into three cells would be as much of a lie as merging it into somebody else's —
+    but two entries that come to look alike stay two cells for the rest of the game. `normalize`
+    keeps only the half of its job that was never in question, dropping what emptied, and does no
+    re-ordering either: an entry that jumped up the grid because you put a counter on it is an
+    entry you then have to hunt for.
+  - One board for the whole game rather than one per token, so `GameBoardStore` holds a single
+    `GameBoard` and undo goes on being a snapshot of it. Adding an entry of seven is one step.
+  - The store also remembers what each token looks like. An entry names its token by id, the deck
+    on screen is not always the deck that entry came from, and the alternative was a table that
+    silently hid what another deck put on it. That catalog sits outside the undo trail on purpose.
+  - A tap turns an entry; a long press opens counters, sickness, the count and taking it off the
+    table. Tapping and untapping is what a table asks for most, and it wanted to be one gesture —
+    the repo owner's call, against a detail sheet on every tap.
+  - `TokenFilter` and the per-token "Vaciar" go (B8, B6), and `stack_*` becomes `entry_*` across
+    seven locales. Two view models become one: the old pair existed only because the grid and the
+    board were separate destinations.
+  - **Written, never compiled.** The unit tests are rewritten, the instrumented suites are rewritten
+    around a robot that spells the new gesture out once, and nothing has run any of it. It joins the
+    C8 list too: the entry cell is a new layout with badges in it, in seven languages.
 
 ### C. Quality and infrastructure
 
@@ -401,4 +443,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-27 · 51 commits · run #73 green including the emulator, all 33 instrumented tests · Scryfall verified live, Moxfield 403 from CI · everything up to run #73 has run; B13's ten tests are written and unrun, and no compiler has read that change yet
+**Last reviewed:** 2026-08-27 · run #81 green including the emulator · Scryfall verified live, Moxfield 403 from CI · **B15 is on top of all of it and nothing has compiled it**: the model, both screens, the strings and every test that touches a board were rewritten in one change, so treat §1's battlefield rows and §2's board row as claims waiting on the next CI run
