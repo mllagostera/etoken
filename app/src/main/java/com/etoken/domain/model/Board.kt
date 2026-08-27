@@ -1,20 +1,29 @@
 package com.etoken.domain.model
 
 /**
- * Copies of one token that are currently on the battlefield in the same state.
+ * Copies of one token that entered the battlefield together and are still in
+ * the same state.
  *
- * Magic tracks counters and summoning sickness per permanent, not per token
- * type: four Goblins where one carries a +1/+1 counter are not interchangeable.
- * A stack is the coarsest grouping that stays truthful — every copy inside one
- * really is identical — so the board is a list of stacks rather than a single
- * count with counters bolted on.
+ * An entry is created by one press of "add" and stays its own thing for the
+ * rest of the game: two entries of three Goblins each are two entries, never a
+ * merged six. That is the whole difference from the stacks this replaced —
+ * those fused whenever they became indistinguishable, which is right for a
+ * count and wrong for cards on a table. What survives from stacks is
+ * [quantity]: "make three Goblins" is one thing that happened, and splitting it
+ * into three rows would be as much of a lie as merging it into somebody else's.
+ *
+ * Counters and summoning sickness stay per entry because Magic tracks them per
+ * permanent; [splitting][com.etoken.domain.BoardRules.addCounters] an entry is
+ * how "three of these seven got a counter" is said.
  */
-data class TokenStack(
-    /** Stable across edits, so the list doesn't re-animate on every tap. */
+data class BoardEntry(
+    /** Stable across edits, so the grid doesn't re-animate on every tap. */
     val id: Long,
+    /** Scryfall id of the token this is copies of. The board mixes types now. */
+    val tokenId: String,
     val quantity: Int,
-    val plusOneCounters: Int,
-    val summoningSick: Boolean,
+    val plusOneCounters: Int = 0,
+    val summoningSick: Boolean = true,
     /**
      * Some tokens are made tapped — Krenko's Goblins with an added "tap" clause,
      * a Treasure fetched by a spell that says so. Independent of
@@ -27,7 +36,7 @@ data class TokenStack(
      * What this copy is a copy of, for tokens named "Copy"; null for every
      * other token.
      *
-     * On the stack rather than on the token because two copies of different
+     * On the entry rather than on the token because two copies of different
      * creatures are two different things on the battlefield, however identical
      * their token card is.
      */
@@ -35,34 +44,33 @@ data class TokenStack(
 )
 
 /**
- * Everything of one token type that is in play.
+ * The whole battlefield for the game being played — every token type at once,
+ * in the order the entries were made.
  *
- * Deliberately in-memory only: this is a play aid for the table, and it is
+ * One board rather than one per token: the player adds from a deck-wide picker
+ * and looks at the result as a table, so "what is out" is a single list. It is
+ * deliberately in-memory only; this is a play aid for the table, and it is
  * reset by starting a new game rather than by anything persisted.
  */
-data class TokenBoard(
-    val stacks: List<TokenStack> = emptyList(),
-    /** Kept in the state so stack ids stay pure — no global counter. */
-    val nextStackId: Long = 1,
+data class GameBoard(
+    val entries: List<BoardEntry> = emptyList(),
+    /** Kept in the state so entry ids stay pure — no global counter. */
+    val nextEntryId: Long = 1,
 ) {
-    val total: Int get() = stacks.sumOf { it.quantity }
+    val total: Int get() = entries.sumOf { it.quantity }
 
     val summoningSickCount: Int get() =
-        stacks.filter { it.summoningSick }.sumOf { it.quantity }
+        entries.filter { it.summoningSick }.sumOf { it.quantity }
 
-    /**
-     * The +1/+1 counters every copy in play is carrying, or null when the board
-     * cannot answer with one number.
-     *
-     * Only a single stack can: two stacks mean two answers, and a badge that
-     * picked one of them would be lying about the other. Zero is a real answer
-     * — one stack with no counters — and is not the same as null.
-     */
-    val uniformPlusOneCounters: Int? get() = stacks.singleOrNull()?.plusOneCounters
+    val isEmpty: Boolean get() = entries.isEmpty()
+
+    /** How many copies of one token are in play, for the picker's badge. */
+    fun countOf(tokenId: String): Int =
+        entries.filter { it.tokenId == tokenId }.sumOf { it.quantity }
 
     /**
      * The same figure as [summoningSickCount], told in the three cases a badge
-     * can draw. Derived here rather than in the grid so both screens read one
+     * can draw. Derived here rather than in the grid so every screen reads one
      * answer, and so the rule is unit-tested off the JVM like every other.
      */
     val summoningSickness: SummoningSickness get() = when (val sick = summoningSickCount) {
@@ -71,13 +79,11 @@ data class TokenBoard(
         total -> SummoningSickness.All
         else -> SummoningSickness.Some(sick)
     }
-
-    val isEmpty: Boolean get() = stacks.isEmpty()
 }
 
 /**
  * How much of what is in play is still summoning sick, in the shape a badge
- * can draw without opening the board.
+ * can draw without opening an entry.
  *
  * A single number would not do it: "2" says nothing about whether the other
  * five can attack, and on a board where every copy is waiting the number is
