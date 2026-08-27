@@ -88,11 +88,12 @@ push; no person has looked at any of it.
   and how much of the table is still summoning sick — `ui/tokens/`
 - [~] Quick filter chip: only the tokens with copies on the table — `ui/tokens/TokensScreen.kt`
 - [~] Token board: quantity, summoning sickness, +1/+1 counters — `ui/board/`
-- [ ] Summoning sickness is gated on `TokenCard.isCreature`, and every stack can be marked entering
+- [~] Summoning sickness is gated on `TokenCard.isCreature`, and every stack can be marked entering
   tapped (a per-add switch, plus a per-stack chip to correct it by hand); the untap step now clears
   both — `domain/model/Models.kt`, `domain/TokenBoardRules.kt`, `ui/board/`. 9 unit and 5
-  instrumented tests written; none have run — this environment has neither an Android SDK nor
-  network to build against, same gap noted for the rest of `ui/`
+  instrumented tests, green on CI run **#86**. The first two pushes (#84, #85) each caught a real
+  bug before this one did: a bad assertion in a unit test, then a switch whose click action sat on
+  the `Switch` alone so tapping its label — what the instrumented tests did — never toggled it
 - [~] A "Prisa" badge and one line saying why a hasty token shows no "Mareo" — `ui/board/`
 - [~] Both destructive actions confirm and name what is lost — `ui/board/`, `ui/tokens/`
 - [~] Every dialog survives rotation, and the counters one holds a stack id rather than a stack
