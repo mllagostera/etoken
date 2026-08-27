@@ -31,45 +31,34 @@
     <string name="decks_empty">This user has no public decks.</string>
     <string name="deck_untitled">Untitled deck</string>
 
-    <string name="tokens_title">Tokens</string>
     <string name="tokens_empty">No card in this deck creates tokens.</string>
     <string name="tokens_created_by">Created by: %1$s</string>
-    <string name="tokens_filter_in_play">In play only</string>
-    <string name="tokens_filtered_count">%1$d of %2$d</string>
-    <string name="tokens_none_in_play">You have no tokens in play.</string>
-    <!-- The grid's summoning-sickness badge when only part of the table is
-         waiting. It reuses stack_sick, already translated everywhere, so the
-         two screens cannot end up calling the same state different things. -->
-    <string name="tokens_sick_some">%1$s ×%2$d</string>
 
-    <string name="board_in_play">In play</string>
-    <string name="board_sick">%1$d with summoning sickness</string>
-    <string name="board_none_sick">None summoning sick</string>
+    <string name="board_title">Battlefield</string>
+    <!-- The button that opens the picker, and the picker's own heading. -->
+    <string name="board_add_token">Add tokens</string>
+    <string name="board_picker_title">What are you creating?</string>
     <string name="board_empty">You haven’t put any into play yet.</string>
+    <string name="board_empty_detail">Tap + to put this deck’s tokens into play.</string>
     <string name="board_add">Add</string>
-    <string name="board_add_other">Another amount…</string>
     <string name="board_begin_turn">My turn begins</string>
     <string name="board_counter_all">+1/+1 on all</string>
-    <string name="board_pick_token">Pick a token to keep count of.</string>
-    <string name="board_clear">Clear</string>
-    <string name="clear_title">Clear this token?</string>
-    <string name="board_base">Base %1$s</string>
-    <string name="board_haste">Haste</string>
-    <string name="board_haste_note">Enters ready to attack. Haste given by another card is yours to mark on each stack.</string>
+    <string name="board_haste_note">Enters ready to attack. Haste given by another card is yours to mark on each entry.</string>
     <string name="board_enter_tapped">Enter tapped</string>
 
-    <string name="stack_quantity">Quantity</string>
-    <string name="stack_counters">+1/+1</string>
-    <string name="stack_counters_chip">+1/+1 ×%1$d</string>
-    <string name="stack_sick">Sick</string>
-    <string name="stack_ready">Can attack</string>
-    <string name="stack_tapped">Tapped</string>
-    <string name="stack_untapped">Untapped</string>
-    <string name="stack_counter_some">+1/+1 on just some…</string>
-    <string name="stack_remove">Remove one</string>
-    <string name="stack_add">Add one more</string>
-    <string name="stack_counter_remove">Remove a counter</string>
-    <string name="stack_counter_add">Add a counter</string>
+    <string name="entry_quantity">Quantity</string>
+    <string name="entry_counters">+1/+1</string>
+    <string name="entry_counters_chip">+1/+1 ×%1$d</string>
+    <string name="entry_sick">Sick</string>
+    <string name="entry_ready">Can attack</string>
+    <string name="entry_tapped">Tapped</string>
+    <string name="entry_untapped">Untapped</string>
+    <string name="entry_counter_some">+1/+1 on just some…</string>
+    <string name="entry_remove_one">Remove one</string>
+    <string name="entry_add_one">Add one more</string>
+    <string name="entry_counter_remove">Remove a counter</string>
+    <string name="entry_counter_add">Add a counter</string>
+    <string name="entry_remove">Take off the table</string>
 
     <string name="dialog_how_many">How many tokens?</string>
     <string name="dialog_how_many_of">On how many of the %1$d?</string>
@@ -81,7 +70,6 @@
     <string name="error_blocked">Moxfield turned the request away. Try again in a few minutes.</string>
     <string name="error_network">No connection. Check your network and try again.</string>
     <string name="error_unknown">Something went wrong.</string>
-    <string name="copy_of_title">What is it copying?</string>
     <string name="copy_of_hint">Card name</string>
 
     <!-- The language picker, on the username screen. -->

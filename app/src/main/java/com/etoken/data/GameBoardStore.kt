@@ -2,6 +2,7 @@ package com.etoken.data
 
 import com.etoken.domain.UndoHistory
 import com.etoken.domain.model.GameBoard
+import com.etoken.domain.model.TokenCard
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,7 @@ class GameBoardStore {
 
     private val state = MutableStateFlow(GameBoard())
     private val history = MutableStateFlow(UndoHistory<GameBoard>())
+    private val catalog = MutableStateFlow<Map<String, TokenCard>>(emptyMap())
 
     // Every caller is the main thread today. The lock is here because the state
     // and its history have to move as one: a read-modify-write that interleaved
@@ -32,6 +34,20 @@ class GameBoardStore {
     private val lock = Any()
 
     val board: StateFlow<GameBoard> = state.asStateFlow()
+
+    /**
+     * Every token the game has seen put into play, by id.
+     *
+     * The board names its entries by token id alone, and the deck on screen is
+     * not always the deck an entry came from — a game can draw on more than one
+     * — so the art and the name have to be remembered here rather than looked
+     * up in whichever deck is open.
+     *
+     * Deliberately outside the undo trail, and deliberately not emptied by a
+     * new game: it is a lookup table, not state anyone can see. Rewinding it
+     * would leave a restored entry with nothing to draw.
+     */
+    val tokens: StateFlow<Map<String, TokenCard>> = catalog.asStateFlow()
 
     val canUndo: Flow<Boolean> = history.map { it.canUndo }
 
@@ -43,6 +59,11 @@ class GameBoardStore {
      */
     fun update(transform: (GameBoard) -> GameBoard) {
         synchronized(lock) { commit(state.value, transform(state.value)) }
+    }
+
+    /** Notes what a token looks like, so an entry of it can always be drawn. */
+    fun remember(token: TokenCard) {
+        catalog.value = catalog.value + (token.id to token)
     }
 
     /** New game: everything leaves the battlefield, entry ids included. */
