@@ -8,8 +8,9 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextReplacement
@@ -53,11 +54,11 @@ class BoardRobot(private val compose: ComposeContentTestRule) {
         }
         // The button that opens the picker only exists once the deck's tokens
         // have arrived, so it is the screen saying it is ready.
-        awaitText(str(R.string.board_add_token))
+        awaitDescription(str(R.string.board_add_token))
     }
 
     fun openPicker() {
-        compose.onNodeWithText(str(R.string.board_add_token)).performClick()
+        compose.onNodeWithContentDescription(str(R.string.board_add_token)).performClick()
         awaitText(str(R.string.board_picker_title))
     }
 
@@ -127,6 +128,10 @@ class BoardRobot(private val compose: ComposeContentTestRule) {
 
     fun awaitText(text: String) = compose.waitUntil(TIMEOUT) {
         compose.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty()
+    }
+
+    fun awaitDescription(description: String) = compose.waitUntil(TIMEOUT) {
+        compose.onAllNodesWithContentDescription(description).fetchSemanticsNodes().isNotEmpty()
     }
 
     fun awaitGone(text: String) = compose.waitUntil(TIMEOUT) {

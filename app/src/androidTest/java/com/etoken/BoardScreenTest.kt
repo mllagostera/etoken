@@ -35,7 +35,8 @@ class BoardScreenTest {
 
         compose.onNodeWithText(robot.str(R.string.board_empty)).assertIsDisplayed()
         compose.onNodeWithText(robot.str(R.string.board_empty_detail)).assertIsDisplayed()
-        compose.onNodeWithText(robot.str(R.string.board_add_token)).assertIsDisplayed()
+        compose.onNodeWithContentDescription(robot.str(R.string.board_add_token))
+            .assertIsDisplayed()
     }
 
     @Test

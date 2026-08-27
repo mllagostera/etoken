@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -72,7 +74,8 @@ class TwoPaneTest {
         compose.onNodeWithText(Fakes.TOKEN_NAME).assertExists()
         compose.onNodeWithText(str(R.string.board_empty)).assertExists()
         // A button to open a picker that is already open would open nothing.
-        compose.onAllNodesWithText(str(R.string.board_add_token)).assertCountEquals(0)
+        compose.onAllNodesWithContentDescription(str(R.string.board_add_token))
+            .assertCountEquals(0)
     }
 
     @Test
@@ -80,7 +83,7 @@ class TwoPaneTest {
         show(400.dp)
 
         // Only the table, and the "+" that reaches the deck's tokens.
-        compose.onNodeWithText(str(R.string.board_add_token)).assertExists()
+        compose.onNodeWithContentDescription(str(R.string.board_add_token)).assertExists()
         compose.onAllNodesWithText(Fakes.TOKEN_NAME).assertCountEquals(0)
     }
 

@@ -25,7 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -167,16 +167,19 @@ fun BoardScreen(
                 // On a tablet the picker is already on screen, so a button to
                 // open it would open nothing.
                 if (ready != null && !twoPane) {
-                    ExtendedFloatingActionButton(
-                        onClick = { picking = true },
-                        icon = {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_add),
-                                contentDescription = null,
-                            )
-                        },
-                        text = { Text(stringResource(R.string.board_add_token)) },
-                    )
+                    // An icon and a description rather than an extended button
+                    // with a label beside it: the label of an
+                    // ExtendedFloatingActionButton does not survive into the
+                    // merged semantics tree, so TalkBack and the instrumented
+                    // tests alike were left with a button that says nothing.
+                    // Every other action in this app is an icon with a
+                    // description, and this is now one too.
+                    FloatingActionButton(onClick = { picking = true }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_add),
+                            contentDescription = stringResource(R.string.board_add_token),
+                        )
+                    }
                 }
             },
         ) { padding ->
