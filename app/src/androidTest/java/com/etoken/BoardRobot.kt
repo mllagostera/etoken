@@ -93,7 +93,7 @@ class BoardRobot(private val compose: ComposeContentTestRule) {
     /** Opens the add dialog for one of the picker's tokens. The picker must be up. */
     fun pick(tokenName: String, scroll: Boolean = false) {
         if (scroll) scrollPickerTo(tokenName)
-        pickerCell(tokenName).performClick()
+        inSheet(tokenName).performClick()
         awaitText(str(R.string.dialog_how_many))
     }
 
@@ -126,15 +126,16 @@ class BoardRobot(private val compose: ComposeContentTestRule) {
     }
 
     /**
-     * A cell in the picker rather than one on the table behind it.
+     * A node in the sheet that is up, rather than the one behind it.
      *
-     * Both draw the token's name, so with the sheet up there can be two nodes
-     * carrying it. The sheet is composed after the table, so the picker's is
-     * the last of them.
+     * The table and a sheet over it draw the same words — a cell's name and a
+     * picker cell's name, a cell's "Sick" badge and the chip in the detail
+     * sheet that toggles it — so a plain finder matches two nodes and fails.
+     * The sheet is composed after the table, so its node is the last of them.
      */
-    private fun pickerCell(tokenName: String): SemanticsNodeInteraction {
-        val matches = compose.onAllNodesWithText(tokenName).fetchSemanticsNodes().size
-        return compose.onAllNodesWithText(tokenName)[matches - 1]
+    fun inSheet(text: String): SemanticsNodeInteraction {
+        val matches = compose.onAllNodesWithText(text).fetchSemanticsNodes().size
+        return compose.onAllNodesWithText(text)[matches - 1]
     }
 
     /** The first cell on the table for that token; the sheet is shut by then. */

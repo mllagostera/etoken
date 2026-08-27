@@ -183,7 +183,9 @@ class BoardScreenTest {
         robot.awaitText("×4")
 
         robot.openEntry(Fakes.TOKEN_NAME)
-        compose.onNodeWithText(robot.str(R.string.entry_sick)).performClick()
+        // The chip in the sheet, not the badge on the cell behind it: both
+        // draw the same word, which is the point of them sharing a string.
+        robot.inSheet(robot.str(R.string.entry_sick)).performClick()
         // All four are waiting, so the question is about the other direction.
         robot.awaitText(robot.str(R.string.entry_ready_how_many))
         robot.answerSome(1)
