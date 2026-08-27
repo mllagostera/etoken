@@ -26,11 +26,12 @@ not truncated. A4, A5 and C8 are that gap.
 
 ---
 
-## 1. Verified — 109 unit and 30 instrumented tests, 0 failures, green on CI
+## 1. Verified — 115 unit and 33 instrumented tests, 0 failures, green on CI
 
-> The language picker (B11) adds 6 unit and 2 instrumented tests, and the
-> splash screen (B12) 1 more, that **no run has executed yet**. They are not in
-> the figures above, and they will not be until a run says they pass.
+> Run **#73** is where those figures come from, and it is the first to execute
+> the language picker's 8 tests (B11) and the splash screen's 1 (B12). Both
+> landed after the last green run and were claims until it finished; they are
+> not any more.
 
 The logic layer runs on the JVM; the screens run on an emulator in CI. Only
 the two APIs are ever faked.
@@ -61,6 +62,11 @@ the two APIs are ever faked.
   says so instead of going blank when the table empties — `ui/tokens/`, 4 instrumented tests
 - [x] The public-decks limit is on screen before the username is typed, and again on an empty deck
   list — `ui/username/`, `ui/decks/`, 2 instrumented tests
+- [x] The **real** `MainActivity` starts: the launch theme, `installSplashScreen()` and
+  `attachBaseContext` all run, and the app reaches the username screen — `SplashScreenTest`, run #73
+  - Every other UI test drives a composable inside a test activity, so until this one nothing in CI
+    ever executed `MainActivity.onCreate`. A splash theme the library cannot use, or a
+    `postSplashScreenTheme` pointing at nothing, takes the activity down there and nowhere else.
 - [x] Printed haste: `keywords` off the wire, `TokenCard.hasHaste`, copies that enter able to
   attack, and a chip that still overrides it — `domain/`, `ui/board/`, 10 unit and 4 instrumented tests
 
@@ -223,9 +229,10 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
   - Android 13's per-app language setting does the same job and was not used: `minSdk` is 26, and
     on Android 8 through 12 that setting does not exist.
   - **The half nobody can test is the half that matters.** The dialog and the stored choice are
-    covered — 2 instrumented tests — but `MainActivity.attachBaseContext` never runs under a test
-    activity, so nothing in CI can tell you whether picking Japanese actually redraws the app in
-    Japanese. That needs the APK on a device, and it joins A5 in wanting one. `AppLanguageTest`
+    covered — 2 instrumented tests — but nothing asserts on the result of applying a language, so
+    nothing in CI can tell you whether picking Japanese actually redraws the app in Japanese.
+    B12's `SplashScreenTest` narrowed this without closing it: it launches the real activity, so
+    `attachBaseContext` does now run in CI and can no longer throw unnoticed. That needs the APK on a device, and it joins A5 in wanting one. `AppLanguageTest`
     covers the part that can be: 6 unit tests, including one that fails if a language is offered
     with no `values-` folder behind it.
 
@@ -249,6 +256,9 @@ A1 and A2 fell on 2026-08-25. What is left needs a real device or a real network
     leaves is a worse bug than an empty field, and an empty field is what a first-time user sees
     anyway. Cold start only: a language change applies itself by recreating the activity, and
     splashing again there would read as the app restarting.
+  - **Green on run #73**, which is also what proved `androidx.core:core-splashscreen:1.0.1`
+    resolves: the machine this was written on has no Android SDK and cannot reach Google's Maven,
+    so the coordinate was a guess until the build ran.
   - One instrumented test, and it is the first in the suite to launch the real `MainActivity` —
     every other one drives a composable inside a test activity, which is why B11's
     `attachBaseContext` hole exists. It fails on a launch theme the library cannot use. It cannot
@@ -342,4 +352,4 @@ Nothing here is blocked on anything I can do without a device.
 
 ---
 
-**Last reviewed:** 2026-08-26 · 48 commits · CI green including the emulator, all 30 instrumented tests · Scryfall verified live, Moxfield 403 from CI · B11's and B12's own tests written but not yet run
+**Last reviewed:** 2026-08-27 · 51 commits · run #73 green including the emulator, all 33 instrumented tests · Scryfall verified live, Moxfield 403 from CI · nothing written is now unrun; what is left needs a device
